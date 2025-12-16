@@ -413,8 +413,8 @@ export default {
   border: 0;
   cursor: pointer;
   font-size: 1.6rem;
-  background: var(--color-amarillo);
-  color: var(--color-oscuro);
+  background: var(--color-morado);
+  color: var(--color-blanco);
   box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
   transition: transform 120ms ease, filter 120ms ease;
 }
@@ -446,8 +446,8 @@ export default {
 
 .hero__dot.is-active {
   width: 26px;
-  background: var(--color-azul);
-  border-color: var(--color-azul);
+  background: var(--color-morado);
+  border-color: var(--color-blanco);
   opacity: 1;
 }
 
@@ -656,7 +656,7 @@ export default {
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--color-azul), var(--color-azul-variante));
+  background:var(--color-morado);
   color: var(--color-blanco);
 }
 

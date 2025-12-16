@@ -10,7 +10,7 @@
   --color-azul: #0188db;
   --color-amarillo: #f4b908;
   --color-naranja: #f0ad4e;
-  --color-morado: #b5106b;
+  --color-morado: #8831FF;
   --color-rojo: #b6212b;
   --color-verde: #28a745;
   --color-blanco: #FFF;
