@@ -11,7 +11,7 @@
       <img src="/src/assets/icons/LogoLetras.png" alt="Logo SportCampus Letras" class="logo-text" />
     </RouterLink>
 
-    <!-- Menú central (solo desktop) -->
+    <!-- Menú central -->
     <div class="center-menu" v-if="!isMobile">
       <button class="courses-btn" @click="showCoursesModal = true">
         Cursos <span class="arrow">▼</span>
@@ -29,9 +29,9 @@
 
     <!-- Lado derecho -->
     <div class="right-section">
-      <!-- Dropdown de idioma -->
+      <!-- Idioma -->
       <div class="dropdown-lang">
-        <button class="icon-btn lang" @click.prevent="toggleLangDropdown" aria-label="Seleccionar idioma">
+        <button class="icon-btn lang" @click.prevent="toggleLangDropdown">
           <span class="lang-text">{{ currentLang }}</span>
         </button>
 
@@ -47,24 +47,24 @@
 
       <span class="separator" v-if="!isMobile"></span>
 
-      <!-- Ayuda (solo desktop) -->
-      <button class="icon-btn help" aria-label="Ayuda" v-if="!isMobile">
+      <!-- Ayuda -->
+      <RouterLink to="/about" class="icon-btn help" v-if="!isMobile">
         <img src="@/assets/icons/about.png" alt="Ayuda" class="icon small" />
-      </button>
+      </RouterLink>
 
       <span class="separator" v-if="!isMobile"></span>
 
-      <!-- Notificaciones (solo desktop) -->
-      <button class="icon-btn notification" aria-label="Notificaciones" v-if="!isMobile && isLoggedIn">
+      <!-- Notificaciones -->
+      <button class="icon-btn notification" v-if="!isMobile && isLoggedIn">
         <img src="@/assets/icons/Notify.png" alt="" class="icon small" />
         <span class="notification-dot" v-if="hasNotifications"></span>
       </button>
 
       <span class="separator" v-if="!isMobile && isLoggedIn"></span>
 
-      <!-- Dropdown de perfil (avatar + nombre en desktop, solo avatar en mobile) -->
+      <!-- Perfil -->
       <div class="dropdown-profile" v-if="isLoggedIn">
-        <button class="profile-btn" @click.prevent="toggleProfileDropdown" aria-label="Menú de usuario">
+        <button class="profile-btn" @click.prevent="toggleProfileDropdown">
           <img src="@/assets/icons/user.png" alt="Avatar" class="avatar" />
           <div class="user-info" v-if="!isMobile">
             <span class="username">Juan Carlos</span>
@@ -76,95 +76,109 @@
           <RouterLink to="/perfil" class="profile-option" @click="profileDropdown = false">
             Mi Perfil
           </RouterLink>
+
           <button class="profile-option logout" @click="logout">
             Cerrar Sesión
           </button>
         </div>
       </div>
 
-      <!-- Botón Iniciar sesión cuando no está logueado (solo desktop) -->
-      <button class="login-btn courses-btn" v-if="!isLoggedIn">
+      <!-- Login -->
+      <RouterLink to="/login" class="login-btn courses-btn" v-if="!isLoggedIn">
         Iniciar sesión
-      </button>
+      </RouterLink>
     </div>
   </nav>
 
-  <!-- Modal de Cursos -->
+  <!-- MODAL CURSOS -->
   <teleport to="body">
     <transition name="modal-fade">
       <div v-if="showCoursesModal" class="modal-overlay" @click.self="showCoursesModal = false">
         <div class="courses-modal" @click.stop>
-          <button class="modal-close" @click="showCoursesModal = false" aria-label="Cerrar modal">
-            ✕
-          </button>
+          <button class="modal-close" @click="showCoursesModal = false">✕</button>
 
           <h2 class="modal-title">Catálogo de cursos</h2>
 
           <div class="modal-content-grid">
+            <!-- IZQUIERDA -->
             <div class="left-column">
-              <section class="levels-section">
+              <section>
                 <h3 class="section-title">Nivel de dificultad</h3>
                 <ul class="list-links">
                   <li>
-                    <RouterLink to="/cursos?nivel=principiante" class="modal-link">Principiante ></RouterLink>
+                    <RouterLink to="/cursos?nivel=principiante" class="modal-link" @click="showCoursesModal = false">
+                      Principiante ></RouterLink>
                   </li>
                   <li>
-                    <RouterLink to="/cursos?nivel=intermedio" class="modal-link">Intermedio ></RouterLink>
+                    <RouterLink to="/cursos?nivel=intermedio" class="modal-link" @click="showCoursesModal = false">
+                      Intermedio ></RouterLink>
                   </li>
                   <li>
-                    <RouterLink to="/cursos?nivel=avanzado" class="modal-link">Avanzado ></RouterLink>
-                  </li>
-                </ul>
-              </section>
-
-              <section class="themes-section">
-                <h3 class="section-title">Temáticas disponibles</h3>
-                <ul class="list-links">
-                  <li>
-                    <RouterLink to="/cursos?tematica=fitness" class="modal-link">Fitness y Gimnasio ></RouterLink>
-                  </li>
-                  <li>
-                    <RouterLink to="/cursos?tematica=yoga" class="modal-link">Yoga y Mindfulness ></RouterLink>
-                  </li>
-                  <li>
-                    <RouterLink to="/cursos?tematica=natacion" class="modal-link">Natación ></RouterLink>
-                  </li>
-                  <li>
-                    <RouterLink to="/cursos?tematica=boxeo" class="modal-link">Boxeo y Artes Marciales ></RouterLink>
-                  </li>
-                  <li>
-                    <RouterLink to="/cursos?tematica=running" class="modal-link">Running y Atletismo ></RouterLink>
-                  </li>
-                  <li>
-                    <RouterLink to="/cursos?tematica=ciclismo" class="modal-link">Ciclismo ></RouterLink>
+                    <RouterLink to="/cursos?nivel=avanzado" class="modal-link" @click="showCoursesModal = false">Avanzado
+                      ></RouterLink>
                   </li>
                 </ul>
               </section>
 
-              <RouterLink to="/cursos" class="explore-btn">
-                Explorar el catálogo completo
-              </RouterLink>
-            </div>
-
-            <div class="right-column">
-              <section class="guides-section">
-                <h3 class="section-title">¿Primera vez aquí?</h3>
+              <section>
+                <h3 class="section-title">Categorías</h3>
                 <ul class="list-links">
                   <li>
-                    <RouterLink to="/como-crear-cuenta" class="modal-link">Cómo crear una cuenta ></RouterLink>
+                    <RouterLink to="/cursos?tematica=fitness" class="modal-link" @click="showCoursesModal = false">Fitness
+                      ></RouterLink>
                   </li>
                   <li>
-                    <RouterLink to="/como-inscribirse" class="modal-link">Cómo inscribirse a un curso ></RouterLink>
-                  </li>
-                  <li>
-                    <RouterLink to="/como-publicar-curso" class="modal-link">Cómo publicar un curso (educadores) >
+                    <RouterLink to="/cursos?tematica=yoga" class="modal-link" @click="showCoursesModal = false">Yoga >
                     </RouterLink>
                   </li>
                   <li>
-                    <RouterLink to="/faq" class="modal-link">Preguntas frecuentes ></RouterLink>
+                    <RouterLink to="/cursos?tematica=natacion" class="modal-link" @click="showCoursesModal = false">
+                      Natación ></RouterLink>
                   </li>
                   <li>
-                    <RouterLink to="/contacto" class="modal-link">Contacto y soporte técnico ></RouterLink>
+                    <RouterLink to="/cursos?tematica=boxeo" class="modal-link" @click="showCoursesModal = false">Boxeo >
+                    </RouterLink>
+                  </li>
+                  <li>
+                    <RouterLink to="/cursos?tematica=running" class="modal-link" @click="showCoursesModal = false">Running
+                      ></RouterLink>
+                  </li>
+                  <li>
+                    <RouterLink to="/cursos?tematica=ciclismo" class="modal-link" @click="showCoursesModal = false">
+                      Ciclismo ></RouterLink>
+                  </li>
+                </ul>
+              </section>
+
+              <RouterLink to="/cursos" class="explore-btn" @click="showCoursesModal = false">
+                Explorar catálogo completo
+              </RouterLink>
+            </div>
+
+            <!-- DERECHA -->
+            <div class="right-column">
+              <section>
+                <h3 class="section-title">¿Primera vez aquí?</h3>
+                <ul class="list-links">
+                  <li>
+                    <RouterLink to="/about" class="modal-link" @click="showCoursesModal = false">Cómo crear una cuenta >
+                    </RouterLink>
+                  </li>
+                  <li>
+                    <RouterLink to="/about" class="modal-link" @click="showCoursesModal = false">Cómo inscribirse a un
+                      curso ></RouterLink>
+                  </li>
+                  <li>
+                    <RouterLink to="/about" class="modal-link" @click="showCoursesModal = false">Cómo publicar un curso >
+                    </RouterLink>
+                  </li>
+                  <li>
+                    <RouterLink to="/about" class="modal-link" @click="showCoursesModal = false">Preguntas frecuentes >
+                    </RouterLink>
+                  </li>
+                  <li>
+                    <RouterLink to="/about" class="modal-link" @click="showCoursesModal = false">Contacto y soporte
+                      técnico ></RouterLink>
                   </li>
                 </ul>
               </section>
@@ -175,11 +189,11 @@
     </transition>
   </teleport>
 
-  <!-- Sidebar móvil -->
+  <!-- SIDEBAR MÓVIL -->
   <transition name="slide">
     <aside v-if="isMobile && menuOpen" class="sidebar">
       <div class="sidebar-header">
-        <button class="icon-btn close" @click="toggleMenu" aria-label="Cerrar menú">
+        <button class="icon-btn close" @click="toggleMenu">
           <img src="@/assets/icons/Close.png" alt="" class="icon" />
         </button>
       </div>
@@ -191,25 +205,24 @@
 
       <ul class="side-links">
         <li>
-          <RouterLink to="/" class="side-link" @click.native="closeMenu">Inicio</RouterLink>
+          <RouterLink to="/" class="side-link" @click="closeMenu">Inicio</RouterLink>
         </li>
-
-        <li class="courses-item">
+        <li>
           <button class="side-link courses-toggle" @click.prevent="openCoursesModal">
             Cursos <span class="submenu-arrow">›</span>
           </button>
         </li>
-
         <li>
-          <RouterLink to="/mis-cursos" class="side-link" @click.native="closeMenu">Mis Cursos</RouterLink>
+          <RouterLink to="/mis-cursos" class="side-link" @click="closeMenu">Mis Cursos</RouterLink>
         </li>
         <li>
-          <RouterLink to="/contacto" class="side-link" @click.native="closeMenu">Contacto</RouterLink>
+          <RouterLink to="/about" class="side-link" @click="closeMenu">Contacto</RouterLink>
         </li>
       </ul>
     </aside>
   </transition>
 </template>
+
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from "vue";
@@ -689,7 +702,7 @@ onUnmounted(() => {
 
 .explore-btn {
   background: var(--color-morado);
-  color:var(--color-blanco);
+  color: var(--color-blanco);
   padding: 0.9rem 1.4rem;
   border-radius: 8px;
   border: 2px solid var(--color-morado);

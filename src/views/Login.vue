@@ -308,7 +308,7 @@ input[type="number"]::-webkit-outer-spin-button {
   top: 50%;
   right: 0.7rem;
   transform: translateY(-50%);
-  color: var(--color-azul-1);
+  color: var(--color-azul);
   font-size: 1.3rem;
   pointer-events: none;
 }
@@ -323,7 +323,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background: transparent;
   border: none;
   font-size: 1.3rem;
-  color: var(--color-azul-1);
+  color: var(--color-azul);
   padding: 0;
 }
 
@@ -333,7 +333,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .input-wrapper input:focus {
-  border-color: var(--color-azul-1);
+  border-color: var(--color-azul);
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 105, 255, 0.2);
 }
@@ -368,7 +368,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--color-azul-1), var(--color-primary-variant));
+  background: linear-gradient(135deg, var(--color-azul), var(--color-morado));
   color: var(--color-blanco);
 }
 
@@ -377,8 +377,6 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: 1rem;
   justify-content: center;
 }
-
-
 
 
 /*====================Parte Izquierda==============*/
@@ -395,7 +393,7 @@ input[type="number"]::-webkit-outer-spin-button {
   left: -250%;
   width: 300%;
   height: 100%;
-  background: linear-gradient(135deg, var(--color-azul-1), var(--color-primary-variant));
+  background: linear-gradient(135deg, var(--color-azul), var(--color-morado));
   border-radius: 150px;
   z-index: 2;
   transition: 1.8s ease-in-out;
