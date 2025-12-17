@@ -1,13 +1,13 @@
 <template>
   <footer class="site-footer" aria-label="Pie de página">
     <div class="site-footer__inner">
-      <p class="site-footer__brand">© 2026 — MinCursos</p>
+      <p class="site-footer__brand">© 2026 — CJ Digital Solutions</p>
 
       <!-- Botonera -->
       <nav class="site-footer__nav" aria-label="Navegación inferior">
         <RouterLink to="/" class="footer-link">Inicio</RouterLink>
         <RouterLink to="/cursos" class="footer-link">Cursos</RouterLink>
-        <RouterLink to="/contacto" class="footer-link">Contacto</RouterLink>
+        <RouterLink to="/about" class="footer-link">Soporte</RouterLink>
       </nav>
 
       <!-- Redes -->
@@ -76,7 +76,7 @@
 }
 
 .footer-link:hover {
-  color: var(--color-azul);
+  color: var(--color-morado);
 }
 
 .site-footer__social {
@@ -97,7 +97,7 @@
 }
 
 .social:hover {
-  color: var(--color-azul);
+  color: var(--color-morado);
   transform: translateY(-2px);
 }
 </style>

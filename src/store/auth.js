@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', {
   },
   getters: {
     isAdmin: (state) => state.user?.rol?.toLowerCase() === 'administrador',
-    isSupervisor: (state) => state.user?.rol?.toLowerCase() === 'supervisor',
-    isAsesor: (state) => state.user?.rol?.toLowerCase() === 'asesor',
+    isInstructor: (state) => state.user?.rol?.toLowerCase() === 'instructor',
+    isEstudiante: (state) => state.user?.rol?.toLowerCase() === 'estudiante',
   }
 })
