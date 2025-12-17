@@ -115,6 +115,7 @@
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/store/auth.js'
 import { useRouter } from 'vue-router'
+import { registroUsuario } from '../services/usuario.services'
 import Swal from 'sweetalert2'
 
 //import { registrarUsuario } from '@/services/usuarios.js'
@@ -165,12 +166,12 @@ async function register() {
   }
 
   try {
-    const data = await registrarUsuario({
+    const data = await registroUsuario({
       id_usuario: registerForm.cedula,
       nombre: registerForm.nombre,
       correo: registerForm.correo,
       telefono: registerForm.telefono,
-      contraseña: registerForm.password
+      contraseña_hash: registerForm.password
     })
 
     Swal.fire({
