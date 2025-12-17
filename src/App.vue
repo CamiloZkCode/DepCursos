@@ -1,8 +1,10 @@
 <template>
   <router-view />
+  <BackToTop />
 </template>
 
 <script setup>
+import BackToTop from '@/components/backtotp.vue'  // Ajusta la ruta si es necesario
 </script>
 
 <style>
@@ -25,11 +27,11 @@
   --border-radius-1: 0.4rem;
   --border-radius-2: 0.8rem;
   --border-radius-3: 1.2rem;
-
   --card-padding: 1rem;
   --padding-1: 1.2rem;
   --box-shadow: 0 2rem 3rem var(--color-light);
 }
+
 
 * {
   margin: 0;
@@ -42,11 +44,6 @@
   box-sizing: border-box;
 }
 
-html, body, #app {
-  width: 100%;
-  height: 100%;
-}
-
 html {
   font-size: 14px;
 }
@@ -56,8 +53,6 @@ body {
   font-size: 0.88rem;
   background: var(--color-background);
   user-select: none;
-  overflow-x: hidden;
+  min-height: 100vh;
 }
-
-
 </style>

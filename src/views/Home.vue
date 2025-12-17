@@ -13,9 +13,9 @@
           <p id="home-intro" class="hero__desc">{{ description }}</p>
           <div class="hero__cta">
             <button class="btn btn--primary">
-              <RouterLink to="/inscripciones" class="footer-link"> Inscribirme ahora </RouterLink>
+              <RouterLink to="/cursos" class="footer-link"> Nuestro Cursos</RouterLink>
             </button>
-            <button class="btn btn--ghost" @click="scrollToCursos">Ver tipos de cursos</button>
+            <button class="btn btn--ghost" @click="scrollToCursos">Nuestras categorías</button>
           </div>
         </header>
 
@@ -34,8 +34,8 @@
     <!-- ===== TIPOS DE CURSOS ===== -->
     <section class="cursos" ref="cursosRef">
       <header class="section-header">
-        <h2>Tipos de cursos disponibles</h2>
-        <p>Elige tu curso favorito y continúa con la inscripción.</p>
+        <h2>Categorias disponibles</h2>
+        <p>Explora nuestras categorías y encuentra el curso ideal para ti.</p>
       </header>
 
       <ul class="cursos__grid" role="list">
@@ -49,10 +49,6 @@
             <div class="place__body">
               <h3 class="place__title">
                 {{ curso.nombre_curso }}
-                <span class="place__capacity">
-                  <img src="/src/assets/Icons/capacidad.png" alt="Capacidad" class="capacity-icon" />
-                  {{ curso.capacidad_min }}–{{ curso.capacidad_max }} alumnos
-                </span>
               </h3>
               <p class="place__desc">{{ curso.descripcion_curso }}</p>
               <div class="place__meta">
@@ -60,8 +56,8 @@
               </div>
               <div class="place__actions">
                 <RouterLink class="btn btn--primary"
-                  :to="{ path: '/inscripciones', query: { curso: curso.id_curso } }">
-                  Inscribirme
+                  :to="{ path: '/cursos', query: { curso: curso.id_curso } }">
+                  Ver categoría
                 </RouterLink>
               </div>
             </div>
@@ -111,40 +107,28 @@ export default {
         id_curso: '1',
         nombre_curso: 'Fitness Intensivo',
         descripcion_curso: 'Clases grupales de alta energía para mejorar fuerza y resistencia.',
-        capacidad_min: '5',
-        capacidad_max: '20',
         imagen_curso: 'https://cdn.prod.website-files.com/65d7b904c0af185c6d721f6f/66745b16786e4667065274df_Friends-Taking-Fitness-Class-NewYorkCity.webp',
-        caracteristica: 'Alta intensidad',
         insignia: 'Popular'
       },
       {
         id_curso: '2',
         nombre_curso: 'Yoga y Mindfulness',
         descripcion_curso: 'Sesiones relajantes para mejorar flexibilidad y bienestar mental.',
-        capacidad_min: '8',
-        capacidad_max: '15',
         imagen_curso: 'https://arisebw.com/wp-content/uploads/2022/11/Yoga-Studio.jpg',
-        caracteristica: 'Principiante',
         insignia: 'Relajante'
       },
       {
         id_curso: '3',
         nombre_curso: 'Natación Avanzada',
         descripcion_curso: 'Entrenamiento técnico en piscina para todos los niveles.',
-        capacidad_min: '4',
-        capacidad_max: '10',
         imagen_curso: 'https://vmrw8k5h.tinifycdn.com/news/wp-content/uploads/2021/10/gmx7-resistance-training-swimming-Trailing_Kick_2-scaled-1.jpeg',
-        caracteristica: 'Técnica',
         insignia: 'Pro'
       },
       {
         id_curso: '4',
         nombre_curso: 'Boxing Fitness',
         descripcion_curso: 'Clases dinámicas combinando cardio y técnica de boxeo.',
-        capacidad_min: '6',
-        capacidad_max: '12',
         imagen_curso: 'https://i0.wp.com/spartansboxing.com/wp-content/uploads/2025/01/Boxing-Gym-Program_-Unlock-Your-Potential_-Copy.webp?fit=1920%2C1080&ssl=1',
-        caracteristica: 'Cardio',
         insignia: 'Energético'
       }
     ])
@@ -491,6 +475,7 @@ export default {
 
 .place__card {
   height: 100%;
+  min-height: 200px; /* Asegura tamaño mínimo uniforme */
   display: grid;
   grid-template-columns: 128px 1fr;
   gap: .9rem;
@@ -536,8 +521,8 @@ export default {
 }
 
 .place__body {
-  display: grid;
-  grid-template-rows: auto auto auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   gap: .25rem;
   min-height: 170px;
 }
@@ -548,23 +533,6 @@ export default {
   font-size: 1.1rem;
 }
 
-.place__capacity {
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--color-oscuro-variante);
-  margin-left: .4rem;
-}
-
-.capacity-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  object-fit: contain;
-  display: inline-block;
-}
-
 .place__desc {
   margin: 0;
   color: var(--color-oscuro-variante);
@@ -573,28 +541,19 @@ export default {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex-grow: 1; /* Permite que la descripción ocupe espacio para uniformidad */
 }
 
 .place__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .4rem .6rem;
-  margin-top: .15rem;
-}
-
-.chip {
-  border: 1px solid var(--color-info-luz);
-  color: var(--color-oscuro);
-  border-radius: 999px;
-  padding: .25rem .5rem;
-  font-size: .78rem;
+  margin-top: 1rem; 
 }
 
 .place__actions {
-  align-self: end;
   display: flex;
+  justify-content: center; /* Centra el botón */
   gap: .55rem;
   flex-wrap: wrap;
+  margin-top: 1rem; 
 }
 
 /* ===== Logos Carousel ===== */
@@ -702,6 +661,7 @@ export default {
   .place__card {
     grid-template-columns: 1fr;
     padding: .9rem;
+    min-height: 380px; /* Tamaño uniforme en desktop */
   }
 
   .place__media {
