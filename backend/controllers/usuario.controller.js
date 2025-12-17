@@ -1,5 +1,5 @@
 const usuariosModel = require("../models/user.models");
-const { crearDatosUsuario, obtenerDatosUsuario, informacionXUsuario } = require('../models/user.models');
+const { crearDatosUsuario, obtenerDatosUsuario, informacionXUsuario } = require('../models/usuario.models');
 const db = require("../config/db");
 const bcrypt = require('bcrypt');
 

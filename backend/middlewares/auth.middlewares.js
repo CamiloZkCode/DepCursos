@@ -42,14 +42,7 @@ function verificarRoles(...rolesPermitidos) {
   };
 }
 
-function verificarCambioContrasena(req, res, next) {
-  if (req.user.debe_cambiar_contrasena) {
-    return res.status(403).json({
-      message: 'Debe cambiar su contraseña antes de continuar.'
-    });
-  }
-  next();
-}
 
 
-module.exports = { verificarToken, verificarRoles,verificarCambioContrasena };
+
+module.exports = { verificarToken, verificarRoles,};

@@ -92,7 +92,7 @@
       <div class="toggle-box">
         <div class="toggle-panel toggle-left">
           <h1>¡Bienvenido a MiMesaYa!</h1>
-          <img src="@/assets/Logo/LogoCon.png" alt="MiMesaYa" />
+          <img src="@/assets/icons/SportCampus.png" alt="MiMesaYa" />
           <p>No tienes una cuenta aun ?</p>
           <div class="btn-group">
             <button class="btn registrar" @click="activarRegistro">Cliente</button>
@@ -102,7 +102,7 @@
 
         <div class="toggle-panel toggle-right">
           <h1>¡Bienvenido a MiMesaYa!</h1>
-          <img src="@/assets/Logo/LogoConLetra.jpg" alt="MiMesaYa" />
+          <img src="@/assets/icons/LogoLetras.png" alt="MiMesaYa" />
           <p>Ya tienes cuenta, inicia sesion</p>
           <button class="btn iniciar" @click="activarLogin">Iniciar</button>
         </div>
@@ -114,10 +114,13 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/store/auth.js'
+import { useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
-import { registrarUsuario } from '@/services/usuarios.js'
+
+//import { registrarUsuario } from '@/services/usuarios.js'
 
 const auth = useAuthStore()
+const router = useRouter()
 
 // estados
 const isRegister = ref(false)
@@ -131,12 +134,18 @@ const showConfirmPassword = ref(false)
 
 async function login() {
   try {
+
     await auth.login(loginForm.correo, loginForm.password)
+
+    
     Swal.fire({
       icon: 'success',
       title: 'Bienvenido',
       text: `Hola ${auth.user?.nombre || 'Usuario'}`
+    }).then(() => {
+      router.push('/')
     })
+
   } catch (error) {
     Swal.fire({
       icon: 'error',
