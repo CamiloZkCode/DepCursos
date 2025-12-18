@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 
 
 async function registroUsuario(req, res) {
-  const { id_usuario, nombre,telefono,correo,contraseña_hash } = req.body;
+  const { id_usuario, nombre,telefono,correo,contraseña_hash,id_rol} = req.body;
 
   try {
     // Validar que los campos obligatorios estén presentes
@@ -18,6 +18,7 @@ async function registroUsuario(req, res) {
      const hash = await bcrypt.hash(contraseña_hash, 10);
     // Verificar si el usuario ya existe
 
+
     const [existing] = await db.query(
       'SELECT * FROM Usuarios WHERE id_usuario = ?',
       [id_usuario]
@@ -28,9 +29,9 @@ async function registroUsuario(req, res) {
 
     // Insertar el nuevo usuario
     await db.query(
-      `INSERT INTO usuarios (id_usuario, nombre,telefono,correo,contraseña_hash)
-       VALUES (?, ?, ?, ?, ?)`,
-      [id_usuario, nombre,telefono,correo,hash|| null]
+      `INSERT INTO usuarios (id_usuario, nombre,telefono,correo,contraseña_hash,id_rol)
+       VALUES (?, ?, ?, ?, ?,?)`,
+      [id_usuario, nombre,telefono,correo,hash,id_rol|| null]
     );
 
     res.status(201).json({ 

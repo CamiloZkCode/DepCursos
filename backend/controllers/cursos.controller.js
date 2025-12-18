@@ -26,9 +26,6 @@ async function crearCurso(req,res) {
       [titulo_curso, descripcion,precio,img_portada,id_categoria,id_dificultad, id_instructor,estatus|| null]
     );
 
-
-
-
     }catch(err){
         console.error(err);
         res.status(500).json({message:"Error del Servidor"})
