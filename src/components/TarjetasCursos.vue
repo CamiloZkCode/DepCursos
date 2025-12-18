@@ -142,7 +142,7 @@ function clearFilters() {
 }
 
 function goToCourse(id) {
-  router.push(`/ver-curso/${id}`);
+  router.push(`/ver-curso`);
 }
 
 function formatPrice(value) {

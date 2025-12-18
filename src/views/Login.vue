@@ -91,18 +91,16 @@
       <!-- Paneles de toggle -->
       <div class="toggle-box">
         <div class="toggle-panel toggle-left">
-          <h1>¡Bienvenido a MiMesaYa!</h1>
-          <img src="@/assets/icons/SportCampus.png" alt="MiMesaYa" />
+          <h1>¡SportCampus!</h1>
+          <img src="@/assets/icons/LogoFondo.jpeg" alt="CampusSport" />
           <p>No tienes una cuenta aun ?</p>
           <div class="btn-group">
-            <button class="btn registrar" @click="activarRegistro">Cliente</button>
-            <RouterLink to="/registrar-restaurante" class="btn emprendedor"> Emprendedor</RouterLink>
+            <button class="btn registrar" @click="activarRegistro">Registrarse</button>
           </div>
         </div>
-
         <div class="toggle-panel toggle-right">
-          <h1>¡Bienvenido a MiMesaYa!</h1>
-          <img src="@/assets/icons/LogoLetras.png" alt="MiMesaYa" />
+          <h1>¡SportCampus!</h1>
+          <img src="@/assets/icons/LogoLetrasFondo.jpeg" alt="CampusSport" />
           <p>Ya tienes cuenta, inicia sesion</p>
           <button class="btn iniciar" @click="activarLogin">Iniciar</button>
         </div>
@@ -318,7 +316,7 @@ input[type="number"]::-webkit-outer-spin-button {
   top: 50%;
   right: 0.7rem;
   transform: translateY(-50%);
-  color: var(--color-azul);
+  color: var(--color-morado);
   font-size: 1.3rem;
   pointer-events: none;
 }
@@ -333,19 +331,19 @@ input[type="number"]::-webkit-outer-spin-button {
   background: transparent;
   border: none;
   font-size: 1.3rem;
-  color: var(--color-azul);
+  color: var(--color-morado);
   padding: 0;
 }
 
 .toggle-password:focus {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 105, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(145, 16, 250, 0.2);
 }
 
 .input-wrapper input:focus {
-  border-color: var(--color-azul);
+  border-color: var(--color-morado);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(0, 105, 255, 0.2);
+  box-shadow: 0 0 0 3px rgba(145, 16, 250, 0.2);
 }
 
 .btn {
@@ -359,15 +357,6 @@ input[type="number"]::-webkit-outer-spin-button {
   transition: transform 120ms ease, filter 120ms ease;
 }
 
-.emprendedor {
-  background: var(--color-blanco);
-  color: var(--color-oscuro);
-  text-decoration: none; 
-  display: inline-block; 
-  text-align: center;
-  cursor: pointer;
-}
-
 .btn:hover {
   transform: translateY(-1px);
   filter: brightness(0.98);
@@ -378,13 +367,13 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--color-azul), var(--color-morado));
+  background: var(--color-morado);
   color: var(--color-blanco);
 }
 
 .btn-group {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   justify-content: center;
 }
 
@@ -403,7 +392,7 @@ input[type="number"]::-webkit-outer-spin-button {
   left: -250%;
   width: 300%;
   height: 100%;
-  background: linear-gradient(135deg, var(--color-azul), var(--color-morado));
+  background: var(--color-morado);
   border-radius: 150px;
   z-index: 2;
   transition: 1.8s ease-in-out;
