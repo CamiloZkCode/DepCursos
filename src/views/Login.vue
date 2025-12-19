@@ -126,7 +126,7 @@ const isRegister = ref(false)
 
 const loginForm = reactive({ correo: '', password: '' })
 const registerForm = reactive({ nombre: '', correo: '', telefono: '', password: '', confirmPassword: '' })
-
+const usuario =2;
 const showLoginPassword = ref(false)
 const showRegisterPassword = ref(false)
 const showConfirmPassword = ref(false)
@@ -169,7 +169,8 @@ async function register() {
       nombre: registerForm.nombre,
       correo: registerForm.correo,
       telefono: registerForm.telefono,
-      contraseña_hash: registerForm.password
+      contraseña_hash: registerForm.password,
+      id_rol:usuario
     })
 
     Swal.fire({
