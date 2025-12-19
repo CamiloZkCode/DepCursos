@@ -19,6 +19,7 @@ import PerfilCliente from "@/views/Cliente/PerfilCliente.vue";
 
 // Admin
 import GestionarCursos from "@/views/Admin/GestionarCursos.vue";
+import PerfilAdmin from "@/views/Admin/PerfilAdmin.vue";
 
 const routes = [
   /* =========================
@@ -42,6 +43,10 @@ const routes = [
 
       { path: "mis-cursos", name: "MisCursos", component: MisCursos },
       { path: "perfil", name: "PerfilCliente", component: PerfilCliente },
+      { path: "admin-perfil", name: "PerfilAdmin", component: PerfilAdmin },
+      { path: "admin/gestionar-cursos", name: "GestionarCursos", component: GestionarCursos },
+
+
     ],
   },
 
@@ -53,13 +58,6 @@ const routes = [
     component: LayoutSinFooter,
     children: [
       { path: "login", name: "Login", component: Login },
-
-      // Admin
-      {
-        path: "admin/gestionar-cursos",
-        name: "GestionarCursos",
-        component: GestionarCursos,
-      },
     ],
   },
 
