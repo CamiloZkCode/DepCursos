@@ -38,17 +38,28 @@ export const useAuthStore = defineStore('auth', {
     },
     
     
-    logout() {
+     async logout() {
+      // Limpiar estado
       this.isAuthenticated = false
       this.user = null
       this.token = null
       localStorage.removeItem('token')
       localStorage.removeItem('user')
-    }
+
+      //alerta cerrar sesión
+      await Swal.fire({
+        icon: 'success',
+        title: 'Sesión cerrada',
+        text: 'Has cerrado sesión correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+      router.push('/login')
+    })},
   },
   getters: {
-    isAdmin: (state) => state.user?.rol?.toLowerCase() === 'administrador',
+    isAdmin: (state) => state.user?.rol?.toLowerCase() === 'admin',
     isInstructor: (state) => state.user?.rol?.toLowerCase() === 'instructor',
-    isEstudiante: (state) => state.user?.rol?.toLowerCase() === 'estudiante',
+    isEstudiante: (state) => state.user?.rol?.toLowerCase() === 'usuario',
   }
 })

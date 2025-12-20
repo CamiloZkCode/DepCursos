@@ -6,43 +6,49 @@
         <img :src="avatarSrc" alt="Avatar del usuario" class="profile__avatar-img" />
       </div>
       <label for="avatar-upload" class="profile__avatar-edit" aria-label="Cambiar foto de perfil">
-        <input id="avatar-upload" type="file" accept="image/*" @change="emit('change-avatar', $event)" class="hidden-input" />
+        <input 
+          id="avatar-upload" 
+          type="file" 
+          accept="image/*" 
+          @change="handleAvatarChange" 
+          class="hidden-input" 
+        />
         <span class="icon">📷</span>
       </label>
     </div>
 
     <!-- Nombre y rol -->
     <div class="profile__info">
-      <h1 class="profile__name">{{ user.fullName }}</h1>
-      <p class="profile__role">{{ user.role }}</p>
+      <h1 class="profile__name">{{ authStore.user?.nombre || 'Usuario' }}</h1>
+      <p class="profile__role">{{ rolDisplay }}</p>
     </div>
 
-    <!-- Estadísticas -->
+    <!-- Estadísticas según rol -->
     <div class="profile__stats">
-      <!-- Estadísticas para Estudiante -->
-      <template v-if="isEstudiante">
+      <!-- Para Estudiante -->
+      <template v-if="authStore.isEstudiante">
         <div class="profile__stat">
           <span class="profile__stat-icon">🏆</span>
-          <span class="profile__stat-value">{{ user.badges }}</span>
+          <span class="profile__stat-value">{{ userStats.badges }}</span>
           <span class="profile__stat-label">Insignias obtenidas</span>
         </div>
         <div class="profile__stat">
           <span class="profile__stat-icon">📚</span>
-          <span class="profile__stat-value">{{ user.completedCourses }}</span>
+          <span class="profile__stat-value">{{ userStats.completedCourses }}</span>
           <span class="profile__stat-label">Cursos completados</span>
         </div>
       </template>
 
-      <!-- Estadísticas para Administrador -->
-      <template v-else-if="isAdmin">
+      <!-- Para Administrador -->
+      <template v-else-if="authStore.isAdmin">
         <div class="profile__stat">
           <span class="profile__stat-icon">📚</span>
-          <span class="profile__stat-value">{{ user.createdCourses }}</span>
+          <span class="profile__stat-value">{{ userStats.createdCourses }}</span>
           <span class="profile__stat-label">Cursos Creados</span>
         </div>
         <div class="profile__stat">
           <span class="profile__stat-icon">👥</span>
-          <span class="profile__stat-value">{{ user.instructors }}</span>
+          <span class="profile__stat-value">{{ userStats.instructors }}</span>
           <span class="profile__stat-label">Instructores</span>
         </div>
       </template>
@@ -51,26 +57,47 @@
 </template>
 
 <script setup>
-defineProps({
-  user: {
-    type: Object,
-    required: true
-  },
-  avatarSrc: {
-    type: String,
-    required: true
-  },
-  isAdmin: {
-    type: Boolean,
-    default: false
-  },
-  isEstudiante: {
-    type: Boolean,
-    default: false
-  }
+import { useAuthStore } from '@/store/auth' // Ajusta la ruta si es necesario
+import { ref, computed, onMounted } from 'vue'
+
+const authStore = useAuthStore()
+
+// Avatar local (preview al cambiar)
+const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
+
+// Estadísticas (valores que vienen del backend en authStore.user)
+const userStats = computed(() => ({
+  badges: authStore.user?.badges || 0,
+  completedCourses: authStore.user?.completedCourses || 0,
+  createdCourses: authStore.user?.createdCourses || 0,
+  instructors: authStore.user?.instructors || 0
+}))
+
+// Texto bonito del rol (sin tocar el store)
+const rolDisplay = computed(() => {
+  if (!authStore.user?.rol) return ''
+  const rol = authStore.user.rol.toLowerCase()
+  if (rol === 'admin') return 'Administrador' 
+  if (rol === 'usuario') return 'Estudiante'
+  if (rol === 'instructor') return 'Instructor'
+  return 'Usuario'
 })
 
-const emit = defineEmits(['change-avatar'])
+// Cambio de avatar (solo preview local por ahora)
+const handleAvatarChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    avatarSrc.value = URL.createObjectURL(file)
+    // Aquí puedes subir al backend si lo deseas
+  }
+}
+
+// Si el usuario ya tiene un avatar guardado, cargarlo
+onMounted(() => {
+  if (authStore.user?.avatar) {
+    avatarSrc.value = authStore.user.avatar
+  }
+})
 </script>
 
 <style scoped>

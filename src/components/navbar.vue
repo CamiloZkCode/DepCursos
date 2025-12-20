@@ -64,12 +64,13 @@
         <button class="profile-btn" @click.prevent="toggleProfileDropdown">
           <img src="@/assets/icons/user.png" alt="Avatar" class="avatar" />
           <div class="user-info" v-if="!isMobile">
-            <span class="username">{{ capitalizedName }}</span>
-            <span class="user-role">{{ capitalizedRole }}</span>
+            <span class="username">{{ formattedName }}</span>
+            <span class="user-role">{{ formattedRole }}</span>
           </div>
         </button>
         <div class="profile-dropdown" v-if="profileDropdown">
-          <RouterLink to="/perfil" class="profile-option" @click="profileDropdown = false">
+          <!-- Ruta dinámica según rol -->
+          <RouterLink :to="profileRoute" class="profile-option" @click="profileDropdown = false">
             Mi Perfil
           </RouterLink>
           <button class="profile-option logout" @click="handleLogout">
@@ -92,7 +93,6 @@
         <div class="courses-modal" @click.stop>
           <button class="modal-close" @click="showCoursesModal = false">✕</button>
           <h2 class="modal-title">Catálogo de cursos</h2>
-          <!-- ... resto del modal igual ... -->
           <div class="modal-content-grid">
             <!-- IZQUIERDA -->
             <div class="left-column">
@@ -138,7 +138,7 @@
     </transition>
   </teleport>
 
-  <!-- SIDEBAR MÓVIL (sin cambios relevantes) -->
+  <!-- SIDEBAR MÓVIL -->
   <transition name="slide">
     <aside v-if="isMobile && menuOpen" class="sidebar">
       <div class="sidebar-header">
@@ -162,35 +162,49 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useAuthStore } from "@/store/auth";  // ← Importamos el store
-import { RouterLink } from "vue-router";
+import { useAuthStore } from "@/store/auth";
+import { RouterLink, useRouter } from "vue-router";
 
 const authStore = useAuthStore();
+const router = useRouter();
 
-// Estado reactivo del navbar
+// Estado
 const menuOpen = ref(false);
 const isMobile = ref(false);
 const showCoursesModal = ref(false);
-const hasNotifications = ref(true); // Puedes conectarlo a un store más adelante
+const hasNotifications = ref(true);
 
-// Dropdowns
 const currentLang = ref('ES');
 const langDropdown = ref(false);
 const profileDropdown = ref(false);
 
-// Computed para autenticación y datos del usuario
+// Computed
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const user = computed(() => authStore.user);
 
-// Nombre y rol con primera letra en mayúscula
-const capitalizedName = computed(() => {
-  if (!user.value?.nombre) return "";
-  return user.value.nombre.charAt(0).toUpperCase() + user.value.nombre.slice(1).toLowerCase();
+// Formato del nombre: primeras letras mayúsculas y solo primeros 2 nombres
+const formattedName = computed(() => {
+  if (!user.value?.nombre) return "Usuario";
+
+  const words = user.value.nombre.trim().split(/\s+/);
+  const capitalized = words.map(word => 
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  );
+
+  // Tomar solo los primeros 2 nombres
+  return capitalized.slice(0, 2).join(' ');
 });
 
-const capitalizedRole = computed(() => {
+// Rol con inicial mayúscula
+const formattedRole = computed(() => {
   if (!user.value?.rol) return "";
   return user.value.rol.charAt(0).toUpperCase() + user.value.rol.slice(1).toLowerCase();
+});
+
+// Ruta dinámica del perfil
+const profileRoute = computed(() => {
+  if (authStore.isAdmin) return '/admin-perfil';
+  return '/perfil'; // por defecto estudiante u otros roles
 });
 
 // Métodos
@@ -217,11 +231,10 @@ const handleLogout = () => {
   authStore.logout();
   profileDropdown.value = false;
   closeMenu();
-  // Opcional: redirigir al home
-  // router.push('/');
+  router.push('/');
 };
 
-// Control de overflow cuando hay modal
+// Overflow cuando hay modal
 watch(showCoursesModal, (isOpen) => {
   document.body.style.overflow = isOpen ? 'hidden' : '';
 });

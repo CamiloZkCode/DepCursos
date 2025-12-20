@@ -140,7 +140,7 @@ async function login() {
     Swal.fire({
       icon: 'success',
       title: 'Bienvenido',
-      text: `Hola ${auth.user?.nombre || 'Usuario'}`
+      text: ` ${auth.user?.nombre || 'Usuario'}`
     }).then(() => {
       router.push('/')
     })
