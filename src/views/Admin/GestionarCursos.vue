@@ -13,11 +13,14 @@
         <h2>Gestionar Cursos</h2>
         <p>Crea y organiza cursos, módulos, lecciones y quizzes.</p>
       </header>
-      <section class="actions mb-6">
+
+      <!-- Botón Crear Curso más separado -->
+      <section class="actions actions--spaced">
         <div class="actions__buttons">
           <button class="btn btn--primary" @click="openCreateCourseModal">Crear Curso</button>
         </div>
       </section>
+
       <section class="results" aria-live="polite">
         <ul class="course-accordions" v-if="courses.length">
           <li v-for="course in courses" :key="course.id" class="accordion-item">
@@ -50,8 +53,8 @@
                   </div>
                   <div class="course-actions mt-4">
                     <button class="btn btn--primary btn--small" @click="openEditCourseModal(course)">Editar Curso</button>
-                    <button class="btn btn--primary btn--small ml-2" @click="openCreateModuleModal(course.id)">+ Módulo</button>
-                    <button class="btn btn--primary btn--small ml-2" @click="openCreateLessonModal(course.id)">+ Lección</button>
+                    <button class="btn btn--primary btn--small" @click="openCreateModuleModal(course.id)">+ Módulo</button>
+                    <button class="btn btn--primary btn--small" @click="openCreateLessonModal(course.id)">+ Lección</button>
                   </div>
                 </div>
                 <div class="modules-column">
@@ -88,58 +91,95 @@
     </section>
 
     <teleport to="body">
-      <!-- Modal Curso -->
+      <!-- Modal Curso (con subida de imagen) -->
       <div v-if="showCourseModal" class="modal-backdrop" @click.self="closeCourseModal">
-        <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="course-modal-title">
           <header class="modal__header">
-            <h3>{{ courseModalTitle }}</h3>
-            <button class="modal__close" @click="closeCourseModal">✕</button>
+            <h3 id="course-modal-title">{{ courseModalTitle }}</h3>
+            <button class="modal__close" @click="closeCourseModal" aria-label="Cerrar">✕</button>
           </header>
           <div class="modal__body">
             <form class="form" @submit.prevent="saveCourse">
               <div class="grid">
                 <div class="field">
                   <label for="course-title">Título del Curso *</label>
-                  <input id="course-title" v-model="formCourse.title" type="text" required />
+                  <div class="input-wrapper">
+                    <input id="course-title" v-model="formCourse.title" type="text" required />
+                    <span class="material-symbols-outlined icon-static">title</span>
+                  </div>
                 </div>
                 <div class="field field--full">
                   <label for="course-description">Descripción</label>
-                  <textarea id="course-description" v-model="formCourse.description"></textarea>
+                  <div class="input-wrapper">
+                    <textarea id="course-description" v-model="formCourse.description" rows="4"></textarea>
+                    <span class="material-symbols-outlined icon-static">description</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="course-price">Precio (USD) *</label>
-                  <input id="course-price" v-model.number="formCourse.price" type="number" min="0" required />
+                  <div class="input-wrapper">
+                    <input id="course-price" v-model.number="formCourse.price" type="number" min="0" required />
+                    <span class="material-symbols-outlined icon-static">attach_money</span>
+                  </div>
                 </div>
-                <div class="field">
-                  <label for="course-cover">URL Portada</label>
-                  <input id="course-cover" v-model="formCourse.coverImage" type="url" placeholder="https://..." />
+
+                <!-- Subida de portada en lugar de URL -->
+                <div class="field field--full">
+                  <label for="course-cover-file">Portada del curso *</label>
+                  <input 
+                    id="course-cover-file" 
+                    type="file" 
+                    accept="image/*" 
+                    @change="handleCoverChange" 
+                  />
+                  <div v-if="coverPreview" class="image-preview">
+                    <img :src="coverPreview" alt="Vista previa de portada" />
+                    <p><small>Nueva portada seleccionada</small></p>
+                  </div>
+                  <div v-else-if="formCourse.coverImage && formCourse.id" class="image-preview">
+                    <img :src="formCourse.coverImage" alt="Portada actual" />
+                    <p><small>Portada actual (se mantendrá si no subes una nueva)</small></p>
+                  </div>
                 </div>
+
                 <div class="field">
                   <label for="course-category">Categoría *</label>
-                  <select id="course-category" v-model="formCourse.category" required>
-                    <option v-for="cat in categories" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="course-category" v-model="formCourse.category" required>
+                      <option v-for="cat in categories" :key="cat.id" :value="cat.name">{{ cat.name }}</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">category</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="course-difficulty">Dificultad *</label>
-                  <select id="course-difficulty" v-model="formCourse.difficulty" required>
-                    <option value="Principiante">Principiante</option>
-                    <option value="Intermedio">Intermedio</option>
-                    <option value="Avanzado">Avanzado</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="course-difficulty" v-model="formCourse.difficulty" required>
+                      <option value="Principiante">Principiante</option>
+                      <option value="Intermedio">Intermedio</option>
+                      <option value="Avanzado">Avanzado</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">school</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="course-instructor">Instructor *</label>
-                  <select id="course-instructor" v-model="formCourse.instructor" required>
-                    <option v-for="inst in instructorsList" :key="inst.id" :value="inst.name">{{ inst.name }}</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="course-instructor" v-model="formCourse.instructor" required>
+                      <option v-for="inst in instructorsList" :key="inst.id" :value="inst.name">{{ inst.name }}</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">person</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="course-status">Estatus *</label>
-                  <select id="course-status" v-model="formCourse.status" required>
-                    <option value="Borrador">Borrador</option>
-                    <option value="Publicado">Publicado</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="course-status" v-model="formCourse.status" required>
+                      <option value="Borrador">Borrador</option>
+                      <option value="Publicado">Publicado</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">visibility</span>
+                  </div>
                 </div>
               </div>
               <div class="modal__actions">
@@ -151,29 +191,38 @@
         </div>
       </div>
 
-      <!-- Modal Módulo -->
+      <!-- Modal Módulo (mismo estilo) -->
       <div v-if="showModuleModal" class="modal-backdrop" @click.self="closeModuleModal">
-        <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="module-modal-title">
           <header class="modal__header">
-            <h3>{{ moduleModalTitle }}</h3>
-            <button class="modal__close" @click="closeModuleModal">✕</button>
+            <h3 id="module-modal-title">{{ moduleModalTitle }}</h3>
+            <button class="modal__close" @click="closeModuleModal" aria-label="Cerrar">✕</button>
           </header>
           <div class="modal__body">
             <form class="form" @submit.prevent="saveModule">
               <div class="grid">
                 <div class="field">
                   <label for="module-course">Curso *</label>
-                  <select id="module-course" v-model="formModule.courseId" required>
-                    <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.title }}</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="module-course" v-model="formModule.courseId" required>
+                      <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.title }}</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">school</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="module-title">Título del Módulo *</label>
-                  <input id="module-title" v-model="formModule.title" type="text" required />
+                  <div class="input-wrapper">
+                    <input id="module-title" v-model="formModule.title" type="text" required />
+                    <span class="material-symbols-outlined icon-static">folder</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="module-order">Número / Orden *</label>
-                  <input id="module-order" v-model.number="formModule.order" type="number" min="1" required />
+                  <div class="input-wrapper">
+                    <input id="module-order" v-model.number="formModule.order" type="number" min="1" required />
+                    <span class="material-symbols-outlined icon-static">format_list_numbered</span>
+                  </div>
                 </div>
               </div>
               <div class="modal__actions">
@@ -185,78 +234,134 @@
         </div>
       </div>
 
-      <!-- Modal Lección -->
+      <!-- Modal Lección (mantiene las mejoras anteriores) -->
       <div v-if="showLessonModal" class="modal-backdrop" @click.self="closeLessonModal">
-        <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lesson-modal-title">
           <header class="modal__header">
-            <h3>{{ lessonModalTitle }}</h3>
-            <button class="modal__close" @click="closeLessonModal">✕</button>
+            <h3 id="lesson-modal-title">{{ lessonModalTitle }}</h3>
+            <button class="modal__close" @click="closeLessonModal" aria-label="Cerrar">✕</button>
           </header>
           <div class="modal__body">
             <form class="form" @submit.prevent="saveLesson">
               <div class="grid">
+                <!-- (todo el contenido del modal lección que ya tenías, sin cambios) -->
                 <div class="field">
                   <label for="lesson-course">Curso *</label>
-                  <select id="lesson-course" v-model="formLesson.courseId" required @change="formLesson.moduleId = null">
-                    <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.title }}</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="lesson-course" v-model="formLesson.courseId" required @change="formLesson.moduleId = null">
+                      <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.title }}</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">school</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="lesson-module">Módulo *</label>
-                  <select id="lesson-module" v-model="formLesson.moduleId" required>
-                    <option v-for="m in availableModulesForLesson" :key="m.id" :value="m.id">
-                      {{ m.title }} ({{ m.order }})
-                    </option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="lesson-module" v-model="formLesson.moduleId" required>
+                      <option v-for="m in availableModulesForLesson" :key="m.id" :value="m.id">
+                        {{ m.title }} ({{ m.order }})
+                      </option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">folder</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="lesson-title">Título de la Lección *</label>
-                  <input id="lesson-title" v-model="formLesson.title" type="text" required />
+                  <div class="input-wrapper">
+                    <input id="lesson-title" v-model="formLesson.title" type="text" required />
+                    <span class="material-symbols-outlined icon-static">title</span>
+                  </div>
                 </div>
                 <div class="field">
                   <label for="lesson-type">Tipo *</label>
-                  <select id="lesson-type" v-model="formLesson.type" required>
-                    <option value="video">Video</option>
-                    <option value="texto">Texto</option>
-                    <option value="archivo">Archivo</option>
-                    <option value="quiz">Quiz</option>
-                  </select>
+                  <div class="input-wrapper">
+                    <select id="lesson-type" v-model="formLesson.type" required>
+                      <option value="video">Video</option>
+                      <option value="texto">Texto</option>
+                      <option value="archivo">Archivo</option>
+                      <option value="quiz">Quiz</option>
+                    </select>
+                    <span class="material-symbols-outlined icon-static">category</span>
+                  </div>
                 </div>
-                <div class="field" v-if="formLesson.type === 'video' || formLesson.type === 'archivo'">
-                  <label for="lesson-url">{{ formLesson.type === 'video' ? 'URL del Video' : 'URL del Archivo' }}</label>
-                  <input id="lesson-url" v-model="formLesson.url" type="url" />
+
+                <div class="field field--full" v-if="formLesson.type === 'video' || formLesson.type === 'archivo'">
+                  <label for="lesson-file">
+                    {{ formLesson.type === 'video' ? 'Subir Video *' : 'Subir Archivo (PDF, Word, Excel, etc.) *' }}
+                  </label>
+                  <input 
+                    id="lesson-file" 
+                    type="file" 
+                    :accept="formLesson.type === 'video' ? 'video/*' : '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt'" 
+                    @change="handleFileChange" 
+                  />
+                  <div v-if="selectedFileName" class="file-preview">
+                    <p><strong>Archivo seleccionado:</strong> {{ selectedFileName }}</p>
+                    <video v-if="formLesson.type === 'video' && filePreviewUrl" controls class="video-preview">
+                      <source :src="filePreviewUrl" />
+                      Tu navegador no soporta video.
+                    </video>
+                  </div>
                 </div>
+
                 <div class="field" v-if="formLesson.type !== 'quiz'">
                   <label for="lesson-duration">Duración (minutos)</label>
-                  <input id="lesson-duration" v-model.number="formLesson.duration" type="number" min="0" />
+                  <div class="input-wrapper">
+                    <input id="lesson-duration" v-model.number="formLesson.duration" type="number" min="0" />
+                    <span class="material-symbols-outlined icon-static">schedule</span>
+                  </div>
                 </div>
+
                 <div class="field">
                   <label for="lesson-order">Orden *</label>
-                  <input id="lesson-order" v-model.number="formLesson.order" type="number" min="1" required />
+                  <div class="input-wrapper">
+                    <input id="lesson-order" v-model.number="formLesson.order" type="number" min="1" required />
+                    <span class="material-symbols-outlined icon-static">format_list_numbered</span>
+                  </div>
                 </div>
+
                 <div class="field field--full" v-if="formLesson.type === 'texto'">
                   <label for="lesson-content">Contenido de texto</label>
-                  <textarea id="lesson-content" v-model="formLesson.contentText" rows="6"></textarea>
+                  <div class="input-wrapper">
+                    <textarea id="lesson-content" v-model="formLesson.contentText" rows="8"></textarea>
+                    <span class="material-symbols-outlined icon-static">text_fields</span>
+                  </div>
                 </div>
+
                 <div v-if="formLesson.type === 'quiz'" class="field field--full quiz-builder">
-                  <h4>Configuración del Quiz</h4>
-                  <div class="quiz-title">
-                    <label for="quiz-title">Título del Quiz</label>
-                    <input id="quiz-title" v-model="formLesson.quiz.title" type="text" required />
+                  <h4 class="quiz-section-title">Configuración del Quiz</h4>
+                  <div class="field">
+                    <label for="quiz-title">Título del Quiz *</label>
+                    <div class="input-wrapper">
+                      <input id="quiz-title" v-model="formLesson.quiz.title" type="text" required />
+                      <span class="material-symbols-outlined icon-static">quiz</span>
+                    </div>
                   </div>
                   <div v-for="(question, qIndex) in formLesson.quiz.questions" :key="qIndex" class="question-block">
-                    <label>Pregunta {{ qIndex + 1 }}</label>
-                    <input v-model="question.text" type="text" placeholder="Escribe la pregunta..." required />
-                    <div v-for="(option, oIndex) in question.options" :key="oIndex" class="option-row">
-                      <input v-model="option.text" type="text" placeholder="Opción..." required />
-                      <label class="radio-label">
-                        <input type="radio" v-model="question.correctOption" :value="oIndex" />
-                        Correcta
-                      </label>
+                    <div class="question-header">
+                      <label>Pregunta {{ qIndex + 1 }} *</label>
+                      <button type="button" class="btn btn--small btn--ghost" @click="removeQuestion(qIndex)">Eliminar</button>
                     </div>
-                    <button type="button" class="btn btn--small" @click="addOption(qIndex)">+ Opción</button>
+                    <div class="input-wrapper">
+                      <input v-model="question.text" type="text" placeholder="Escribe la pregunta..." required />
+                      <span class="material-symbols-outlined icon-static">help_outline</span>
+                    </div>
+                    <div class="options-list">
+                      <div v-for="(option, oIndex) in question.options" :key="oIndex" class="option-row">
+                        <div class="input-wrapper">
+                          <input v-model="option.text" type="text" placeholder="Opción..." required />
+                          <span class="material-symbols-outlined icon-static">radio_button_checked</span>
+                        </div>
+                        <label class="radio-label">
+                          <input type="radio" :name="'correct-' + qIndex" v-model="question.correctOption" :value="oIndex" />
+                          Respuesta correcta
+                        </label>
+                        <button type="button" class="btn btn--small btn--ghost" @click="removeOption(qIndex, oIndex)">✕</button>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn--small btn--primary" @click="addOption(qIndex)">+ Añadir opción</button>
                   </div>
-                  <button type="button" class="btn btn--primary btn--small mt-2" @click="addQuestion">+ Pregunta</button>
+                  <button type="button" class="btn btn--primary" @click="addQuestion">+ Añadir pregunta</button>
                 </div>
               </div>
               <div class="modal__actions">
@@ -280,8 +385,6 @@ const courses = reactive([
     id: 1,
     title: 'Curso Ejemplo 1',
     description: 'Descripción 1',
-    enrolled: 50,
-    maxEnrolled: 100,
     price: 49.99,
     coverImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
     category: 'Fitness',
@@ -293,8 +396,6 @@ const courses = reactive([
     id: 2,
     title: 'Curso Ejemplo 2',
     description: 'Descripción 2',
-    enrolled: 30,
-    maxEnrolled: 80,
     price: 79.99,
     coverImage: '',
     category: 'Yoga',
@@ -385,21 +486,53 @@ const formLesson = reactive({
   moduleId: null,
   title: '',
   type: 'video',
-  url: '',
   duration: 0,
   order: 1,
   contentText: '',
+  file: null,
   quiz: { title: '', questions: [] }
 })
 
+const selectedFileName = ref('')
+const filePreviewUrl = ref('')
+
+// Nueva variable para portada del curso
+const selectedCoverFile = ref(null)
+const coverPreview = ref('')
+
+const handleFileChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    formLesson.file = file
+    selectedFileName.value = file.name
+    if (formLesson.type === 'video') {
+      filePreviewUrl.value = URL.createObjectURL(file)
+    } else {
+      filePreviewUrl.value = ''
+    }
+  }
+}
+
+const handleCoverChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    selectedCoverFile.value = file
+    coverPreview.value = URL.createObjectURL(file)
+  }
+}
+
 const openCreateCourseModal = () => {
   Object.assign(formCourse, { id: null, title: '', description: '', price: 0, coverImage: '', category: '', difficulty: '', instructor: '', status: 'Borrador' })
+  selectedCoverFile.value = null
+  coverPreview.value = ''
   courseModalTitle.value = 'Nuevo Curso'
   showCourseModal.value = true
 }
 
 const openEditCourseModal = (course) => {
   Object.assign(formCourse, { ...course })
+  selectedCoverFile.value = null
+  coverPreview.value = ''
   courseModalTitle.value = 'Editar Curso'
   showCourseModal.value = true
 }
@@ -408,19 +541,34 @@ const saveCourse = () => {
   if (formCourse.title && formCourse.price >= 0) {
     if (formCourse.id) {
       const index = courses.findIndex(c => c.id === formCourse.id)
-      if (index !== -1) courses[index] = { ...formCourse }
+      if (index !== -1) {
+        courses[index] = { 
+          ...formCourse,
+          coverImage: selectedCoverFile.value ? 'URL_SIMULADA_' + selectedCoverFile.value.name : courses[index].coverImage
+        }
+      }
     } else {
-      courses.push({ id: courses.length + 1, ...formCourse, enrolled: 0, maxEnrolled: 100 })
+      courses.push({ 
+        id: courses.length + 1, 
+        ...formCourse,
+        coverImage: selectedCoverFile.value ? 'URL_SIMULADA_' + selectedCoverFile.value.name : ''
+      })
     }
     alert('Curso guardado (simulado).')
     closeCourseModal()
   }
 }
 
-const closeCourseModal = () => showCourseModal.value = false
+const closeCourseModal = () => {
+  showCourseModal.value = false
+  selectedCoverFile.value = null
+  coverPreview.value = ''
+}
 
+// (el resto de tus funciones de módulo y lección permanecen iguales)
 const openCreateModuleModal = (preselectCourseId = null) => {
-  Object.assign(formModule, { id: null, courseId: preselectCourseId, title: '', order: getModulesForCourse(preselectCourseId).length + 1 || 1 })
+  const nextOrder = getModulesForCourse(preselectCourseId).length + 1 || 1
+  Object.assign(formModule, { id: null, courseId: preselectCourseId, title: '', order: nextOrder })
   moduleModalTitle.value = 'Nuevo Módulo'
   showModuleModal.value = true
 }
@@ -446,26 +594,42 @@ const saveModule = () => {
 
 const closeModuleModal = () => showModuleModal.value = false
 
-const openCreateLessonModal = (preselectCourseId = null) => {
+const resetLessonForm = (courseId = null) => {
   Object.assign(formLesson, {
     id: null,
-    courseId: preselectCourseId,
+    courseId,
     moduleId: null,
     title: '',
     type: 'video',
-    url: '',
     duration: 0,
     order: 1,
     contentText: '',
+    file: null,
     quiz: { title: '', questions: [] }
   })
+  selectedFileName.value = ''
+  filePreviewUrl.value = ''
+}
+
+const openCreateLessonModal = (preselectCourseId = null) => {
+  resetLessonForm(preselectCourseId)
   lessonModalTitle.value = 'Nueva Lección'
   showLessonModal.value = true
 }
 
 const openEditLessonModal = (lesson) => {
-  Object.assign(formLesson, { ...lesson, courseId: modules.find(m => m.id === lesson.moduleId)?.courseId })
-  if (formLesson.type === 'quiz') {
+  resetLessonForm(modules.find(m => m.id === lesson.moduleId)?.courseId)
+  Object.assign(formLesson, {
+    id: lesson.id,
+    moduleId: lesson.moduleId,
+    title: lesson.title,
+    type: lesson.type,
+    duration: lesson.duration || 0,
+    order: lesson.order,
+    contentText: lesson.contentText || '',
+    quiz: lesson.quiz ? { ...lesson.quiz } : { title: '', questions: [] }
+  })
+  if (lesson.quiz) {
     formLesson.quiz.questions.forEach(q => {
       q.correctOption = q.options.findIndex(o => o.correct === true)
     })
@@ -475,53 +639,79 @@ const openEditLessonModal = (lesson) => {
 }
 
 const saveLesson = () => {
-  if (formLesson.moduleId && formLesson.title && formLesson.order) {
-    if (formLesson.type === 'quiz') {
-      formLesson.quiz.questions.forEach(q => {
-        q.options.forEach((o, i) => {
-          o.correct = (i === q.correctOption)
-        })
-        delete q.correctOption
-      })
+  if (!formLesson.moduleId || !formLesson.title || !formLesson.order) return
+
+  if (formLesson.type === 'quiz') {
+    const valid = formLesson.quiz.title && formLesson.quiz.questions.every(q => 
+      q.text && q.options.length >= 2 && q.options.every(o => o.text) && q.correctOption !== undefined
+    )
+    if (!valid) {
+      alert('Completa todas las preguntas y marca una respuesta correcta.')
+      return
     }
-    const lessonData = {
-      moduleId: formLesson.moduleId,
-      title: formLesson.title,
-      type: formLesson.type,
-      order: formLesson.order,
-      duration: formLesson.duration,
-      url: formLesson.url,
-      contentText: formLesson.contentText
-    }
-    if (formLesson.type === 'quiz') lessonData.quiz = { ...formLesson.quiz }
-    if (formLesson.id) {
-      const index = lessons.findIndex(l => l.id === formLesson.id)
-      if (index !== -1) lessons[index] = { id: formLesson.id, ...lessonData }
-    } else {
-      lessons.push({ id: lessons.length + 1, ...lessonData })
-    }
-    alert('Lección guardada (simulado).')
-    closeLessonModal()
+    formLesson.quiz.questions.forEach(q => {
+      q.options.forEach((o, i) => o.correct = i === q.correctOption)
+      delete q.correctOption
+    })
   }
+
+  const lessonData = {
+    moduleId: formLesson.moduleId,
+    title: formLesson.title,
+    type: formLesson.type,
+    order: formLesson.order,
+    duration: formLesson.duration || undefined,
+    contentText: formLesson.contentText || undefined
+  }
+
+  if (formLesson.type === 'quiz') lessonData.quiz = { ...formLesson.quiz }
+  if (formLesson.file) lessonData.fileName = formLesson.file.name
+
+  if (formLesson.id) {
+    const index = lessons.findIndex(l => l.id === formLesson.id)
+    if (index !== -1) lessons[index] = { id: formLesson.id, ...lessonData }
+  } else {
+    lessons.push({ id: lessons.length + 1, ...lessonData })
+  }
+
+  alert('Lección guardada (simulado).')
+  closeLessonModal()
 }
 
-const closeLessonModal = () => showLessonModal.value = false
+const closeLessonModal = () => {
+  showLessonModal.value = false
+  resetLessonForm()
+}
 
 const addQuestion = () => {
   formLesson.quiz.questions.push({
     text: '',
-    options: [{ text: '', correct: false }, { text: '', correct: false }],
+    options: [{ text: '' }, { text: '' }],
     correctOption: 0
   })
 }
 
 const addOption = (qIndex) => {
-  formLesson.quiz.questions[qIndex].options.push({ text: '', correct: false })
+  formLesson.quiz.questions[qIndex].options.push({ text: '' })
+}
+
+const removeQuestion = (qIndex) => {
+  formLesson.quiz.questions.splice(qIndex, 1)
+}
+
+const removeOption = (qIndex, oIndex) => {
+  const q = formLesson.quiz.questions[qIndex]
+  if (q.options.length <= 2) {
+    alert('Mínimo 2 opciones.')
+    return
+  }
+  q.options.splice(oIndex, 1)
+  if (q.correctOption === oIndex) q.correctOption = 0
+  else if (q.correctOption > oIndex) q.correctOption--
 }
 </script>
 
 <style scoped>
-/* Todo el estilo necesario para la gestión de cursos (del original) */
 .profile {
   display: grid;
   gap: 2rem;
@@ -538,21 +728,23 @@ const addOption = (qIndex) => {
   overflow-x: hidden;
 }
 
-.actions {
-  padding: 1rem;
+.section-header h2 {
+  margin: 0 0 .25rem;
+  color: var(--color-oscuro);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
 }
 
-.actions__buttons {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
+.section-header p {
+  margin-bottom: 1rem;
+  color: var(--color-oscuro-variante);
 }
 
-.results {
-  max-width: 1200px;
-  margin: 0 auto;
+
+.actions--spaced {
+  margin-bottom: 1rem;
 }
 
+/* Accordions y cards */
 .course-accordions {
   list-style: none;
   margin: 0;
@@ -560,10 +752,6 @@ const addOption = (qIndex) => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.accordion-item {
-  width: 100%;
 }
 
 .course-card {
@@ -602,37 +790,19 @@ const addOption = (qIndex) => {
 }
 
 .course-card.is-expanded .card__expanded-content {
-  max-height: 2000px;
-}
-
-.course-info-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.cover-container {
-  flex-shrink: 0;
-  width: 100%;
+  max-height: 3000px;
 }
 
 .cover-preview {
   max-width: 200px;
-  height: auto;
   border-radius: 0.4rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.course-details {
-  flex: 1;
-  width: 100%;
 }
 
 .course-info-list {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.5rem 1rem;
-  font-size: 1.1rem;
 }
 
 .course-info-list dt {
@@ -641,26 +811,10 @@ const addOption = (qIndex) => {
   text-align: right;
 }
 
-.course-info-list dd {
-  margin: 0;
-  color: var(--color-oscuro);
-}
-
 .course-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-top: 1.5rem;
-}
-
-.modules-column {
-  flex: 1;
-}
-
-.modules-section h4 {
-  margin: 0 0 1rem;
-  color: var(--color-morado);
-  font-size: 1.4rem;
 }
 
 .module-item {
@@ -679,7 +833,6 @@ const addOption = (qIndex) => {
   align-items: center;
   gap: 1rem;
   font-weight: 600;
-  font-size: 1.1rem;
 }
 
 .module-lessons {
@@ -697,39 +850,20 @@ const addOption = (qIndex) => {
 .lesson-item {
   padding: 0.75rem 0;
   border-bottom: 1px solid var(--color-light);
-  font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
 }
 
-.lesson-item:last-child {
-  border-bottom: none;
-}
-
-.lesson-edit-btn {
-  margin-left: auto;
-}
-
-.empty {
-  color: var(--color-oscuro);
+.empty, .empty-mini {
+  color: var(--color-oscuro-variante);
   font-style: italic;
   text-align: center;
-  margin: 1rem 0;
-  background: var(--color-blanco);
-  border-radius: 0.6rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   padding: 1rem;
 }
 
-.empty-mini {
-  color: var(--color-oscuro-variante);
-  font-style: italic;
-  margin: 1.5rem 0;
-  font-size: 1rem;
-}
-
+/* Botones (igual que vistaCliente) */
 .btn {
   padding: 0.6rem 1rem;
   border-radius: var(--border-radius-2);
@@ -750,11 +884,18 @@ const addOption = (qIndex) => {
   color: var(--color-blanco);
 }
 
+.btn--ghost {
+  background: transparent;
+  border-color: var(--color-morado);
+  color: var(--color-morado);
+}
+
 .btn--small {
+  padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
 }
 
-/* Modal styles (del original) */
+/* Modal (igual que vistaCliente) */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -768,7 +909,7 @@ const addOption = (qIndex) => {
 
 .modal {
   background: var(--color-blanco);
-  width: min(820px, 100%);
+  width: min(600px, 100%);
   max-height: 90vh;
   overflow-y: auto;
   border-radius: 0.6rem;
@@ -792,44 +933,145 @@ const addOption = (qIndex) => {
 }
 
 .modal__body {
-  padding: 1rem;
-  display: grid;
-  gap: 1rem;
+  padding: 1.5rem;
 }
 
 .grid {
   display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+  grid-template-columns: 1fr;
 }
 
 .field {
-  grid-column: span 12;
+  display: grid;
+  gap: 0.5rem;
 }
 
-.field--full {
-  grid-column: span 12;
+.field label {
+  font-weight: 600;
+  color: var(--color-oscuro);
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper input,
+.input-wrapper select,
+.input-wrapper textarea {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+  border: 1px solid #d1e3ff;
+  border-radius: 0.4rem;
+  background: var(--color-blanco);
+  font: inherit;
+}
+
+.input-wrapper textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.icon-static {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  transform: translateY(-50%);
+  color: var(--color-azul-1);
+  font-size: 1.3rem;
+  pointer-events: none;
 }
 
 .modal__actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.6rem;
-  padding-top: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d1e3ff;
+}
+
+/* Preview de portada */
+.image-preview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 0.4rem;
+  box-shadow: var(--box-shadow);
+}
+
+/* Quiz y preview archivo */
+.quiz-builder {
+  background: #f8f9ff;
+  padding: 1.5rem;
+  border-radius: 0.6rem;
+  border: 1px solid #d1e3ff;
+}
+
+.quiz-section-title {
+  margin-bottom: 1rem;
+  color: var(--color-morado);
+}
+
+.question-block {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--color-blanco);
+  border-radius: 0.4rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--color-morado);
+}
+
+.file-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f0f4ff;
+  border-radius: 0.4rem;
+}
+
+.video-preview {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 0.4rem;
+  margin-top: 0.5rem;
 }
 
 /* Responsive */
 @media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .field--full {
+    grid-column: 1 / -1;
+  }
   .card__expanded-content {
     flex-direction: row;
-  }
-
-  .course-info-column {
-    width: 40%;
-  }
-
-  .modules-column {
-    flex: 1;
   }
 }
 </style>

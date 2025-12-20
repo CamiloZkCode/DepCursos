@@ -257,11 +257,26 @@
                     <span class="material-symbols-outlined icon-static">description</span>
                   </div>
                 </div>
+
+                <!-- CAMBIO: Subida de imagen en lugar de URL -->
                 <div class="field field--full">
-                  <label for="category-image">URL de la Imagen</label>
-                  <div class="input-wrapper">
-                    <input id="category-image" v-model="formCategory.image_url" type="url" />
-                    <span class="material-symbols-outlined icon-static">image</span>
+                  <label for="category-image-upload">Imagen de la categoría *</label>
+                  <input 
+                    id="category-image-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    @change="handleCategoryImageChange" 
+                    required 
+                  />
+                  <!-- Vista previa de la nueva imagen seleccionada -->
+                  <div v-if="categoryImagePreview" class="image-preview">
+                    <img :src="categoryImagePreview" alt="Vista previa de la imagen seleccionada" />
+                    <p><small>Nueva imagen seleccionada</small></p>
+                  </div>
+                  <!-- Mostrar imagen actual si estamos editando y no hay nueva -->
+                  <div v-else-if="formCategory.image_url && formCategory.id" class="image-preview">
+                    <img :src="formCategory.image_url" alt="Imagen actual de la categoría" />
+                    <p><small>Imagen actual (se mantendrá si no subes una nueva)</small></p>
                   </div>
                 </div>
               </div>
@@ -471,32 +486,57 @@ const showCategoryModal = ref(false)
 const categoryModalTitle = ref('Nueva Categoría')
 const formCategory = ref({ id: null, name: '', badge: '', description: '', image_url: '' })
 
+// Nuevas variables para subida de imagen
+const selectedCategoryImage = ref(null)
+const categoryImagePreview = ref('')
+
+const handleCategoryImageChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    selectedCategoryImage.value = file
+    categoryImagePreview.value = URL.createObjectURL(file)
+  }
+}
+
 const openCreateCategoryModal = () => {
   formCategory.value = { id: null, name: '', badge: '', description: '', image_url: '' }
+  selectedCategoryImage.value = null
+  categoryImagePreview.value = ''
   categoryModalTitle.value = 'Nueva Categoría'
   showCategoryModal.value = true
 }
 
 const openEditCategoryModal = (category) => {
   formCategory.value = { ...category }
+  selectedCategoryImage.value = null
+  categoryImagePreview.value = ''
   categoryModalTitle.value = 'Editar Categoría'
   showCategoryModal.value = true
 }
 
-const closeCategoryModal = () => showCategoryModal.value = false
+const closeCategoryModal = () => {
+  showCategoryModal.value = false
+  selectedCategoryImage.value = null
+  categoryImagePreview.value = ''
+}
 
 const saveCategory = () => {
   if (formCategory.value.name && formCategory.value.badge) {
     if (formCategory.value.id) {
       const index = categories.findIndex(c => c.id === formCategory.value.id)
-      if (index !== -1) categories[index] = { ...formCategory.value }
+      if (index !== -1) {
+        categories[index] = { 
+          ...formCategory.value,
+          image_url: selectedCategoryImage.value ? 'URL_SIMULADA_NUEVA_IMAGEN.jpg' : categories[index].image_url
+        }
+      }
     } else {
       categories.push({
         id: categories.length + 1,
         name: formCategory.value.name,
         badge: formCategory.value.badge,
         description: formCategory.value.description || '',
-        image_url: formCategory.value.image_url || ''
+        image_url: selectedCategoryImage.value ? 'URL_SIMULADA_NUEVA_IMAGEN.jpg' : '/src/assets/icons/LogoFondo.jpeg'
       })
     }
     alert('Categoría guardada exitosamente (simulado).')
@@ -1046,5 +1086,25 @@ const totalRegisteredUsers = ref(245)
   .stats__card--large .stats__value {
     font-size: 2.8rem;
   }
+}
+
+/* Estilos adicionales para vista previa de imagen en modal de categoría */
+.image-preview {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: var(--border-radius-2);
+  box-shadow: var(--box-shadow);
+  object-fit: contain;
+}
+
+.image-preview p {
+  margin-top: 0.5rem;
+  color: var(--color-oscuro-variante);
+  font-size: 0.9rem;
 }
 </style>
