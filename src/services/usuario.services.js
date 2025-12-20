@@ -8,3 +8,45 @@ export async function registroUsuario(usuario) {
     throw err.response?.data || err;
   }
 }
+
+export async function actualizarAvatarUsuario(idUsuario, imagen) {
+  try {
+    const formData = new FormData();
+    formData.append("imagen", imagen);
+
+    const res = await API.put(
+      `/usuario/usuarios/${idUsuario}/avatar`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
+
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function obtenerDatosPerfil(id_usuario) {
+  try {
+
+    const res = await API.get(`/usuario/datosUsuario/${id_usuario}`);
+
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+export async function actualizarDatosPerfil(id_usuario) {
+  try {
+    const res = await API.put(`/usuario/usuarios/${id_usuario}`);
+    
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}

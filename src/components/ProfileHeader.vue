@@ -59,6 +59,8 @@
 <script setup>
 import { useAuthStore } from '@/store/auth' // Ajusta la ruta si es necesario
 import { ref, computed, onMounted } from 'vue'
+import { actualizarAvatarUsuario,obtenerDatosPerfil } from '../services/usuario.services'
+
 
 const authStore = useAuthStore()
 
@@ -84,20 +86,49 @@ const rolDisplay = computed(() => {
 })
 
 // Cambio de avatar (solo preview local por ahora)
-const handleAvatarChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    avatarSrc.value = URL.createObjectURL(file)
-    // Aquí puedes subir al backend si lo deseas
+const handleAvatarChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Preview inmediato
+  avatarSrc.value = URL.createObjectURL(file);
+
+  try {
+    const data = await actualizarAvatarUsuario(
+      authStore.user.id,
+      file
+    );
+
+
+    if (data?.img_usuario) {
+      authStore.user.img_usuario = data.img_usuario;
+      avatarSrc.value = data.img_usuario;
+    } else {
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al subir la imagen");
   }
-}
+};
+
 
 // Si el usuario ya tiene un avatar guardado, cargarlo
-onMounted(() => {
-  if (authStore.user?.avatar) {
-    avatarSrc.value = authStore.user.avatar
+
+onMounted(async () => {
+  try {
+    const res = await obtenerDatosPerfil(authStore.user.id);
+    if (res && res.img_usuario) {
+      avatarSrc.value = res.img_usuario;
+    } else {
+    }
+
+  } catch (error) {
+
   }
-})
+});
+
+
 </script>
 
 <style scoped>

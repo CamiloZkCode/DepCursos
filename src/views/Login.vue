@@ -113,10 +113,10 @@
 import { reactive, ref } from 'vue'
 import { useAuthStore } from '@/store/auth.js'
 import { useRouter } from 'vue-router'
-import { registroUsuario } from '../services/usuario.services'
+import { registroUsuario} from '../services/usuario.services'
+
 import Swal from 'sweetalert2'
 
-//import { registrarUsuario } from '@/services/usuarios.js'
 
 const auth = useAuthStore()
 const router = useRouter()

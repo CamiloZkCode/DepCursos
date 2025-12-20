@@ -32,3 +32,6 @@ async function crearCurso(req,res) {
 
     }
 }
+
+
+module.exports={crearCurso}

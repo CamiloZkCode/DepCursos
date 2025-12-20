@@ -23,9 +23,21 @@ async function getRolById(id_rol) {
   ]);
   return rows[0]?.rol;
 }
+
+
+async function obtenerDatosUsuario(id_usuario) {
+  const [rows] = await db.query(
+    "SELECT * FROM Usuarios WHERE id_usuario = ?",
+    [id_usuario]
+  );
+  return rows[0] || null;
+}
+
+
 module.exports = {
   getAllUsuarios,
   findUserByUsername,
   getRolById,
-  findByCorreo
+  findByCorreo,
+  obtenerDatosUsuario
   };
