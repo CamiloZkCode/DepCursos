@@ -138,7 +138,7 @@ onMounted(async () => {
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  background: linear-gradient(135deg, var(--color-morado), var(--color-naranja));
+  background: linear-gradient(135deg, var(--color-morado), #ff6b35, #ffa62e);
   color: var(--color-blanco);
   padding: 2rem;
   border-radius: var(--card-border-radius);

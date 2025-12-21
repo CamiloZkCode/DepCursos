@@ -1,5 +1,5 @@
 <template>
-  <main class="profile" aria-describedby="profile-intro">
+  <main class="profile-admin" aria-describedby="profile-admin-intro">
     <!-- Componente reutilizable de header -->
     <ProfileHeader 
       :user="user" 
@@ -10,216 +10,558 @@
     />
 
     <!-- ===== NAVEGACIÓN DE TABS ===== -->
-    <nav class="profile__tabs" role="tablist" aria-label="Secciones del perfil">
-      <button v-for="tab in tabs" :key="tab.id" class="profile__tab" :class="{ 'is-active': activeTab === tab.id }"
-        @click="activeTab = tab.id" role="tab" :aria-selected="activeTab === tab.id" :aria-controls="tab.id">
+    <nav class="profile__tabs" role="tablist" aria-label="Secciones del perfil administrador">
+      <button 
+        v-for="tab in tabs" 
+        :key="tab.id" 
+        class="profile__tab" 
+        :class="{ 'is-active': activeTab === tab.id }"
+        @click="activeTab = tab.id" 
+        role="tab" 
+        :aria-selected="activeTab === tab.id" 
+        :aria-controls="tab.id"
+      >
         <span class="profile__tab-icon">{{ tab.icon }}</span>
-        {{ tab.label }}
+        <span class="profile__tab-label">{{ tab.label }}</span>
       </button>
     </nav>
 
     <!-- ===== CONTENIDO DE TABS ===== -->
     <section class="profile__content">
       <!-- TAB: PERFIL -->
-      <div v-if="activeTab === 'perfil'" id="perfil" role="tabpanel">
+      <div v-if="activeTab === 'perfil'" id="perfil" role="tabpanel" class="tab-content">
         <header class="section-header">
-          <h2>Información básica</h2>
-          <p>Actualiza tus datos personales.</p>
+          <h2>Información Personal</h2>
+          <p>Actualiza tus datos personales</p>
         </header>
-        <form class="profile__form" @submit.prevent="updateProfile">
-          <div class="profile__form-group">
-            <label for="nombre">Nombre *</label>
-            <input id="nombre" v-model="editedUser.firstName" type="text" required @input="checkChanges" />
-          </div>
-          <div class="profile__form-group">
-            <label for="apellido">Apellido *</label>
-            <input id="apellido" v-model="editedUser.lastName" type="text" required @input="checkChanges" />
-          </div>
-          <div class="profile__form-group">
-            <label for="telefono">Teléfono</label>
-            <input id="telefono" v-model="editedUser.phone" type="tel" @input="checkChanges" />
-          </div>
-          <div class="profile__form-group">
-            <label for="correo">Correo electrónico</label>
-            <input id="correo" v-model="editedUser.email" type="email" @input="checkChanges" />
-          </div>
-          <div class="profile__form-group">
-            <label for="idioma">Idioma predeterminado</label>
-            <select id="idioma" v-model="editedUser.language" @change="checkChanges">
-              <option value="Español (Spanish)">Español (Spanish)</option>
-              <option value="English">English</option>
-            </select>
-          </div>
-          <div class="profile__form-group">
-            <label for="pais">País o región *</label>
-            <select id="pais" v-model="editedUser.country" required @change="checkChanges">
-              <option value="Colombia">Colombia</option>
-            </select>
-          </div>
-          <div class="profile__form-group">
-            <label for="estado">Estado o provincia *</label>
-            <select id="estado" v-model="editedUser.state" required @change="checkChanges">
-              <option value="Tolima">Tolima</option>
-            </select>
-          </div>
-          <div class="profile__form-actions">
-            <button type="button" class="btn btn--ghost" @click="showPasswordModal = true">
-              Cambiar contraseña
-            </button>
-            <button type="submit" class="btn btn--primary" :disabled="!hasChanges">
-              Actualizar
-            </button>
-          </div>
-        </form>
+        
+        <div class="profile__form-container">
+          <form class="profile__form" @submit.prevent="updateProfile">
+            <div class="form-section">
+              <h3 class="form-section__title">Datos Personales</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="nombre" class="form-label">
+                    Nombre <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="nombre" 
+                    v-model="editedUser.firstName" 
+                    type="text" 
+                    class="form-input"
+                    required 
+                    @input="checkChanges"
+                    placeholder="Tu nombre"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="apellido" class="form-label">
+                    Apellido <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="apellido" 
+                    v-model="editedUser.lastName" 
+                    type="text" 
+                    class="form-input"
+                    required 
+                    @input="checkChanges"
+                    placeholder="Tu apellido"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="telefono" class="form-label">Teléfono</label>
+                  <input 
+                    id="telefono" 
+                    v-model="editedUser.phone" 
+                    type="tel" 
+                    class="form-input"
+                    @input="checkChanges"
+                    placeholder="+57 123 456 7890"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="correo" class="form-label">Correo electrónico</label>
+                  <input 
+                    id="correo" 
+                    v-model="editedUser.email" 
+                    type="email" 
+                    class="form-input"
+                    @input="checkChanges"
+                    placeholder="admin@ejemplo.com"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <h3 class="form-section__title">Localización</h3>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="pais" class="form-label">
+                    País <span class="required">*</span>
+                  </label>
+                  <select 
+                    id="pais" 
+                    v-model="editedUser.country" 
+                    class="form-select"
+                    required 
+                    @change="checkChanges"
+                  >
+                    <option value="">Seleccionar país</option>
+                    <option value="Colombia">Colombia</option>
+                    <option value="México">México</option>
+                    <option value="Argentina">Argentina</option>
+                    <option value="España">España</option>
+                    <option value="Estados Unidos">Estados Unidos</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="estado" class="form-label">
+                    Departamento/Estado <span class="required">*</span>
+                  </label>
+                  <select 
+                    id="estado" 
+                    v-model="editedUser.state" 
+                    class="form-select"
+                    required 
+                    @change="checkChanges"
+                  >
+                    <option value="">Seleccionar departamento</option>
+                    <option value="Tolima">Tolima</option>
+                    <option value="Bogotá D.C.">Bogotá D.C.</option>
+                    <option value="Antioquia">Antioquia</option>
+                    <option value="Valle del Cauca">Valle del Cauca</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <h3 class="form-section__title">Seguridad</h3>
+              <div class="account-settings">
+                <div class="account-setting">
+                  <div class="account-setting__info">
+                    <h4>Contraseña</h4>
+                    <p>Cambia tu contraseña regularmente para mayor seguridad</p>
+                  </div>
+                  <button 
+                    type="button" 
+                    class="btn btn--outline"
+                    @click="showPasswordModal = true"
+                  >
+                    Cambiar contraseña
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button 
+                type="button" 
+                class="btn btn--ghost"
+                @click="resetForm"
+                :disabled="!hasChanges"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn--primary"
+                :disabled="!hasChanges"
+                :class="{ 'btn--loading': isSaving }"
+              >
+                <span v-if="isSaving">Guardando...</span>
+                <span v-else>Guardar Cambios</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <!-- TAB: GESTIONAR CATEGORÍAS -->
-      <div v-if="activeTab === 'categorias'" id="categorias" role="tabpanel">
+      <div v-if="activeTab === 'categorias'" id="categorias" role="tabpanel" class="tab-content">
         <header class="section-header">
           <h2>Gestionar Categorías</h2>
-          <p>Crea y gestiona categorías para tus cursos.</p>
+          <p>Crea y administra las categorías de cursos</p>
         </header>
-        <section class="actions" aria-label="Gestión de categorías">
-          <div class="actions__buttons">
+        
+        <div class="management-container">
+          <div class="management-header">
+            <div class="stats-overview">
+              <div class="stat-card">
+                <div class="stat-card__icon">📂</div>
+                <div class="stat-card__content">
+                  <div class="stat-card__value">{{ categories.length }}</div>
+                  <div class="stat-card__label">Categorías Totales</div>
+                </div>
+              </div>
+            </div>
+            
             <button class="btn btn--primary" @click="openCreateCategoryModal">
-              Crear Categoría
+              <span class="btn-icon">➕</span>
+              Nueva Categoría
             </button>
           </div>
-        </section>
-        <section class="results" aria-live="polite">
-          <ul class="cards" v-if="categories.length">
-            <li v-for="category in categories" :key="category.id" class="card">
-              <article :style="{ '--img': `url(${category.image_url || '/src/assets/icons/LogoFondo.jpeg'})` }">
-                <div class="card__media"></div>
-                <div class="card__content">
-                  <header class="card__head">
-                    <h3 class="card__title">{{ category.name }}</h3>
-                  </header>
-                  <dl class="card__info">
-                    <div class="row">
-                      <dt>Descripción:</dt>
-                      <dd>{{ category.description || 'Sin descripción' }}</dd>
-                    </div>
-                  </dl>
-                  <footer class="card__actions">
-                    <button class="btn btn--primary btn--small" @click="openEditCategoryModal(category)">Editar</button>
-                  </footer>
+          
+          <div class="categories-grid">
+            <div 
+              v-for="category in categories" 
+              :key="category.id" 
+              class="category-card"
+            >
+              <div class="category-card__image" :style="{ backgroundImage: `url(${category.image_url})` }">
+                <div class="category-card__badge">{{ category.badge || 'CAT' }}</div>
+              </div>
+              
+              <div class="category-card__content">
+                <div class="category-card__header">
+                  <h3 class="category-card__title">{{ category.name }}</h3>
                 </div>
-              </article>
-            </li>
-          </ul>
-          <p v-else class="empty">No hay categorías registradas.</p>
-        </section>
+                
+                <p class="category-card__description">{{ category.description || 'Sin descripción' }}</p>
+                
+                <div class="category-card__actions">
+                  <button 
+                    class="btn btn--outline"
+                    @click="openEditCategoryModal(category)"
+                  >
+                    Editar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="categories.length === 0" class="empty-state">
+            <div class="empty-state__icon">📂</div>
+            <h3 class="empty-state__title">No hay categorías registradas</h3>
+            <p class="empty-state__description">
+              Comienza creando tu primera categoría para organizar los cursos
+            </p>
+            <button class="btn btn--primary" @click="openCreateCategoryModal">
+              Crear Primera Categoría
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- TAB: GESTIONAR INSTRUCTORES -->
-      <div v-if="activeTab === 'instructores'" id="instructores" role="tabpanel">
+      <div v-if="activeTab === 'instructores'" id="instructores" role="tabpanel" class="tab-content">
         <header class="section-header">
           <h2>Gestionar Instructores</h2>
-          <p>Visualiza y gestiona los instructores.</p>
+          <p>Administra los instructores de la plataforma</p>
         </header>
-        <section class="actions" aria-label="Gestión de instructores">
-          <div class="actions__buttons">
+        
+        <div class="management-container">
+          <div class="management-header">
+            <div class="stats-overview">
+              <div class="stat-card">
+                <div class="stat-card__icon">👥</div>
+                <div class="stat-card__content">
+                  <div class="stat-card__value">{{ activeInstructors }}</div>
+                  <div class="stat-card__label">Instructores Activos</div>
+                </div>
+              </div>
+            </div>
+            
             <button class="btn btn--primary" @click="openCreateInstructorModal">
-              Crear Instructor
+              <span class="btn-icon">👨‍🏫</span>
+              Nuevo Instructor
             </button>
           </div>
-        </section>
-        <div class="profile__management">
-          <div class="instructors__table-wrapper">
-            <table class="instructors__table">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Correo</th>
-                  <th>Teléfono</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="instructor in instructorsList" :key="instructor.id">
-                  <td>{{ instructor.name }}</td>
-                  <td>{{ instructor.email }}</td>
-                  <td>{{ instructor.phone }}</td>
-                  <td>
-                    <button class="btn" :class="instructor.active ? 'btn--ghost' : 'btn--primary'" @click="toggleInstructorAccess(instructor.id)">
-                      {{ instructor.active ? 'Desactivar' : 'Activar' }}
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          
+          <div class="table-container">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Instructor</th>
+                    <th>Contacto</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="instructor in instructorsList" :key="instructor.id">
+                    <td>
+                      <div class="user-cell">
+                        <div class="user-avatar" :style="{ backgroundImage: `url(${instructor.avatar || avatarSrc})` }"></div>
+                        <div class="user-info">
+                          <strong>{{ instructor.name }}</strong>
+                          <span class="user-id">ID: {{ instructor.id }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="contact-info">
+                        <div class="contact-item">
+                          <span class="contact-icon">📧</span>
+                          <span>{{ instructor.email }}</span>
+                        </div>
+                        <div class="contact-item" v-if="instructor.phone">
+                          <span class="contact-icon">📱</span>
+                          <span>{{ instructor.phone }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-badge" :class="`status-badge--${instructor.active ? 'active' : 'inactive'}`">
+                        {{ instructor.active ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button 
+                          class="btn btn--toggle"
+                          :class="instructor.active ? 'btn--danger' : 'btn--success'"
+                          @click="toggleInstructorAccess(instructor.id)"
+                        >
+                          {{ instructor.active ? 'Desactivar' : 'Activar' }}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div v-if="instructorsList.length === 0" class="empty-state">
+            <div class="empty-state__icon">👨‍🏫</div>
+            <h3 class="empty-state__title">No hay instructores registrados</h3>
+            <p class="empty-state__description">
+              Agrega instructores para que puedan crear y gestionar cursos
+            </p>
+            <button class="btn btn--primary" @click="openCreateInstructorModal">
+              Agregar Primer Instructor
+            </button>
           </div>
         </div>
       </div>
 
       <!-- TAB: ESTADÍSTICAS -->
-      <div v-if="activeTab === 'estadisticas'" id="estadisticas" role="tabpanel">
+      <div v-if="activeTab === 'estadisticas'" id="estadisticas" role="tabpanel" class="tab-content">
         <header class="section-header">
-          <h2>Estadísticas</h2>
-          <p>Visualiza diferentes métricas de tu academia</p>
+          <h2>Dashboard de Estadísticas</h2>
+          <p>Métricas y análisis de la plataforma</p>
         </header>
-        <div class="stats-selector">
-          <label for="stats-type">Ver estadísticas de:</label>
-          <select id="stats-type" v-model="selectedStatsType">
-            <option value="total">Cantidad de inscritos total</option>
-            <option value="per-course">Cantidad de inscritos por curso</option>
-            <option value="registered-users">Cantidad de registrados en la página</option>
-          </select>
-        </div>
-        <div class="profile__stats-section">
-          <div v-if="selectedStatsType === 'total'" class="stats__card stats__card--large">
-            <h3>Total de inscritos</h3>
-            <div class="stats__value">{{ totalEnrolled }}</div>
-            <p>en todos los cursos</p>
-          </div>
-          <div v-else-if="selectedStatsType === 'per-course'">
-            <div v-for="course in courses" :key="course.id" class="stats__item">
-              <h3>{{ course.title }}</h3>
-              <div class="stats__gauge">
-                <div class="stats__gauge-bar" :style="{ width: (course.enrolled / course.maxEnrolled * 100) + '%' }"></div>
+        
+        <div class="dashboard-container">
+          <!-- Tarjetas de métricas principales -->
+          <div class="metrics-grid">
+            <div class="metric-card metric-card--primary">
+              <div class="metric-card__icon">👥</div>
+              <div class="metric-card__content">
+                <div class="metric-card__value">{{ formatNumber(totalRegisteredUsers) }}</div>
+                <div class="metric-card__label">Usuarios Registrados</div>
               </div>
-              <p>{{ course.enrolled }} / {{ course.maxEnrolled }} inscritos</p>
+            </div>
+            
+            <div class="metric-card metric-card--success">
+              <div class="metric-card__icon">📚</div>
+              <div class="metric-card__content">
+                <div class="metric-card__value">{{ formatNumber(totalEnrolled) }}</div>
+                <div class="metric-card__label">Inscripciones Totales</div>
+              </div>
+            </div>
+            
+            <div class="metric-card metric-card--warning">
+              <div class="metric-card__icon">🎓</div>
+              <div class="metric-card__content">
+                <div class="metric-card__value">{{ courses.length }}</div>
+                <div class="metric-card__label">Cursos Activos</div>
+              </div>
             </div>
           </div>
-          <div v-else-if="selectedStatsType === 'registered-users'" class="stats__card stats__card--large">
-            <h3>Usuarios registrados</h3>
-            <div class="stats__value">{{ totalRegisteredUsers }}</div>
-            <p>en la plataforma</p>
+          
+          <!-- Gráficos y visualizaciones -->
+          <div class="charts-grid">
+            <div class="chart-container">
+              <div class="chart-header">
+                <h3>Inscripciones por Curso</h3>
+                <span class="chart-subtitle">Top 5 cursos más populares</span>
+              </div>
+              <div class="chart-content">
+                <div class="bar-chart">
+                  <div 
+                    v-for="course in topCourses" 
+                    :key="course.id" 
+                    class="bar-item"
+                  >
+                    <div class="bar-label">{{ course.title }}</div>
+                    <div class="bar-wrapper">
+                      <div 
+                        class="bar-fill" 
+                        :style="{ width: `${(course.enrolled / course.maxEnrolled) * 100}%` }"
+                      ></div>
+                    </div>
+                    <div class="bar-value">{{ course.enrolled }} inscritos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="chart-container">
+              <div class="chart-header">
+                <h3>Distribución por Categoría</h3>
+                <span class="chart-subtitle">Cantidad de cursos por categoría</span>
+              </div>
+              <div class="chart-content">
+                <div class="category-distribution">
+                  <div 
+                    v-for="category in categoryDistribution" 
+                    :key="category.name"
+                    class="category-item"
+                  >
+                    <div class="category-info">
+                      <span class="category-name">{{ category.name }}</span>
+                      <span class="category-count">{{ category.count }} cursos</span>
+                    </div>
+                    <div class="category-bar">
+                      <div 
+                        class="category-bar-fill" 
+                        :style="{ width: `${(category.count / totalCourses) * 100}%` }"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== MODALES (teleport) ===== -->
+    <!-- ===== MODALES ===== -->
     <teleport to="body">
       <!-- Modal Cambio de Contraseña -->
-      <div v-if="showPasswordModal" class="modal-backdrop" @click.self="showPasswordModal = false">
+      <div v-if="showPasswordModal" class="modal-backdrop" @click.self="closePasswordModal">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
           <header class="modal__header">
             <h3 id="password-modal-title">Cambiar Contraseña</h3>
-            <button class="modal__close" @click="showPasswordModal = false" aria-label="Cerrar">✕</button>
+            <button class="modal__close" @click="closePasswordModal" aria-label="Cerrar">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
           </header>
           <div class="modal__body">
-            <form @submit.prevent="submitChangePassword">
-              <div class="grid">
-                <div class="field">
-                  <label for="current-password">Contraseña actual *</label>
-                  <input id="current-password" v-model="passwordForm.current" type="password" required />
-                </div>
-                <div class="field">
-                  <label for="new-password">Nueva contraseña *</label>
-                  <input id="new-password" v-model="passwordForm.new" type="password" required />
-                </div>
-                <div class="field">
-                  <label for="confirm-password">Confirmar nueva contraseña *</label>
-                  <input id="confirm-password" v-model="passwordForm.confirm" type="password" required />
+            <form @submit.prevent="submitChangePassword" class="password-form">
+              <div class="form-group">
+                <label for="current-password" class="form-label">
+                  Contraseña actual <span class="required">*</span>
+                </label>
+                <div class="password-input">
+                  <input 
+                    id="current-password" 
+                    v-model="passwordForm.current" 
+                    :type="showCurrentPassword ? 'text' : 'password'" 
+                    required 
+                    class="form-input"
+                    placeholder="Ingresa tu contraseña actual"
+                  />
+                  <button 
+                    type="button" 
+                    class="password-toggle"
+                    @click="showCurrentPassword = !showCurrentPassword"
+                  >
+                    <svg v-if="showCurrentPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
+              
+              <div class="form-group">
+                <label for="new-password" class="form-label">
+                  Nueva contraseña <span class="required">*</span>
+                </label>
+                <div class="password-input">
+                  <input 
+                    id="new-password" 
+                    v-model="passwordForm.new" 
+                    :type="showNewPassword ? 'text' : 'password'" 
+                    required 
+                    class="form-input"
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                  <button 
+                    type="button" 
+                    class="password-toggle"
+                    @click="showNewPassword = !showNewPassword"
+                  >
+                    <svg v-if="showNewPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="password-strength">
+                  <div 
+                    class="strength-bar" 
+                    :class="passwordStrengthClass"
+                  ></div>
+                  <span class="strength-text">{{ passwordStrengthText }}</span>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="confirm-password" class="form-label">
+                  Confirmar nueva contraseña <span class="required">*</span>
+                </label>
+                <div class="password-input">
+                  <input 
+                    id="confirm-password" 
+                    v-model="passwordForm.confirm" 
+                    :type="showConfirmPassword ? 'text' : 'password'" 
+                    required 
+                    class="form-input"
+                    placeholder="Repite la nueva contraseña"
+                  />
+                  <button 
+                    type="button" 
+                    class="password-toggle"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                  >
+                    <svg v-if="showConfirmPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              
               <div class="modal__actions">
-                <button type="button" class="btn btn--ghost" @click="showPasswordModal = false">Cancelar</button>
-                <button type="submit" class="btn btn--primary">Cambiar Contraseña</button>
+                <button type="button" class="btn btn--ghost" @click="closePasswordModal">
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn--primary"
+                  :disabled="!canSubmitPassword"
+                >
+                  Cambiar Contraseña
+                </button>
               </div>
             </form>
           </div>
@@ -228,61 +570,97 @@
 
       <!-- Modal Categorías -->
       <div v-if="showCategoryModal" class="modal-backdrop" @click.self="closeCategoryModal">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="category-title">
+        <div class="modal modal--large" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
           <header class="modal__header">
-            <h3 id="category-title">{{ categoryModalTitle }}</h3>
-            <button class="modal__close" @click="closeCategoryModal" aria-label="Cerrar">✕</button>
+            <h3 id="category-modal-title">{{ categoryModalTitle }}</h3>
+            <button class="modal__close" @click="closeCategoryModal" aria-label="Cerrar">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
           </header>
           <div class="modal__body">
-            <form class="form" @submit.prevent="saveCategory">
-              <div class="grid">
-                <div class="field">
-                  <label for="category-name">Nombre *</label>
-                  <div class="input-wrapper">
-                    <input id="category-name" v-model="formCategory.name" type="text" required />
-                    <span class="material-symbols-outlined icon-static">category</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="category-badge">Insignia de la categoría *</label>
-                  <div class="input-wrapper">
-                    <input id="category-badge" v-model="formCategory.badge" type="text" required />
-                    <span class="material-symbols-outlined icon-static">badge</span>
-                  </div>
-                </div>
-                <div class="field field--full">
-                  <label for="category-description">Descripción</label>
-                  <div class="input-wrapper">
-                    <textarea id="category-description" v-model="formCategory.description"></textarea>
-                    <span class="material-symbols-outlined icon-static">description</span>
-                  </div>
-                </div>
-
-                <!-- CAMBIO: Subida de imagen en lugar de URL -->
-                <div class="field field--full">
-                  <label for="category-image-upload">Imagen de la categoría *</label>
+            <form @submit.prevent="saveCategory" class="category-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="category-name" class="form-label">
+                    Nombre de la categoría <span class="required">*</span>
+                  </label>
                   <input 
-                    id="category-image-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    @change="handleCategoryImageChange" 
+                    id="category-name" 
+                    v-model="formCategory.name" 
+                    type="text" 
+                    class="form-input"
                     required 
+                    placeholder="Ej: Fitness, Yoga, Nutrición"
                   />
-                  <!-- Vista previa de la nueva imagen seleccionada -->
+                </div>
+                
+                <div class="form-group">
+                  <label for="category-badge" class="form-label">
+                    Insignia <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="category-badge" 
+                    v-model="formCategory.badge" 
+                    type="text" 
+                    class="form-input"
+                    required 
+                    placeholder="Ej: FIT, YGA, NUT"
+                    maxlength="5"
+                  />
+                  <div class="form-help">Máximo 5 caracteres</div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="category-description" class="form-label">Descripción</label>
+                <textarea 
+                  id="category-description" 
+                  v-model="formCategory.description" 
+                  class="form-textarea"
+                  rows="3"
+                  placeholder="Describe la categoría..."
+                ></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">
+                  Imagen de la categoría <span class="required">*</span>
+                </label>
+                <div class="image-upload">
+                  <input 
+                    type="file" 
+                    id="category-image-upload"
+                    accept="image/*"
+                    @change="handleCategoryImageChange"
+                    class="file-input"
+                  />
+                  <label for="category-image-upload" class="upload-label">
+                    <span class="upload-icon">📷</span>
+                    <span>Subir imagen</span>
+                  </label>
+                  
                   <div v-if="categoryImagePreview" class="image-preview">
-                    <img :src="categoryImagePreview" alt="Vista previa de la imagen seleccionada" />
-                    <p><small>Nueva imagen seleccionada</small></p>
+                    <img :src="categoryImagePreview" alt="Vista previa" />
+                    <button type="button" class="btn btn--xs btn--ghost" @click="categoryImagePreview = ''">
+                      <span>✕</span>
+                    </button>
                   </div>
-                  <!-- Mostrar imagen actual si estamos editando y no hay nueva -->
                   <div v-else-if="formCategory.image_url && formCategory.id" class="image-preview">
-                    <img :src="formCategory.image_url" alt="Imagen actual de la categoría" />
-                    <p><small>Imagen actual (se mantendrá si no subes una nueva)</small></p>
+                    <img :src="formCategory.image_url" alt="Imagen actual" />
+                    <p class="image-caption">Imagen actual</p>
                   </div>
                 </div>
               </div>
+              
               <div class="modal__actions">
-                <button type="button" class="btn btn--ghost" @click="closeCategoryModal">Cancelar</button>
-                <button type="submit" class="btn btn--primary">Guardar</button>
+                <button type="button" class="btn btn--ghost" @click="closeCategoryModal">
+                  Cancelar
+                </button>
+                <button type="submit" class="btn btn--primary">
+                  {{ formCategory.id ? 'Actualizar' : 'Crear' }} Categoría
+                </button>
               </div>
             </form>
           </div>
@@ -291,59 +669,162 @@
 
       <!-- Modal Instructor -->
       <div v-if="showInstructorModal" class="modal-backdrop" @click.self="closeInstructorModal">
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="instructor-title">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="instructor-modal-title">
           <header class="modal__header">
-            <h3 id="instructor-title">Crear Nuevo Instructor</h3>
-            <button class="modal__close" @click="closeInstructorModal" aria-label="Cerrar">✕</button>
+            <h3 id="instructor-modal-title">Nuevo Instructor</h3>
+            <button class="modal__close" @click="closeInstructorModal" aria-label="Cerrar">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
           </header>
           <div class="modal__body">
-            <form class="form" @submit.prevent="createInstructor">
-              <div class="grid">
-                <div class="field">
-                  <label for="instructor-name">Nombre *</label>
-                  <div class="input-wrapper">
-                    <input id="instructor-name" v-model="newInstructor.name" type="text" required />
-                    <span class="material-symbols-outlined icon-static">person</span>
+            <form @submit.prevent="createInstructor" class="instructor-form">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="instructor-name" class="form-label">
+                    Nombre completo <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="instructor-name" 
+                    v-model="newInstructor.name" 
+                    type="text" 
+                    class="form-input"
+                    required 
+                    placeholder="Nombre del instructor"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="instructor-email" class="form-label">
+                    Correo electrónico <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="instructor-email" 
+                    v-model="newInstructor.email" 
+                    type="email" 
+                    class="form-input"
+                    required 
+                    placeholder="instructor@ejemplo.com"
+                  />
+                </div>
+              </div>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="instructor-phone" class="form-label">Teléfono</label>
+                  <input 
+                    id="instructor-phone" 
+                    v-model="newInstructor.phone" 
+                    type="tel" 
+                    class="form-input"
+                    placeholder="+57 123 456 7890"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="instructor-specialty" class="form-label">Especialidad</label>
+                  <input 
+                    id="instructor-specialty" 
+                    v-model="newInstructor.specialty" 
+                    type="text" 
+                    class="form-input"
+                    placeholder="Ej: Fitness, Yoga, Nutrición"
+                  />
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="instructor-bio" class="form-label">Biografía</label>
+                <textarea 
+                  id="instructor-bio" 
+                  v-model="newInstructor.bio" 
+                  class="form-textarea"
+                  rows="3"
+                  placeholder="Describe la experiencia y especialidades del instructor..."
+                ></textarea>
+              </div>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="instructor-password" class="form-label">
+                    Contraseña <span class="required">*</span>
+                  </label>
+                  <div class="password-input">
+                    <input 
+                      id="instructor-password" 
+                      v-model="newInstructor.password" 
+                      :type="showInstructorPassword ? 'text' : 'password'" 
+                      class="form-input"
+                      required 
+                      placeholder="Contraseña temporal"
+                    />
+                    <button 
+                      type="button" 
+                      class="password-toggle"
+                      @click="showInstructorPassword = !showInstructorPassword"
+                    >
+                      <svg v-if="showInstructorPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
-                <div class="field">
-                  <label for="instructor-email">Correo *</label>
-                  <div class="input-wrapper">
-                    <input id="instructor-email" v-model="newInstructor.email" type="email" required />
-                    <span class="material-symbols-outlined icon-static">mail</span>
+                
+                <div class="form-group">
+                  <label for="instructor-confirm-password" class="form-label">
+                    Confirmar contraseña <span class="required">*</span>
+                  </label>
+                  <div class="password-input">
+                    <input 
+                      id="instructor-confirm-password" 
+                      v-model="newInstructor.confirmPassword" 
+                      :type="showConfirmInstructorPassword ? 'text' : 'password'" 
+                      class="form-input"
+                      required 
+                      placeholder="Confirmar contraseña"
+                    />
+                    <button 
+                      type="button" 
+                      class="password-toggle"
+                      @click="showConfirmInstructorPassword = !showConfirmInstructorPassword"
+                    >
+                      <svg v-if="showConfirmInstructorPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      </svg>
+                    </button>
                   </div>
-                </div>
-                <div class="field">
-                  <label for="instructor-phone">Teléfono</label>
-                  <div class="input-wrapper">
-                    <input id="instructor-phone" v-model="newInstructor.phone" type="tel" />
-                    <span class="material-symbols-outlined icon-static">call</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="instructor-password">Contraseña *</label>
-                  <div class="input-wrapper">
-                    <input id="instructor-password" :type="showInstructorPassword ? 'text' : 'password'" v-model="newInstructor.password" required />
-                    <span class="material-symbols-outlined toggle-password" @click="toggleInstructorPassword"
-                      :aria-label="showInstructorPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-                      {{ showInstructorPassword ? 'lock_open' : 'lock' }}
-                    </span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="instructor-confirm-password">Confirmar Contraseña *</label>
-                  <div class="input-wrapper">
-                    <input id="instructor-confirm-password" :type="showConfirmInstructorPassword ? 'text' : 'password'" v-model="newInstructor.confirmPassword" required />
-                    <span class="material-symbols-outlined toggle-password" @click="toggleConfirmInstructorPassword"
-                      :aria-label="showConfirmInstructorPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-                      {{ showConfirmInstructorPassword ? 'lock_open' : 'lock' }}
+                  <div v-if="newInstructor.password && newInstructor.confirmPassword" class="password-match">
+                    <span :class="newInstructor.password === newInstructor.confirmPassword ? 'match-success' : 'match-error'">
+                      {{ newInstructor.password === newInstructor.confirmPassword ? '✓ Las contraseñas coinciden' : '✗ Las contraseñas no coinciden' }}
                     </span>
                   </div>
                 </div>
               </div>
+              
               <div class="modal__actions">
-                <button type="button" class="btn btn--ghost" @click="closeInstructorModal">Cancelar</button>
-                <button type="submit" class="btn btn--primary">Guardar</button>
+                <button type="button" class="btn btn--ghost" @click="closeInstructorModal">
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn--primary"
+                  :disabled="!canCreateInstructor"
+                >
+                  Crear Instructor
+                </button>
               </div>
             </form>
           </div>
@@ -354,153 +835,268 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import ProfileHeader from '@/components/ProfileHeader.vue'
 
-const courses = reactive([
-  {
-    id: 1,
-    title: 'Curso Ejemplo 1',
-    description: 'Descripción 1',
-    enrolled: 50,
-    maxEnrolled: 100,
-    price: 49.99,
-    coverImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48',
-    category: 'Fitness',
-    difficulty: 'Principiante',
-    instructor: 'Instructor 1',
-    status: 'Publicado'
-  },
-  {
-    id: 2,
-    title: 'Curso Ejemplo 2',
-    description: 'Descripción 2',
-    enrolled: 30,
-    maxEnrolled: 80,
-    price: 79.99,
-    coverImage: '',
-    category: 'Yoga',
-    difficulty: 'Avanzado',
-    instructor: 'Instructor 2',
-    status: 'Borrador'
-  }
-])
+// Estado principal
+const activeTab = ref('perfil')
+const hasChanges = ref(false)
+const isSaving = ref(false)
+const showPasswordModal = ref(false)
+const showCurrentPassword = ref(false)
+const showNewPassword = ref(false)
+const showConfirmPassword = ref(false)
 
-const instructorsList = reactive([
-  { id: 1, name: 'Instructor 1', email: 'inst1@example.com', phone: '+57 111 222 333', active: true },
-  { id: 2, name: 'Instructor 2', email: 'inst2@example.com', phone: '+57 444 555 666', active: false }
-])
-
-const categories = reactive([
-  {
-    id: 1,
-    name: 'Fitness',
-    description: 'Categoría de fitness intensivo',
-    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-  },
-  {
-    id: 2,
-    name: 'Yoga',
-    description: 'Categoría de yoga y mindfulness',
-    image_url: 'https://images.unsplash.com/photo-1545201019-6e2e1a9e3f2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-  }
-])
-
+// Datos del usuario admin
 const user = reactive({
   firstName: 'Admin',
   lastName: 'Ejemplo',
   phone: '+57 123 456 789',
   email: 'admin@example.com',
-  language: 'Español (Spanish)',
   country: 'Colombia',
   state: 'Tolima',
   fullName: computed(() => `${user.firstName} ${user.lastName}`),
-  role: 'Administrador - Academia Deportiva',
-  createdCourses: computed(() => courses.length),
-  instructors: computed(() => instructorsList.length)
+  role: 'Administrador - Academia Deportiva'
 })
 
 const editedUser = ref({ ...user })
-const hasChanges = ref(false)
-const showPasswordModal = ref(false)
 
+// Tabs
+const tabs = [
+  { id: 'perfil', label: 'Perfil', icon: '👤' },
+  { id: 'categorias', label: 'Gestionar Categorías', icon: '📂' },
+  { id: 'instructores', label: 'Gestionar Instructores', icon: '👥' },
+  { id: 'estadisticas', label: 'Dashboard', icon: '📊' }
+]
+
+// Contraseña
 const passwordForm = reactive({
   current: '',
   new: '',
   confirm: ''
 })
-const passwordError = ref('')
 
+const passwordStrength = computed(() => {
+  const password = passwordForm.new
+  if (!password) return 0
+  
+  let strength = 0
+  if (password.length >= 8) strength += 33
+  if (/[A-Z]/.test(password)) strength += 33
+  if (/[0-9]/.test(password)) strength += 34
+  
+  return strength
+})
+
+const passwordStrengthClass = computed(() => {
+  if (passwordStrength.value < 33) return 'strength-weak'
+  if (passwordStrength.value < 66) return 'strength-medium'
+  return 'strength-strong'
+})
+
+const passwordStrengthText = computed(() => {
+  if (passwordStrength.value < 33) return 'Débil'
+  if (passwordStrength.value < 66) return 'Media'
+  return 'Fuerte'
+})
+
+const passwordsMatch = computed(() => {
+  return passwordForm.new && passwordForm.confirm && passwordForm.new === passwordForm.confirm
+})
+
+const canSubmitPassword = computed(() => {
+  return passwordForm.current && 
+         passwordForm.new && 
+         passwordForm.confirm && 
+         passwordStrength.value >= 66 && 
+         passwordsMatch.value
+})
+
+// Cursos de ejemplo
+const courses = reactive([
+  {
+    id: 1,
+    title: 'Fitness Intensivo',
+    description: 'Entrenamiento de alta intensidad',
+    enrolled: 150,
+    maxEnrolled: 200,
+    price: 49.99,
+    category: 'Fitness',
+    instructor: 'Instructor 1',
+    completionRate: 75
+  },
+  {
+    id: 2,
+    title: 'Yoga para Principiantes',
+    description: 'Introducción al yoga',
+    enrolled: 120,
+    maxEnrolled: 150,
+    price: 39.99,
+    category: 'Yoga',
+    instructor: 'Instructor 2',
+    completionRate: 82
+  },
+  {
+    id: 3,
+    title: 'Nutrición Deportiva',
+    description: 'Alimentación para atletas',
+    enrolled: 80,
+    maxEnrolled: 100,
+    price: 59.99,
+    category: 'Nutrición',
+    instructor: 'Instructor 1',
+    completionRate: 68
+  },
+  {
+    id: 4,
+    title: 'CrossFit Avanzado',
+    description: 'Entrenamiento CrossFit nivel avanzado',
+    enrolled: 60,
+    maxEnrolled: 80,
+    price: 69.99,
+    category: 'Fitness',
+    instructor: 'Instructor 3',
+    completionRate: 90
+  },
+  {
+    id: 5,
+    title: 'Meditación Guiada',
+    description: 'Técnicas de meditación',
+    enrolled: 90,
+    maxEnrolled: 120,
+    price: 29.99,
+    category: 'Yoga',
+    instructor: 'Instructor 2',
+    completionRate: 78
+  }
+])
+
+// Instructores mejorados
+const instructorsList = reactive([
+  { 
+    id: 1, 
+    name: 'Carlos Rodríguez', 
+    email: 'carlos@academia.com', 
+    phone: '+57 311 222 3333',
+    specialty: 'Fitness y CrossFit',
+    bio: 'Entrenador certificado con 10 años de experiencia',
+    active: true,
+    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop'
+  },
+  { 
+    id: 2, 
+    name: 'Ana Martínez', 
+    email: 'ana@academia.com', 
+    phone: '+57 322 444 5555',
+    specialty: 'Yoga y Meditación',
+    bio: 'Instructora de yoga con certificación internacional',
+    active: true,
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop'
+  },
+  { 
+    id: 3, 
+    name: 'Luis Gómez', 
+    email: 'luis@academia.com', 
+    phone: '+57 300 666 7777',
+    specialty: 'Nutrición Deportiva',
+    bio: 'Nutricionista deportivo especializado en alto rendimiento',
+    active: false,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'
+  }
+])
+
+// Categorías mejoradas
+const categories = reactive([
+  {
+    id: 1,
+    name: 'Fitness',
+    badge: 'FIT',
+    description: 'Categoría dedicada al entrenamiento físico y acondicionamiento',
+    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop'
+  },
+  {
+    id: 2,
+    name: 'Yoga',
+    badge: 'YGA',
+    description: 'Categoría enfocada en yoga, meditación y bienestar mental',
+    image_url: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=300&fit=crop'
+  },
+  {
+    id: 3,
+    name: 'Nutrición',
+    badge: 'NUT',
+    description: 'Categoría especializada en alimentación y nutrición deportiva',
+    image_url: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=400&h=300&fit=crop'
+  }
+])
+
+// Avatar
+const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
+
+// Métodos de perfil
 const checkChanges = () => {
   hasChanges.value = JSON.stringify(editedUser.value) !== JSON.stringify({
     firstName: user.firstName,
     lastName: user.lastName,
     phone: user.phone,
     email: user.email,
-    language: user.language,
     country: user.country,
     state: user.state
   })
 }
 
-const updateProfile = () => {
-  if (hasChanges.value) {
-    Object.assign(user, editedUser.value)
-    hasChanges.value = false
-    alert('Perfil actualizado exitosamente.')
+const resetForm = () => {
+  editedUser.value = { ...user }
+  hasChanges.value = false
+}
+
+const updateProfile = async () => {
+  if (!hasChanges.value) return
+  
+  isSaving.value = true
+  await new Promise(resolve => setTimeout(resolve, 1500))
+  
+  Object.assign(user, editedUser.value)
+  hasChanges.value = false
+  isSaving.value = false
+  
+  alert('Perfil actualizado exitosamente')
+}
+
+const handleAvatarChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    avatarSrc.value = URL.createObjectURL(file)
+    alert('Imagen de perfil actualizada')
   }
 }
 
-const submitChangePassword = () => {
-  passwordError.value = ''
-  if (!passwordForm.current) {
-    passwordError.value = 'Ingrese su contraseña actual'
-    return
-  }
-  if (passwordForm.new.length < 8) {
-    passwordError.value = 'La nueva contraseña debe tener al menos 8 caracteres'
-    return
-  }
-  if (passwordForm.new !== passwordForm.confirm) {
-    passwordError.value = 'Las contraseñas no coinciden'
-    return
-  }
-  alert('Contraseña cambiada exitosamente.')
+const closePasswordModal = () => {
+  showPasswordModal.value = false
   passwordForm.current = ''
   passwordForm.new = ''
   passwordForm.confirm = ''
-  showPasswordModal.value = false
+  showCurrentPassword.value = false
+  showNewPassword.value = false
+  showConfirmPassword.value = false
 }
 
-const tabs = [
-  { id: 'perfil', label: 'Perfil', icon: '👤' },
-  { id: 'categorias', label: 'Gestionar Categorías', icon: '📂' },
-  { id: 'instructores', label: 'Gestionar Instructores', icon: '👥' },
-  { id: 'estadisticas', label: 'Estadísticas', icon: '📊' }
-]
+const submitChangePassword = async () => {
+  if (!canSubmitPassword.value) return
+  
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  alert('Contraseña cambiada exitosamente')
+  closePasswordModal()
+}
 
-const activeTab = ref('perfil')
-
-// Categorías
+// Gestión de categorías
 const showCategoryModal = ref(false)
 const categoryModalTitle = ref('Nueva Categoría')
 const formCategory = ref({ id: null, name: '', badge: '', description: '', image_url: '' })
-
-// Nuevas variables para subida de imagen
-const selectedCategoryImage = ref(null)
 const categoryImagePreview = ref('')
-
-const handleCategoryImageChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    selectedCategoryImage.value = file
-    categoryImagePreview.value = URL.createObjectURL(file)
-  }
-}
 
 const openCreateCategoryModal = () => {
   formCategory.value = { id: null, name: '', badge: '', description: '', image_url: '' }
-  selectedCategoryImage.value = null
   categoryImagePreview.value = ''
   categoryModalTitle.value = 'Nueva Categoría'
   showCategoryModal.value = true
@@ -508,7 +1104,6 @@ const openCreateCategoryModal = () => {
 
 const openEditCategoryModal = (category) => {
   formCategory.value = { ...category }
-  selectedCategoryImage.value = null
   categoryImagePreview.value = ''
   categoryModalTitle.value = 'Editar Categoría'
   showCategoryModal.value = true
@@ -516,8 +1111,14 @@ const openEditCategoryModal = (category) => {
 
 const closeCategoryModal = () => {
   showCategoryModal.value = false
-  selectedCategoryImage.value = null
   categoryImagePreview.value = ''
+}
+
+const handleCategoryImageChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    categoryImagePreview.value = URL.createObjectURL(file)
+  }
 }
 
 const saveCategory = () => {
@@ -527,7 +1128,7 @@ const saveCategory = () => {
       if (index !== -1) {
         categories[index] = { 
           ...formCategory.value,
-          image_url: selectedCategoryImage.value ? 'URL_SIMULADA_NUEVA_IMAGEN.jpg' : categories[index].image_url
+          image_url: categoryImagePreview.value || categories[index].image_url
         }
       }
     } else {
@@ -536,90 +1137,163 @@ const saveCategory = () => {
         name: formCategory.value.name,
         badge: formCategory.value.badge,
         description: formCategory.value.description || '',
-        image_url: selectedCategoryImage.value ? 'URL_SIMULADA_NUEVA_IMAGEN.jpg' : '/src/assets/icons/LogoFondo.jpeg'
+        image_url: categoryImagePreview.value || '/src/assets/icons/LogoFondo.jpeg'
       })
     }
-    alert('Categoría guardada exitosamente (simulado).')
+    alert('Categoría guardada exitosamente')
     closeCategoryModal()
   }
 }
 
-// Instructores
-const newInstructor = ref({ name: '', email: '', phone: '', password: '', confirmPassword: '' })
+// Gestión de instructores
+const newInstructor = ref({ 
+  name: '', 
+  email: '', 
+  phone: '', 
+  specialty: '', 
+  bio: '', 
+  password: '', 
+  confirmPassword: '' 
+})
 const showInstructorModal = ref(false)
 const showInstructorPassword = ref(false)
 const showConfirmInstructorPassword = ref(false)
 
-const toggleInstructorPassword = () => showInstructorPassword.value = !showInstructorPassword.value
-const toggleConfirmInstructorPassword = () => showConfirmInstructorPassword.value = !showConfirmInstructorPassword.value
-
 const openCreateInstructorModal = () => {
-  newInstructor.value = { name: '', email: '', phone: '', password: '', confirmPassword: '' }
+  newInstructor.value = { 
+    name: '', 
+    email: '', 
+    phone: '', 
+    specialty: '', 
+    bio: '', 
+    password: '', 
+    confirmPassword: '' 
+  }
   showInstructorModal.value = true
 }
 
 const closeInstructorModal = () => showInstructorModal.value = false
 
+const canCreateInstructor = computed(() => {
+  return newInstructor.value.name && 
+         newInstructor.value.email && 
+         newInstructor.value.password && 
+         newInstructor.value.password === newInstructor.value.confirmPassword
+})
+
 const createInstructor = () => {
-  if (newInstructor.value.password !== newInstructor.value.confirmPassword) {
-    alert('Las contraseñas no coinciden.')
-    return
+  if (!canCreateInstructor.value) return
+  
+  instructorsList.push({
+    id: instructorsList.length + 1,
+    name: newInstructor.value.name,
+    email: newInstructor.value.email,
+    phone: newInstructor.value.phone || '',
+    specialty: newInstructor.value.specialty || '',
+    bio: newInstructor.value.bio || '',
+    active: true,
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'
+  })
+  
+  newInstructor.value = { 
+    name: '', 
+    email: '', 
+    phone: '', 
+    specialty: '', 
+    bio: '', 
+    password: '', 
+    confirmPassword: '' 
   }
-  if (newInstructor.value.name && newInstructor.value.email && newInstructor.value.password) {
-    instructorsList.push({
-      id: instructorsList.length + 1,
-      name: newInstructor.value.name,
-      email: newInstructor.value.email,
-      phone: newInstructor.value.phone || '',
-      active: true
-    })
-    newInstructor.value = { name: '', email: '', phone: '', password: '', confirmPassword: '' }
-    showInstructorModal.value = false
-    alert('Instructor creado exitosamente (simulado).')
-  }
+  showInstructorModal.value = false
+  alert('Instructor creado exitosamente')
 }
 
 const toggleInstructorAccess = (id) => {
   const instructor = instructorsList.find(i => i.id === id)
   if (instructor) {
     instructor.active = !instructor.active
-    alert(`Acceso ${instructor.active ? 'activado' : 'desactivado'} (simulado).`)
-  }
-}
-
-// Avatar
-const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
-
-const handleAvatarChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    avatarSrc.value = URL.createObjectURL(file)
-    alert('Imagen de perfil actualizada (simulado).')
+    alert(`Acceso ${instructor.active ? 'activado' : 'desactivado'} para ${instructor.name}`)
   }
 }
 
 // Estadísticas
-const selectedStatsType = ref('per-course')
-const totalEnrolled = computed(() => courses.reduce((sum, course) => sum + course.enrolled, 0))
-const totalRegisteredUsers = ref(245)
+const totalRegisteredUsers = ref(1245)
+
+const activeInstructors = computed(() => {
+  return instructorsList.filter(i => i.active).length
+})
+
+const totalEnrolled = computed(() => {
+  return courses.reduce((sum, course) => sum + course.enrolled, 0)
+})
+
+const averageCompletionRate = computed(() => {
+  if (courses.length === 0) return 0
+  const total = courses.reduce((sum, course) => sum + (course.completionRate || 0), 0)
+  return Math.round(total / courses.length)
+})
+
+const topCourses = computed(() => {
+  return [...courses]
+    .sort((a, b) => b.enrolled - a.enrolled)
+    .slice(0, 5)
+})
+
+const categoryDistribution = computed(() => {
+  const distribution = {}
+  
+  courses.forEach(course => {
+    if (!distribution[course.category]) {
+      distribution[course.category] = 0
+    }
+    distribution[course.category]++
+  })
+  
+  return Object.keys(distribution).map(category => ({
+    name: category,
+    count: distribution[category]
+  }))
+})
+
+const totalCourses = computed(() => courses.length)
+
+const formatNumber = (num) => {
+  return new Intl.NumberFormat('es-ES').format(num)
+}
 </script>
 
 <style scoped>
-/* ===== Base ===== */
-.profile {
+/* Estilos Base */
+.profile-admin {
   display: grid;
   gap: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
 }
 
-/* ===== Tabs ===== */
+/* Tabs */
 .profile__tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.25rem;
   overflow-x: auto;
   border-bottom: 1px solid var(--color-light);
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.profile__tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.profile__tabs::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.profile__tabs::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
 }
 
 .profile__tab {
@@ -631,9 +1305,15 @@ const totalRegisteredUsers = ref(245)
   border: none;
   cursor: pointer;
   color: var(--color-oscuro-variante);
-  transition: color 0.2s ease, border-bottom 0.2s ease;
+  transition: all 0.2s ease;
   border-bottom: 3px solid transparent;
   white-space: nowrap;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.profile__tab:hover {
+  color: var(--color-morado);
 }
 
 .profile__tab.is-active {
@@ -645,466 +1325,1003 @@ const totalRegisteredUsers = ref(245)
   font-size: 1.2rem;
 }
 
-/* ===== Contenido ===== */
+.profile__tab-label {
+  font-size: 0.95rem;
+}
+
+/* Contenido Principal */
 .profile__content {
   background: var(--color-blanco);
   border-radius: var(--border-radius-3);
   box-shadow: var(--box-shadow);
-  padding: 1.5rem;
-  overflow-x: hidden;
-}
-
-/* ===== Formulario ===== */
-.profile__form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.profile__form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.profile__form-group label {
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: var(--color-oscuro);
-}
-
-.profile__form-group input,
-.profile__form-group select,
-.profile__form-group textarea {
-  padding: 0.75rem;
-  border: 1px solid var(--color-light);
-  border-radius: var(--border-radius-2);
-  background: var(--color-blanco);
-  color: var(--color-oscuro);
-}
-
-.profile__form-group textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.profile__form-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-/* ===== Gestión ===== */
-.profile__management {
-  display: grid;
-  gap: 2rem;
-}
-
-/* ===== Tabla de Instructores ===== */
-.instructors__table-wrapper {
-  overflow-x: auto;
-  margin-bottom: 2rem;
-}
-
-.instructors__table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.instructors__table th,
-.instructors__table td {
-  padding: 0.75rem;
-  border: 1px solid var(--color-light);
-  text-align: left;
-}
-
-.instructors__table th {
-  background: var(--color-morado);
-  color: var(--color-blanco);
-}
-
-/* ===== Estadísticas ===== */
-.profile__stats-section {
-  display: grid;
-  gap: 1rem;
-}
-
-.stats__item {
-  background: var(--color-blanco);
-  border-radius: var(--border-radius-3);
-  box-shadow: var(--box-shadow);
-  padding: 2rem;
-  border: 3px solid transparent;
-  margin-bottom: 1rem;
-  border-image: linear-gradient(135deg, var(--color-naranja), var(--color-morado)) 1;
-}
-
-.stats__gauge {
-  background: var(--color-light);
-  border-radius: 999px;
-  height: 16px;
   overflow: hidden;
-  margin: 1rem 0;
 }
 
-.stats__gauge-bar {
-  background: linear-gradient(90deg, var(--color-naranja), var(--color-morado));
-  height: 100%;
-  transition: width 0.6s ease;
-}
-
-.stats-selector {
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.stats-selector label {
-  font-weight: 600;
-  color: var(--color-oscuro);
-}
-
-.stats-selector select {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--color-light);
-  border-radius: var(--border-radius-2);
-  background: var(--color-blanco);
-  font-size: 1rem;
-  min-width: 250px;
-}
-
-.stats__card.stats__card--large {
-  background: var(--color-blanco);
-  border-radius: var(--border-radius-3);
-  box-shadow: var(--box-shadow);
+.tab-content {
   padding: 2rem;
-  text-align: center;
-  border: 3px solid transparent;
-  border-image: linear-gradient(135deg, var(--color-naranja), var(--color-morado)) 1;
+  animation: fadeIn 0.3s ease;
 }
 
-.stats__card--large h3 {
-  margin: 0 0 1rem;
-  font-size: 1.5rem;
-  color: var(--color-morado);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.stats__card--large .stats__value {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: var(--color-morado);
-  margin: 0.5rem 0;
+/* Headers */
+.section-header {
+  text-align: left;
+  margin: 0 0 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--color-light);
 }
 
-.stats__card--large p {
+.section-header h2 {
+  margin: 0 0 .5rem;
+  color: var(--color-oscuro);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+
+.section-header p {
+  margin: 0;
   color: var(--color-oscuro-variante);
   font-size: 1.1rem;
 }
 
-.stats__item h3 {
-  margin: 0 0 1rem;
-  color: var(--color-morado);
-}
-
-/* ===== Cards (estilo del código viejo) ===== */
-.actions {
-  padding: 1rem;
-}
-
-.actions__buttons {
-  display: flex;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
-}
-
-.results {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.cards {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Formulario (igual al de cliente) */
+.profile__form-container {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: 1fr;
+  gap: 0;
 }
 
-.card {
-  grid-column: span 12;
+.form-section {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-light);
 }
 
-.card > article {
-  background: var(--color-blanco);
-  box-shadow: var(--box-shadow, 0 2px 6px rgba(0, 0, 0, 0.08));
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  align-items: stretch;
-  min-height: 160px;
-  border: 2px solid transparent;
-  border-image: linear-gradient(135deg, var(--color-naranja), var(--color-morado)) 1;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
 
-.card > article:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.card__media {
-  background-image: var(--img);
-  background-size: cover;
-  background-position: center;
-  min-height: 100%;
-}
-
-.card__content {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-}
-
-.card__head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card__title {
-  margin: 0;
+.form-section__title {
+  margin: 0 0 1.5rem;
   color: var(--color-oscuro);
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
-.card__info {
-  font-size: 0.9rem;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--color-oscuro);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-light);
+  border-radius: var(--border-radius-2);
+  background: var(--color-blanco);
+  color: var(--color-oscuro);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-morado);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-help {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
   color: var(--color-oscuro-variante);
 }
 
-.card__actions {
+/* Configuración de Cuenta */
+.account-settings {
   display: flex;
-  justify-content: center;
-  padding-top: 0.5rem;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-/* Responsive para cards de categorías (igual que en el viejo) */
-@media (min-width: 720px) {
-  .card {
-    grid-column: span 6;
-  }
+.account-setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--color-light);
 }
 
-@media (min-width: 1100px) {
-  .card {
-    grid-column: span 4;
-  }
+.account-setting__info h4 {
+  margin: 0 0 0.25rem;
+  color: var(--color-oscuro);
+  font-size: 1rem;
 }
 
-/* ===== Botones ===== */
+.account-setting__info p {
+  margin: 0;
+  color: var(--color-oscuro-variante);
+  font-size: 0.875rem;
+}
+
+/* Botones */
 .btn {
-  padding: 0.6rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   border-radius: var(--border-radius-2);
   border: 1px solid transparent;
   cursor: pointer;
-  font-weight: 700;
-  letter-spacing: .2px;
-  transition: transform 120ms ease, filter 120ms ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  text-align: center;
+  line-height: 1;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  filter: brightness(.98);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 .btn--primary {
-  background: var(--color-morado);
+  background: linear-gradient(135deg, var(--color-morado), #6d28d9);
   color: var(--color-blanco);
+  border: none;
 }
 
-.btn--ghost {
+.btn--primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn--outline {
   background: transparent;
   border-color: var(--color-morado);
   color: var(--color-morado);
 }
 
-.btn--small {
-  font-size: 0.9rem;
-  padding: 0.4rem 0.8rem;
+.btn--ghost {
+  background: transparent;
+  border-color: var(--color-light);
+  color: var(--color-oscuro);
 }
 
-/* ===== Modal ===== */
+.btn--success {
+  background: #10b981;
+  color: white;
+  border: none;
+}
+
+.btn--success:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn--danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+}
+
+.btn--danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn--toggle {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  min-width: 100px;
+}
+
+.btn--xs {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.7rem;
+}
+
+.btn--loading {
+  opacity: 0.8;
+  cursor: wait;
+}
+
+.btn-icon {
+  font-size: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 0rem;
+}
+
+/* Gestionar Categorías */
+.management-container {
+  margin-top: 1rem;
+}
+
+.management-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.stats-overview {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--color-light);
+  min-width: 200px;
+}
+
+.stat-card__icon {
+  font-size: 2rem;
+  color: var(--color-morado);
+}
+
+.stat-card__content {
+  flex: 1;
+}
+
+.stat-card__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-morado);
+  line-height: 1;
+}
+
+.stat-card__label {
+  margin-top: 0.25rem;
+  color: var(--color-oscuro-variante);
+  font-size: 0.875rem;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.category-card {
+  background: var(--color-blanco);
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--color-light);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-morado);
+}
+
+.category-card__image {
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.category-card__badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: var(--color-morado);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-1);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.category-card__content {
+  padding: 1.5rem;
+}
+
+.category-card__header {
+  margin-bottom: 1rem;
+}
+
+.category-card__title {
+  margin: 0;
+  color: var(--color-oscuro);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.category-card__description {
+  margin: 0 0 1.5rem;
+  color: var(--color-oscuro-variante);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  min-height: 60px;
+}
+
+.category-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Gestionar Instructores */
+.table-container {
+  margin-top: 1rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border: 1px solid var(--color-light);
+  border-radius: var(--border-radius-2);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-light);
+  text-align: left;
+}
+
+.data-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: var(--color-oscuro);
+  position: sticky;
+  top: 0;
+}
+
+.data-table tr:hover {
+  background: #f8fafc;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #f1f5f9;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-id {
+  font-size: 0.75rem;
+  color: var(--color-oscuro-variante);
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.contact-icon {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge--active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge--inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Dashboard de Estadísticas */
+.dashboard-container {
+  margin-top: 1rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: var(--color-blanco);
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--color-light);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card--primary {
+  border-left: 4px solid var(--color-morado);
+}
+
+.metric-card--success {
+  border-left: 4px solid #10b981;
+}
+
+.metric-card--warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.metric-card--info {
+  border-left: 4px solid #3b82f6;
+}
+
+.metric-card__icon {
+  font-size: 2.5rem;
+  color: var(--color-morado);
+}
+
+.metric-card--success .metric-card__icon {
+  color: #10b981;
+}
+
+.metric-card--warning .metric-card__icon {
+  color: #f59e0b;
+}
+
+.metric-card--info .metric-card__icon {
+  color: #3b82f6;
+}
+
+.metric-card__content {
+  flex: 1;
+}
+
+.metric-card__value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-oscuro);
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.metric-card__label {
+  font-size: 0.875rem;
+  color: var(--color-oscuro-variante);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.chart-container {
+  background: var(--color-blanco);
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--color-light);
+  padding: 1.5rem;
+}
+
+.chart-header {
+  margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+  margin: 0 0 0.25rem;
+  color: var(--color-oscuro);
+  font-size: 1.1rem;
+}
+
+.chart-subtitle {
+  font-size: 0.875rem;
+  color: var(--color-oscuro-variante);
+}
+
+.chart-content {
+  min-height: 250px;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bar-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bar-label {
+  min-width: 120px;
+  font-size: 0.875rem;
+  color: var(--color-oscuro);
+}
+
+.bar-wrapper {
+  flex: 1;
+  height: 20px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-morado), #8b5cf6);
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+
+.bar-value {
+  min-width: 100px;
+  text-align: right;
+  font-size: 0.875rem;
+  color: var(--color-oscuro-variante);
+}
+
+.category-distribution {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-name {
+  font-size: 0.875rem;
+  color: var(--color-oscuro);
+}
+
+.category-count {
+  font-size: 0.75rem;
+  color: var(--color-oscuro-variante);
+}
+
+.category-bar {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f8fafc;
+  border-radius: var(--border-radius-2);
+  border: 2px dashed var(--color-light);
+}
+
+.empty-state__icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state__title {
+  margin: 0 0 0.5rem;
+  color: var(--color-oscuro);
+  font-size: 1.25rem;
+}
+
+.empty-state__description {
+  margin: 0 0 1.5rem;
+  color: var(--color-oscuro-variante);
+  max-width: 400px;
+  margin: 0 auto 1.5rem;
+}
+
+/* Modal Mejorado */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
   padding: 1rem;
   z-index: 1000;
+  animation: backdropFadeIn 0.2s ease;
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal {
   background: var(--color-blanco);
-  width: min(820px, 100%);
+  width: min(500px, 100%);
   max-height: 90vh;
   overflow-y: auto;
-  border-radius: 0.6rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: modalSlideIn 0.3s ease;
+}
+
+.modal--large {
+  width: min(700px, 100%);
+}
+
+@keyframes modalSlideIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-20px) scale(0.95);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.9rem 1rem;
-  border-bottom: 1px solid #d1e3ff;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-light);
 }
 
 .modal__header h3 {
   margin: 0;
   color: var(--color-oscuro);
+  font-size: 1.25rem;
 }
 
 .modal__close {
   background: transparent;
-  border: 1px solid #d1e3ff;
-  border-radius: 0.4rem;
-  padding: 0.25rem 0.45rem;
+  border: none;
   cursor: pointer;
+  color: var(--color-oscuro-variante);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.modal__close:hover {
+  background: #f1f5f9;
+  color: var(--color-oscuro);
 }
 
 .modal__body {
-  padding: 1rem;
+  padding: 1.5rem;
+}
+
+.password-form,
+.category-form,
+.instructor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.password-input {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-oscuro-variante);
+  padding: 0.25rem;
   display: grid;
-  gap: 1rem;
+  place-items: center;
+  width: 24px;
+  height: 24px;
 }
 
-.grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: 1fr;
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
 }
 
-.field {
-  display: grid;
-  gap: 0.25rem;
+.password-strength {
+  margin-top: 0.5rem;
 }
 
-.field label {
-  color: var(--color-oscuro);
-  font-weight: 700;
+.strength-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: #e5e7eb;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
 }
 
-.field input {
+.strength-bar::before {
+  content: '';
+  display: block;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.strength-weak::before {
+  width: 33%;
+  background: #ef4444;
+}
+
+.strength-medium::before {
+  width: 66%;
+  background: #f59e0b;
+}
+
+.strength-strong::before {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--color-light);
-  border-radius: var(--border-radius-2);
-  background: var(--color-blanco);
+  background: #10b981;
+}
+
+.strength-text {
+  font-size: 0.75rem;
+  color: var(--color-oscuro-variante);
+}
+
+.password-match {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.match-success {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.match-error {
+  color: #ef4444;
+  font-weight: 600;
 }
 
 .modal__actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.6rem;
-  margin-top: 1rem;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-light);
 }
 
-.error-message {
-  color: red;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  grid-column: 1 / -1;
+/* Subida de imagen */
+.image-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* Estilos específicos para los modales con input-wrapper */
-.input-wrapper {
-  position: relative;
-  width: 100%;
+.file-input {
+  display: none;
 }
 
-.input-wrapper input,
-.input-wrapper textarea {
-  width: 100%;
-  padding: 0.55rem 2.5rem 0.55rem 0.7rem;
-  border: 1px solid #d1e3ff;
-  border-radius: 0.4rem;
-  font: inherit;
-  background: var(--color-blanco);
-}
-
-.icon-static {
-  position: absolute;
-  top: 50%;
-  right: 0.7rem;
-  transform: translateY(-50%);
-  color: var(--color-azul-1);
-  font-size: 1.3rem;
-  pointer-events: none;
-}
-
-.toggle-password {
-  position: absolute;
-  top: 50%;
-  right: 0.7rem;
-  transform: translateY(-50%);
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--border-radius-2);
   cursor: pointer;
-  background: transparent;
-  border: none;
-  font-size: 1.3rem;
-  color: var(--color-morado);
-  padding: 0;
-}
-
-/* Responsive general */
-@media (max-width: 768px) {
-  .profile__form {
-    grid-template-columns: 1fr;
-  }
-
-  .profile__content {
-    padding: 1rem;
-  }
-
-  .instructors__table {
-    font-size: 0.9rem;
-  }
-
-  .stats-selector {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .stats__card--large .stats__value {
-    font-size: 2.8rem;
-  }
-}
-
-/* Estilos adicionales para vista previa de imagen en modal de categoría */
-.image-preview {
-  margin-top: 1rem;
+  transition: all 0.2s ease;
+  background: #f8fafc;
   text-align: center;
 }
 
-.image-preview img {
-  max-width: 100%;
-  max-height: 300px;
-  border-radius: var(--border-radius-2);
-  box-shadow: var(--box-shadow);
-  object-fit: contain;
+.upload-label:hover {
+  border-color: var(--color-morado);
+  background: #f1f5f9;
 }
 
-.image-preview p {
-  margin-top: 0.5rem;
+.upload-icon {
+  font-size: 2rem;
+  color: var(--color-morado);
+}
+
+.image-preview {
+  position: relative;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--border-radius-2);
+  border: 1px solid var(--color-light);
+}
+
+.image-preview .btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.image-caption {
+  text-align: center;
+  font-size: 0.875rem;
   color: var(--color-oscuro-variante);
-  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile__tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0;
+  }
+  
+  .profile__tab {
+    padding: 1rem;
+    min-width: fit-content;
+  }
+  
+  .tab-content {
+    padding: 1.5rem;
+  }
+  
+  .management-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .stats-overview {
+    flex-direction: column;
+  }
+  
+  .stat-card {
+    min-width: auto;
+  }
+  
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal {
+    width: min(95%, 100%);
+  }
+  
+  .modal--large {
+    width: min(95%, 100%);
+  }
+}
+
+@media (max-width: 480px) {
+  .profile__tab-label {
+    font-size: 0.85rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal__actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
 }
 </style>
