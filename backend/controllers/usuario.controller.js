@@ -1,5 +1,5 @@
 const usuariosModel = require("../models/usuario.models");
-
+const { uploadToCloudinary,eliminarAvatarAntiguo } = require("../config/cloudinary");
 const db = require("../config/db");
 const bcrypt = require('bcrypt');
 
@@ -108,36 +108,68 @@ async function editarPerfilUsuario(req, res) {
     res.status(500).json({ message: 'Error del servidor' });
   }
 }
-
+//ActualizaAvatar y elimina el anterior del cloud
 async function actualizarAvatar(req, res) {
   const { id } = req.params;
 
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No se envió ninguna imagen' });
+      return res.status(400).json({
+        success: false,
+        message: "No se envió ninguna imagen"
+      });
     }
 
-    const avatarUrl = req.file.path; // URL Cloudinary
-
-    await db.query(
-      `UPDATE usuarios 
-       SET img_usuario = ?
-       WHERE id_usuario = ?`,
-      [avatarUrl, id]
+    // 1. Obtener public_id actual del usuario
+    const [usuarioActual] = await db.query(
+      `SELECT img_public_id FROM usuarios WHERE id_usuario = ?`,
+      [id]
     );
 
+    const publicIdAntiguo = usuarioActual[0]?.img_public_id;
+
+    // 2. Subir nueva imagen a Cloudinary
+    const result = await uploadToCloudinary(req.file.buffer, {
+      transformation: [
+        { width: 300, height: 300, crop: "fill", gravity: "face" }
+      ]
+    });
+
+    const avatarUrl = result.secure_url;
+    const nuevoPublicId = result.public_id;
+
+    // 3. Actualizar en base de datos
+    await db.query(
+      `UPDATE usuarios 
+       SET img_usuario = ?, img_public_id = ?, actualizado = NOW()
+       WHERE id_usuario = ?`,
+      [avatarUrl, nuevoPublicId, id]
+    );
+
+    // 4. Eliminar avatar antiguo de Cloudinary (asincrónico, no bloqueante)
+    if (publicIdAntiguo) {
+      eliminarAvatarAntiguo(publicIdAntiguo).catch(console.error);
+    }
+
+    // 5. Respuesta
     res.status(200).json({
-      message: 'Avatar actualizado correctamente',
-      imagen: avatarUrl
+      success: true,
+      message: "Avatar actualizado correctamente",
+      data: {
+        imagen: avatarUrl,
+        publicId: nuevoPublicId
+      }
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error del servidor' });
+    console.error("Error en actualizarAvatarConCleanup:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error del servidor",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 }
-
-  
 
 
 
