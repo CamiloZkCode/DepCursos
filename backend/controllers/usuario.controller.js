@@ -89,9 +89,6 @@ async function editarPerfilUsuario(req, res) {
     if (correoExistente.length > 0) {
       return res.status(400).json({ message: 'El correo ya está registrado' });
     }
-
-
-
     // Actualizar usuario
     await db.query(
       `UPDATE usuarios 
@@ -162,7 +159,6 @@ async function actualizarAvatar(req, res) {
     });
 
   } catch (error) {
-    console.error("Error en actualizarAvatarConCleanup:", error);
     res.status(500).json({
       success: false,
       message: "Error del servidor",
@@ -171,11 +167,45 @@ async function actualizarAvatar(req, res) {
   }
 }
 
+async function cambiarContrasena(req, res) {
+  try {
+    const { nuevaContrasena,contraseña } = req.body;
+    const { id } = req.params;
+
+    if (!nuevaContrasena|| !contraseña_hash) {
+    return res.status(400).json({ 
+      message: "Faltan campos requeridos",
+      receivedBody: req.body // Para debug
+    });
+  }
+
+    const match = await bcrypt.compare(contraseña, user.contraseña_hash);
+    if (!match) return res.status(401).json({ message: "La Contraseña es Incorrecta" });
+
+
+    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+
+    const [resultado] = await db.query(
+      "UPDATE Usuarios SET contraseña_hash = ? WHERE id_usuario = ?",
+      [hashedPassword, id]
+    );
+
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({ message: 'Usuario no encontrado o no se pudo actualizar' });
+    }
+
+    res.json({ message: 'Contraseña actualizada correctamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al actualizar contraseña' });
+  }
+}
 
 
 
-
-module.exports = { registroUsuario,editarPerfilUsuario,obtenerPerfilUsuario,actualizarAvatar};
+module.exports = { registroUsuario,editarPerfilUsuario,obtenerPerfilUsuario,actualizarAvatar,
+cambiarContrasena
+};
 
 
 
