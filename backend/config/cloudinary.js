@@ -16,8 +16,8 @@ const uploadToCloudinary = (buffer, options = {}) => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: "lms/perfiles",
-        allowed_formats: ["jpg", "png", "jpeg"],
+        folder: "lms", // Carpeta base por defecto
+        allowed_formats: ["jpg", "png", "jpeg", "webp"],
         resource_type: "image",
         ...options,
       },

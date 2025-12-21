@@ -4,4 +4,5 @@ const { registrarCategoria } = require('../controllers/categorias.controller');
 const { verificarToken, verificarRoles } = require('../middlewares/auth.middlewares');
 
 
-router.post('/crearCategoria',registrarCategoria,verificarToken,)
+router.post('/crearCategoria',verificarToken,upload.single('img_categoria'),registrarCategoria,)
+

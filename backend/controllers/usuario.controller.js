@@ -119,21 +119,25 @@ async function actualizarAvatar(req, res) {
 
     // 1. Obtener public_id actual del usuario
     const [usuarioActual] = await db.query(
-      `SELECT img_public_id FROM usuarios WHERE id_usuario = ?`,
+      `SELECT nombre,img_public_id FROM usuarios WHERE id_usuario = ?`,
       [id]
     );
 
     const publicIdAntiguo = usuarioActual[0]?.img_public_id;
+    const nombreUsuario = usuarioActual[0]?.nombre_usuario || `usuario_${id}`;
 
-    // 2. Subir nueva imagen a Cloudinary
-    const result = await uploadToCloudinary(req.file.buffer, {
+    // Subir imagen a Cloudinary en carpeta específica para avatar Usuario
+    const uploadResult = await uploadToCloudinary(req.file.buffer, {
+      folder: "lms/avatares", // Carpeta específica para categorías
+      public_id: `user_${Date.now()}_${nombreUsuario.toLowerCase().replace(/\s+/g, '_')}`,
       transformation: [
-        { width: 300, height: 300, crop: "fill", gravity: "face" }
+        { width: 300, height: 300, crop: 'fill',gravity: "face" },
+        { quality: 'auto:good' }
       ]
     });
 
-    const avatarUrl = result.secure_url;
-    const nuevoPublicId = result.public_id;
+    const avatarUrl = uploadResult.secure_url;
+    const nuevoPublicId = uploadResult.public_id;
 
     // 3. Actualizar en base de datos
     await db.query(
