@@ -1,10 +1,9 @@
+const db = require("../config/db");
 const categoriasModel= require("../models/categorias.models");
 
-const db = require("../config/db");
 
 async function registrarCategoria(req,res) {
   const { nombre_categoria, img_categoria ,descripcion_categoria,insignia} = req.body;
-
   try{
       if (!nombre_categoria || !img_categoria|| !descripcion_categoria|| !insignia) {
       return res.status(400).json({ message: 'Faltan campos obligatorios' });
@@ -34,6 +33,8 @@ async function registrarCategoria(req,res) {
   }
     
 }
+
+
 
 async function actualizarCategoria(params) {
   
