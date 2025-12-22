@@ -6,6 +6,6 @@ const { verificarToken, verificarRoles } = require('../middlewares/auth.middlewa
 
 router.post('/crearCategoria',verificarToken,upload.single('img_categoria'),registrarCategoria,)
 router.get('/Categorias',verificarToken,obtenerCategorias)
-router.put('/Categorias/:id',verificarToken,actualizarCategoria)
+router.put('/Categorias/:id',verificarToken,upload.single('img_categoria'),actualizarCategoria)
 
 
