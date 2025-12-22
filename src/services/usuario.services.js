@@ -41,12 +41,22 @@ export async function obtenerDatosPerfil(id_usuario) {
   }
 }
 
-export async function actualizarDatosPerfil(id_usuario) {
+export async function actualizarDatosPerfil(id_usuario, datos) {
   try {
-    const res = await API.put(`/usuario/usuarios/${id_usuario}`);
-    
+    const res = await API.put(`/usuario/usuarios/${id_usuario}`, datos);
     return res.data;
   } catch (err) {
     throw err.response?.data || err;
   }
 }
+
+export async function cambiarContrasenaUsuario(id_usuario, passwords) {
+  try {
+    const res = await API.put(`/usuario/usuarios/${id_usuario}/contrasena`, passwords);
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}
+
+

@@ -4,7 +4,7 @@ const router = express.Router();
 const {  upload, handleUploadErrors } = require("../config/cloudinary");
 
 
-const { registroUsuario,editarPerfilUsuario,obtenerPerfilUsuario,actualizarAvatar} = require('../controllers/usuario.controller');
+const { registroUsuario,editarPerfilUsuario,obtenerPerfilUsuario,actualizarAvatar, cambiarContrasena} = require('../controllers/usuario.controller');
 const { verificarToken, verificarRoles } = require('../middlewares/auth.middlewares');
 
 
@@ -12,6 +12,8 @@ router.post('/registroUsuario',registroUsuario);
 router.put('/usuarios/:id',verificarToken,editarPerfilUsuario)
 router.put("/usuarios/:id/avatar",verificarToken,upload.single("imagen"),handleUploadErrors, 
 actualizarAvatar );
+
+router.put('/usuarios/:id/contrasena', verificarToken, cambiarContrasena);
 
 router.get('/datosUsuario/:id',verificarToken, obtenerPerfilUsuario);
 

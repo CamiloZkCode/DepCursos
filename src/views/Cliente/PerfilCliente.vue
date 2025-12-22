@@ -28,166 +28,146 @@
 
     <!-- ===== CONTENIDO DE TABS ===== -->
     <section class="profile__content">
-      <!-- TAB: PERFIL MEJORADO -->
+      <!-- TAB: PERFIL - IDÉNTICO AL ADMIN -->
       <div v-if="activeTab === 'perfil'" id="perfil" role="tabpanel" class="tab-content">
-        <header class="section-header">
-          <h2>Información Personal</h2>
-          <p>Actualiza tus datos personales</p>
-        </header>
-        
-        <div class="profile__form-container">
-          <form class="profile__form" @submit.prevent="updateProfile">
-            <div class="form-section">
-              <h3 class="form-section__title">Datos Personales</h3>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="nombre" class="form-label">
-                    Nombre <span class="required">*</span>
-                  </label>
-                  <input 
-                    id="nombre" 
-                    v-model="editedUser.firstName" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    @input="checkChanges"
-                    placeholder="Tu nombre"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="apellido" class="form-label">
-                    Apellido <span class="required">*</span>
-                  </label>
-                  <input 
-                    id="apellido" 
-                    v-model="editedUser.lastName" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    @input="checkChanges"
-                    placeholder="Tu apellido"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="telefono" class="form-label">Teléfono</label>
-                  <input 
-                    id="telefono" 
-                    v-model="editedUser.phone" 
-                    type="tel" 
-                    class="form-input"
-                    @input="checkChanges"
-                    placeholder="+57 123 456 7890"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="correo" class="form-label">Correo electrónico</label>
-                  <input 
-                    id="correo" 
-                    v-model="editedUser.email" 
-                    type="email" 
-                    class="form-input"
-                    @input="checkChanges"
-                    placeholder="tu@email.com"
-                  />
-                  <div class="form-help">Usamos tu correo para notificaciones importantes</div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-section">
-              <h3 class="form-section__title">Localización</h3>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="pais" class="form-label">
-                    País <span class="required">*</span>
-                  </label>
-                  <select 
-                    id="pais" 
-                    v-model="editedUser.country" 
-                    class="form-select"
-                    required 
-                    @change="checkChanges"
-                  >
-                    <option value="">Seleccionar país</option>
-                    <option value="Colombia">Colombia</option>
-                    <option value="México">México</option>
-                    <option value="Argentina">Argentina</option>
-                    <option value="España">España</option>
-                    <option value="Estados Unidos">Estados Unidos</option>
-                    <option value="Perú">Perú</option>
-                    <option value="Chile">Chile</option>
-                    <option value="Ecuador">Ecuador</option>
-                  </select>
-                </div>
-                
-                <div class="form-group">
-                  <label for="estado" class="form-label">
-                    Departamento/Estado <span class="required">*</span>
-                  </label>
-                  <select 
-                    id="estado" 
-                    v-model="editedUser.state" 
-                    class="form-select"
-                    required 
-                    @change="checkChanges"
-                  >
-                    <option value="">Seleccionar departamento</option>
-                    <option value="Tolima">Tolima</option>
-                    <option value="Bogotá D.C.">Bogotá D.C.</option>
-                    <option value="Antioquia">Antioquia</option>
-                    <option value="Valle del Cauca">Valle del Cauca</option>
-                    <option value="Santander">Santander</option>
-                    <option value="Cundinamarca">Cundinamarca</option>
-                    <option value="Atlántico">Atlántico</option>
-                    <option value="Bolívar">Bolívar</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-section">
-              <h3 class="form-section__title">Seguridad</h3>
-              <div class="account-settings">
-                <div class="account-setting">
-                  <div class="account-setting__info">
-                    <h4>Contraseña</h4>
-                    <p>Cambia tu contraseña regularmente para mayor seguridad</p>
-                  </div>
-                  <button 
-                    type="button" 
-                    class="btn btn--outline"
-                    @click="showPasswordModal = true"
-                  >
-                    Cambiar contraseña
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-actions">
-              <button 
-                type="button" 
-                class="btn btn--ghost"
-                @click="resetForm"
-                :disabled="!hasChanges"
-              >
-                Cancelar
-              </button>
-              <button 
-                type="submit" 
-                class="btn btn--primary"
-                :disabled="!hasChanges"
-                :class="{ 'btn--loading': isSaving }"
-              >
-                <span v-if="isSaving">Guardando...</span>
-                <span v-else>Guardar Cambios</span>
-              </button>
-            </div>
-          </form>
+        <!-- Estado de carga -->
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando datos del perfil...</p>
         </div>
+        
+        <!-- Contenido del perfil -->
+        <template v-else>
+          <header class="section-header">
+            <h2>Información Personal</h2>
+            <p>Actualiza tus datos personales</p>
+          </header>
+          
+          <div class="profile__form-container">
+            <form class="profile__form" @submit.prevent="updateProfile">
+              <!-- Sección: Datos Personales -->
+              <div class="form-section">
+                <h3 class="form-section__title">Datos Personales</h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="nombreCompleto" class="form-label">
+                      Nombre Completo <span class="required">*</span>
+                    </label>
+                    <input 
+                      id="nombreCompleto" 
+                      v-model="editedUser.fullName" 
+                      type="text" 
+                      class="form-input"
+                      required 
+                      :disabled="isSaving"
+                      placeholder="Ej: Juan Pérez"
+                    />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input 
+                      id="telefono" 
+                      v-model="editedUser.phone" 
+                      type="tel" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="+57 123 456 7890"
+                    />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="correo" class="form-label">Correo electrónico</label>
+                    <input 
+                      id="correo" 
+                      v-model="editedUser.email" 
+                      type="email" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="estudiante@ejemplo.com"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Sección: Localización -->
+              <div class="form-section">
+                <h3 class="form-section__title">Localización</h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="pais" class="form-label">
+                      País
+                    </label>
+                    <input 
+                      id="pais" 
+                      v-model="editedUser.country" 
+                      type="text" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="Ej: Colombia, México, Argentina"
+                    />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="estado" class="form-label">
+                      Departamento/Estado
+                    </label>
+                    <input 
+                      id="estado" 
+                      v-model="editedUser.state" 
+                      type="text" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="Ej: Tolima, Bogotá D.C., Antioquia"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Sección: Seguridad -->
+              <div class="form-section">
+                <h3 class="form-section__title">Seguridad</h3>
+                <div class="account-settings">
+                  <div class="account-setting">
+                    <div class="account-setting__info">
+                      <h4>Contraseña</h4>
+                      <p>Cambia tu contraseña regularmente para mayor seguridad</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn btn--outline"
+                      @click="showPasswordModal = true"
+                      :disabled="isSaving"
+                    >
+                      Cambiar contraseña
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Acciones del formulario -->
+              <div class="form-actions">
+                <button 
+                  type="button" 
+                  class="btn btn--ghost"
+                  @click="resetForm"
+                  :disabled="!hasChanges || isSaving"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn--primary"
+                  :disabled="!hasChanges || isSaving"
+                  :class="{ 'btn--loading': isSaving }"
+                >
+                  <span v-if="isSaving">Guardando...</span>
+                  <span v-else>Guardar Cambios</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </template>
       </div>
 
       <!-- TAB: CURSOS COMPLETADOS -->
@@ -713,42 +693,77 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+// =================================================================
+// IMPORTS - ORGANIZADOS POR FUNCIONALIDAD
+// =================================================================
+
+// Vue & Pinia
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
+import { useAuthStore } from '@/store/auth'
+
+// Componentes
 import ProfileHeader from '@/components/ProfileHeader.vue'
+
+// Servicios API
+import { 
+  obtenerDatosPerfil, 
+  actualizarDatosPerfil, 
+  cambiarContrasenaUsuario,
+  actualizarAvatarUsuario 
+} from '@/services/usuario.services'
+
+// Librerías externas
+import Swal from 'sweetalert2'
 import html2pdf from 'html2pdf.js'
 
-// Estado principal
+// =================================================================
+// SECCIÓN 1: PERFIL Y CONTRASEÑA
+// =================================================================
+
+// ===== ESTADO =====
+const authStore = useAuthStore()
+
+// Estado principal del perfil
 const activeTab = ref('perfil')
 const hasChanges = ref(false)
 const isSaving = ref(false)
+const loading = ref(true)
+
+// Datos del usuario real desde el backend
+const user = reactive({
+  fullName: '',
+  phone: '',
+  email: '',
+  country: '',
+  state: '',
+  id_usuario: '',
+  img_usuario: ''
+})
+
+const editedUser = ref({
+  fullName: '',
+  phone: '',
+  email: '',
+  country: '',
+  state: ''
+})
+
+// Estado para contraseña
 const showPasswordModal = ref(false)
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
-const transcriptContent = ref(null)
 
-// Datos del usuario
-const user = reactive({
-  firstName: 'Juan Camilo',
-  lastName: 'Pimiento Garcia',
-  phone: '+57 123 456 789',
-  email: 'juan@example.com',
-  country: 'Colombia',
-  state: 'Tolima',
-  fullName: computed(() => `${user.firstName} ${user.lastName}`),
-  role: 'Estudiante - Academia Deportiva'
-})
-
-const editedUser = ref({ ...user })
-
-// Contraseña
 const passwordForm = reactive({
   current: '',
   new: '',
   confirm: ''
 })
 
-// Tabs en nuevo orden
+// Avatar
+const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
+
+// Tabs de navegación
 const tabs = [
   { id: 'perfil', label: 'Perfil', icon: '👤' },
   { id: 'cursos-completados', label: 'Cursos Completados', icon: '📜' },
@@ -757,7 +772,327 @@ const tabs = [
   { id: 'transcripcion', label: 'Transcripción', icon: '📄' }
 ]
 
-// Certificados (ordenados por fecha más reciente)
+// ===== COMPUTED =====
+const passwordStrength = computed(() => {
+  const password = passwordForm.new
+  if (!password) return 0
+  
+  let strength = 0
+  if (password.length >= 8) strength += 33
+  if (/[A-Z]/.test(password)) strength += 33
+  if (/[0-9]/.test(password)) strength += 34
+  
+  return strength
+})
+
+const passwordStrengthClass = computed(() => {
+  if (passwordStrength.value < 33) return 'strength-weak'
+  if (passwordStrength.value < 66) return 'strength-medium'
+  return 'strength-strong'
+})
+
+const passwordStrengthText = computed(() => {
+  if (passwordStrength.value < 33) return 'Débil'
+  if (passwordStrength.value < 66) return 'Media'
+  return 'Fuerte'
+})
+
+const passwordsMatch = computed(() => {
+  return passwordForm.new && passwordForm.confirm && passwordForm.new === passwordForm.confirm
+})
+
+const canSubmitPassword = computed(() => {
+  return passwordForm.current && 
+         passwordForm.new && 
+         passwordForm.confirm && 
+         passwordStrength.value >= 66 && 
+         passwordsMatch.value
+})
+
+// ===== MÉTODOS =====
+/**
+ * Carga los datos del usuario desde el backend
+ */
+const cargarDatosUsuario = async () => {
+  try {
+    loading.value = true
+    
+    // Usar 'id' en lugar de 'id_usuario'
+    const userId = authStore.user?.id
+    
+    if (!userId) {
+      console.error('No se encontró ID de usuario en el store')
+      Swal.fire({
+        icon: 'warning',
+        title: 'Datos incompletos',
+        text: 'No se pudo identificar al usuario',
+        timer: 2000
+      })
+      return
+    }
+    
+    console.log('🔍 Obteniendo datos para usuario ID:', userId)
+    const datos = await obtenerDatosPerfil(userId)
+    
+    if (!datos) {
+      throw new Error('El servidor no retornó datos')
+    }
+    
+    console.log('📊 Datos recibidos del backend:', datos)
+    
+    // Mapear datos del backend al frontend
+    user.fullName = datos.nombre || authStore.user?.nombre || ''
+    user.phone = datos.telefono || datos.phone || ''
+    user.email = datos.correo || datos.email || authStore.user?.correo || ''
+    user.country = datos.pais || datos.country || ''
+    user.state = datos.departamento || datos.state || datos.estado || ''
+    user.id_usuario = datos.id_usuario || datos.id || userId
+    user.img_usuario = datos.img_usuario || datos.imagen || '/src/assets/icons/LogoFondo.jpeg'
+    
+    console.log('✅ Usuario mapeado:', {
+      fullName: user.fullName,
+      email: user.email,
+      country: user.country,
+      state: user.state,
+      phone: user.phone
+    })
+    
+    // Inicializar editedUser con los datos del usuario
+    editedUser.value = { 
+      fullName: user.fullName,
+      phone: user.phone,
+      email: user.email,
+      country: user.country,
+      state: user.state
+    }
+    
+    // Mostrar datos en consola para debug
+    console.log('🎯 editedUser inicializado:', editedUser.value)
+    
+  } catch (error) {
+    console.error('❌ Error al cargar datos del usuario:', error)
+    console.error('Detalles del error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
+    
+    // Cargar datos mínimos desde el store de auth
+    user.fullName = authStore.user?.nombre || 'Estudiante'
+    user.email = authStore.user?.correo || ''
+    user.id_usuario = authStore.user?.id || ''
+    
+    editedUser.value = {
+      fullName: user.fullName,
+      phone: '',
+      email: user.email,
+      country: '',
+      state: ''
+    }
+    
+    Swal.fire({
+      icon: 'warning',
+      title: 'Datos limitados',
+      text: 'Se cargaron datos básicos. Algunos campos pueden estar vacíos.',
+      timer: 3000
+    })
+    
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * Restablece el formulario a los valores originales
+ */
+const resetForm = () => {
+  editedUser.value = { 
+    fullName: user.fullName,
+    phone: user.phone,
+    email: user.email,
+    country: user.country,
+    state: user.state
+  }
+  hasChanges.value = false
+}
+
+/**
+ * Actualiza el perfil del usuario en el backend
+ */
+const updateProfile = async () => {
+  if (!hasChanges.value) return
+  
+  try {
+    isSaving.value = true
+    
+    // Preparar datos para enviar al backend
+    const datosActualizados = {
+      nombre: editedUser.value.fullName,
+      telefono: editedUser.value.phone,
+      correo: editedUser.value.email,
+      pais: editedUser.value.country,
+      departamento: editedUser.value.state
+    }
+    
+    await actualizarDatosPerfil(user.id_usuario, datosActualizados)
+    
+    // Actualizar el objeto user con los nuevos datos
+    user.fullName = editedUser.value.fullName
+    user.phone = editedUser.value.phone
+    user.email = editedUser.value.email
+    user.country = editedUser.value.country
+    user.state = editedUser.value.state
+    
+    if (authStore.user) {
+      authStore.user.nombre = editedUser.value.fullName
+      authStore.user.correo = editedUser.value.email
+      // Si guardas teléfono, país, etc. en el store, actualízalos también
+      // authStore.user.telefono = editedUser.value.phone
+      // authStore.user.pais = editedUser.value.country
+      // etc.
+    }
+    // Mostrar confirmación
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Perfil actualizado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    })
+    
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al actualizar el perfil'
+    })
+  } finally {
+    isSaving.value = false
+  }
+}
+
+/**
+ * Maneja el cambio de avatar del usuario
+ */
+const handleAvatarChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  try {
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Formato inválido',
+        text: 'Por favor selecciona una imagen válida'
+      })
+      return
+    }
+    
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Imagen muy grande',
+        text: 'La imagen debe ser menor a 5MB'
+      })
+      return
+    }
+    
+    const response = await actualizarAvatarUsuario(user.id_usuario, file)
+    
+    if (response.success) {
+      // Actualizar la imagen en el frontend
+      user.img_usuario = response.data.imagen
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Avatar actualizado correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error al cambiar avatar:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al actualizar el avatar'
+    })
+  }
+}
+
+/**
+ * Cierra el modal de cambio de contraseña y limpia el formulario
+ */
+const closePasswordModal = () => {
+  showPasswordModal.value = false
+  passwordForm.current = ''
+  passwordForm.new = ''
+  passwordForm.confirm = ''
+  showCurrentPassword.value = false
+  showNewPassword.value = false
+  showConfirmPassword.value = false
+}
+
+/**
+ * Envía el formulario de cambio de contraseña al backend
+ */
+const submitChangePassword = async () => {
+  if (!canSubmitPassword.value) {
+    console.warn('Formulario de contraseña inválido')
+    return
+  }
+
+  try {
+    const userId = user.id_usuario
+
+    console.log('Intentando cambiar contraseña para userId:', userId)
+    console.log('Datos que se enviarán:', {
+      contrasenaActual: passwordForm.current,
+      nuevaContrasena: passwordForm.new
+    })
+
+    if (!userId) {
+      throw new Error('ID de usuario no encontrado. No se puede cambiar la contraseña.')
+    }
+
+    await cambiarContrasenaUsuario(userId, {
+      contrasenaActual: passwordForm.current,
+      nuevaContrasena: passwordForm.new
+    })
+
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Contraseña cambiada exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    })
+
+    closePasswordModal()
+
+  } catch (error) {
+    console.error('Error completo al cambiar contraseña:', error)
+    console.error('Response:', error.response?.data)
+    console.error('Status:', error.response?.status)
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al cambiar contraseña',
+      text: error.response?.data?.message || error.message || 'Error desconocido'
+    })
+  }
+}
+
+// =================================================================
+// SECCIÓN 2: CURSOS COMPLETADOS
+// =================================================================
+
+// ===== ESTADO =====
 const certificates = reactive([
   { 
     id: 1, 
@@ -791,14 +1126,15 @@ const certificates = reactive([
   }
 ])
 
-// Ordenar certificados por fecha (más reciente primero)
+const transcriptContent = ref(null)
+
+// ===== COMPUTED =====
 const sortedCertificates = computed(() => {
   return [...certificates].sort((a, b) => {
     return new Date(b.date) - new Date(a.date)
   })
 })
 
-// Promedio de calificaciones
 const averageGrade = computed(() => {
   if (certificates.length === 0) return '0.0'
   const total = certificates.reduce((sum, cert) => {
@@ -807,7 +1143,67 @@ const averageGrade = computed(() => {
   return (total / certificates.length).toFixed(1)
 })
 
-// Descuentos
+// ===== MÉTODOS =====
+/**
+ * Visualiza un certificado
+ */
+const viewCertificate = (certificate) => {
+  Swal.fire({
+    title: certificate.title,
+    html: `
+      <div style="text-align: left;">
+        <p><strong>Descripción:</strong> ${certificate.description}</p>
+        <p><strong>Fecha de finalización:</strong> ${certificate.date}</p>
+        <p><strong>Duración:</strong> ${certificate.duration}</p>
+        <p><strong>Calificación:</strong> ${certificate.grade}/5.0</p>
+        <p><strong>Código del certificado:</strong> <code>${certificate.code}</code></p>
+      </div>
+    `,
+    icon: 'info',
+    confirmButtonText: 'Cerrar',
+    width: 600
+  })
+}
+
+// =================================================================
+// SECCIÓN 3: HISTORIAL DE APRENDIZAJE
+// =================================================================
+
+// ===== ESTADO =====
+const totalCourses = ref(8)
+
+const progressCourses = reactive([
+  {
+    id: 1,
+    title: 'Digital Marketing',
+    progress: 75,
+    status: 'in-progress',
+    lastActivity: 'Hoy, 10:30 AM'
+  },
+  {
+    id: 2,
+    title: 'Web Development',
+    progress: 30,
+    status: 'in-progress',
+    lastActivity: 'Ayer, 14:20'
+  },
+  {
+    id: 3,
+    title: 'Project Management',
+    progress: 100,
+    status: 'completed',
+    lastActivity: '15 Nov 2024'
+  }
+])
+
+// ===== COMPUTED =====
+const completedCourses = computed(() => certificates.length)
+
+// =================================================================
+// SECCIÓN 4: DESCUENTOS Y PROMOCIONES
+// =================================================================
+
+// ===== ESTADO =====
 const activeDiscounts = reactive([
   {
     id: 1,
@@ -845,34 +1241,26 @@ const expiredDiscounts = reactive([
   }
 ])
 
-// Historial de aprendizaje
-const totalCourses = ref(8)
+// ===== MÉTODOS =====
+/**
+ * Copia un código de descuento al portapapeles
+ */
+const copyDiscountCode = (code) => {
+  navigator.clipboard.writeText(code)
+  Swal.fire({
+    icon: 'success',
+    title: '¡Copiado!',
+    text: 'Código copiado al portapapeles',
+    timer: 1500,
+    showConfirmButton: false
+  })
+}
 
-const progressCourses = reactive([
-  {
-    id: 1,
-    title: 'Digital Marketing',
-    progress: 75,
-    status: 'in-progress',
-    lastActivity: 'Hoy, 10:30 AM'
-  },
-  {
-    id: 2,
-    title: 'Web Development',
-    progress: 30,
-    status: 'in-progress',
-    lastActivity: 'Ayer, 14:20'
-  },
-  {
-    id: 3,
-    title: 'Project Management',
-    progress: 100,
-    status: 'completed',
-    lastActivity: '15 Nov 2024'
-  }
-])
+// =================================================================
+// SECCIÓN 5: TRANSCRIPCIÓN ACADÉMICA
+// =================================================================
 
-// Transcripción
+// ===== ESTADO =====
 const studentId = ref('EST-2024-00123')
 const currentDate = new Date().toLocaleDateString('es-ES', {
   day: '2-digit',
@@ -919,118 +1307,10 @@ const transcriptCourses = reactive([
   }
 ])
 
-const completedCourses = computed(() => certificates.length)
-
-// Computed para validación de contraseña
-const passwordStrength = computed(() => {
-  const password = passwordForm.new
-  if (!password) return 0
-  
-  let strength = 0
-  if (password.length >= 8) strength += 33
-  if (/[A-Z]/.test(password)) strength += 33
-  if (/[0-9]/.test(password)) strength += 34
-  
-  return strength
-})
-
-const passwordStrengthClass = computed(() => {
-  if (passwordStrength.value < 33) return 'strength-weak'
-  if (passwordStrength.value < 66) return 'strength-medium'
-  return 'strength-strong'
-})
-
-const passwordStrengthText = computed(() => {
-  if (passwordStrength.value < 33) return 'Débil'
-  if (passwordStrength.value < 66) return 'Media'
-  return 'Fuerte'
-})
-
-const passwordsMatch = computed(() => {
-  return passwordForm.new && passwordForm.confirm && passwordForm.new === passwordForm.confirm
-})
-
-const canSubmitPassword = computed(() => {
-  return passwordForm.current && 
-         passwordForm.new && 
-         passwordForm.confirm && 
-         passwordStrength.value >= 66 && 
-         passwordsMatch.value
-})
-
-// Avatar
-const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
-
-// Métodos
-const checkChanges = () => {
-  hasChanges.value = JSON.stringify(editedUser.value) !== JSON.stringify({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    phone: user.phone,
-    email: user.email,
-    country: user.country,
-    state: user.state
-  })
-}
-
-const resetForm = () => {
-  editedUser.value = { ...user }
-  hasChanges.value = false
-}
-
-const updateProfile = async () => {
-  if (!hasChanges.value) return
-  
-  isSaving.value = true
-  
-  // Simular guardado
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  
-  Object.assign(user, editedUser.value)
-  hasChanges.value = false
-  isSaving.value = false
-  
-  alert('Perfil actualizado exitosamente')
-}
-
-const handleAvatarChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    avatarSrc.value = URL.createObjectURL(file)
-    alert('Imagen de perfil actualizada')
-  }
-}
-
-const closePasswordModal = () => {
-  showPasswordModal.value = false
-  passwordForm.current = ''
-  passwordForm.new = ''
-  passwordForm.confirm = ''
-  showCurrentPassword.value = false
-  showNewPassword.value = false
-  showConfirmPassword.value = false
-}
-
-const submitChangePassword = async () => {
-  if (!canSubmitPassword.value) return
-  
-  // Simular cambio de contraseña
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  alert('Contraseña cambiada exitosamente')
-  closePasswordModal()
-}
-
-const viewCertificate = (certificate) => {
-  alert(`Viendo certificado: ${certificate.title}`)
-}
-
-
-const copyDiscountCode = (code) => {
-  navigator.clipboard.writeText(code)
-  alert('Código copiado al portapapeles')
-}
-
+// ===== MÉTODOS =====
+/**
+ * Descarga la transcripción en formato PDF
+ */
 const downloadTranscriptPDF = async () => {
   if (!transcriptContent.value) return
   
@@ -1038,7 +1318,7 @@ const downloadTranscriptPDF = async () => {
     const element = transcriptContent.value
     const opt = {
       margin: [0.5, 0.5, 0.5, 0.5],
-      filename: `transcripcion_${user.firstName}_${user.lastName}.pdf`,
+      filename: `transcripcion_${user.fullName.replace(/\s+/g, '_')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { 
         scale: 2,
@@ -1062,12 +1342,58 @@ const downloadTranscriptPDF = async () => {
     // Restaurar estilo original
     element.style.display = originalDisplay
     
-    alert('Transcripción descargada exitosamente')
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Transcripción descargada exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    })
   } catch (error) {
     console.error('Error al generar PDF:', error)
-    alert('Error al generar el PDF. Por favor, inténtalo de nuevo.')
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Error al generar el PDF. Por favor, inténtalo de nuevo.'
+    })
   }
 }
+
+// =================================================================
+// Onmounted y Watchers
+// =================================================================
+onMounted(async () => {
+  await nextTick()
+  
+  // Usar 'id' en lugar de 'id_usuario'
+  if (authStore.isAuthenticated && authStore.user?.id) {
+    await cargarDatosUsuario()
+  } else {
+    loading.value = false
+  }
+})
+
+// Actualizar el watch para usar 'id'
+watch(
+  () => authStore.user?.id,
+  (newId) => {    
+    if (newId && !loading.value) {
+      cargarDatosUsuario()
+    }
+  },
+  { immediate: true }
+)
+
+// Watch para detectar cambios en el formulario
+watch(editedUser, (newVal) => {
+  hasChanges.value = JSON.stringify(newVal) !== JSON.stringify({
+    fullName: user.fullName,
+    phone: user.phone,
+    email: user.email,
+    country: user.country,
+    state: user.state
+  })
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -1153,6 +1479,31 @@ const downloadTranscriptPDF = async () => {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Estado de carga */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--color-morado);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Headers */

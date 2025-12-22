@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/store/auth.js";
 
 // Layouts
 import LayoutConFooter from "@/layouts/LayoutConFooter.vue";
@@ -33,7 +34,6 @@ const routes = [
       { path: "about", name: "About", component: About },
       { path: "cursos", name: "Cursos", component: Cursos },
 
-      // Curso individual (dinámico)
       {
         path: "cursos/:id",
         name: "VerCursos",
@@ -41,12 +41,33 @@ const routes = [
         props: true,
       },
 
-      { path: "mis-cursos", name: "MisCursos", component: MisCursos },
-      { path: "perfil", name: "PerfilCliente", component: PerfilCliente },
-      { path: "admin-perfil", name: "PerfilAdmin", component: PerfilAdmin },
-      { path: "admin/gestionar-cursos", name: "GestionarCursos", component: GestionarCursos },
+      // Cliente
+      {
+        path: "mis-cursos",
+        name: "MisCursos",
+        component: MisCursos,
+        meta: { requiresAuth: true, role: "usuario" },
+      },
+      {
+        path: "perfil",
+        name: "PerfilCliente",
+        component: PerfilCliente,
+        meta: { requiresAuth: true, role: "usuario" },
+      },
 
-
+      // Admin
+      {
+        path: "admin-perfil",
+        name: "PerfilAdmin",
+        component: PerfilAdmin,
+        meta: { requiresAuth: true, role: "admin" },
+      },
+      {
+        path: "admin/gestionar-cursos",
+        name: "GestionarCursos",
+        component: GestionarCursos,
+        meta: { requiresAuth: true, role: "admin" },
+      },
     ],
   },
 
@@ -57,7 +78,12 @@ const routes = [
     path: "/",
     component: LayoutSinFooter,
     children: [
-      { path: "login", name: "Login", component: Login },
+      {
+        path: "login",
+        name: "Login",
+        component: Login,
+        meta: { guestOnly: true },
+      },
     ],
   },
 
@@ -70,6 +96,33 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+/* =========================
+   GUARD GLOBAL (AUTH + ROLES)
+========================= */
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+
+  // 🚫 Usuario logueado intentando ir al login
+  if (to.meta.guestOnly && authStore.isAuthenticated) {
+    return next({ name: "Home" });
+  }
+
+  // 🔒 Ruta protegida
+  if (to.meta.requiresAuth) {
+    // ❌ No autenticado
+    if (!authStore.isAuthenticated) {
+      return next({ name: "Login" });
+    }
+
+    // ❌ Rol incorrecto
+    if (to.meta.role && authStore.user?.rol !== to.meta.role) {
+      return next({ name: "Home" }); // o ruta 403
+    }
+  }
+
+  next();
 });
 
 export default router;

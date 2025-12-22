@@ -1,9 +1,9 @@
 <template>
   <main class="profile-admin" aria-describedby="profile-admin-intro">
-    <!-- Componente reutilizable de header -->
+    <!-- ===== HEADER DEL PERFIL ===== -->
     <ProfileHeader 
       :user="user" 
-      :avatar-src="avatarSrc" 
+      :avatar-src="user.img_usuario || '/src/assets/icons/LogoFondo.jpeg'" 
       @change-avatar="handleAvatarChange"
       :is-admin="true"
       :is-estudiante="false"
@@ -28,161 +28,149 @@
 
     <!-- ===== CONTENIDO DE TABS ===== -->
     <section class="profile__content">
-      <!-- TAB: PERFIL -->
+      <!-- ===== TAB 1: PERFIL DEL USUARIO ===== -->
       <div v-if="activeTab === 'perfil'" id="perfil" role="tabpanel" class="tab-content">
-        <header class="section-header">
-          <h2>Información Personal</h2>
-          <p>Actualiza tus datos personales</p>
-        </header>
-        
-        <div class="profile__form-container">
-          <form class="profile__form" @submit.prevent="updateProfile">
-            <div class="form-section">
-              <h3 class="form-section__title">Datos Personales</h3>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="nombre" class="form-label">
-                    Nombre <span class="required">*</span>
-                  </label>
-                  <input 
-                    id="nombre" 
-                    v-model="editedUser.firstName" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    @input="checkChanges"
-                    placeholder="Tu nombre"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="apellido" class="form-label">
-                    Apellido <span class="required">*</span>
-                  </label>
-                  <input 
-                    id="apellido" 
-                    v-model="editedUser.lastName" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    @input="checkChanges"
-                    placeholder="Tu apellido"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="telefono" class="form-label">Teléfono</label>
-                  <input 
-                    id="telefono" 
-                    v-model="editedUser.phone" 
-                    type="tel" 
-                    class="form-input"
-                    @input="checkChanges"
-                    placeholder="+57 123 456 7890"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="correo" class="form-label">Correo electrónico</label>
-                  <input 
-                    id="correo" 
-                    v-model="editedUser.email" 
-                    type="email" 
-                    class="form-input"
-                    @input="checkChanges"
-                    placeholder="admin@ejemplo.com"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-section">
-              <h3 class="form-section__title">Localización</h3>
-              <div class="form-grid">
-                <div class="form-group">
-                  <label for="pais" class="form-label">
-                    País <span class="required">*</span>
-                  </label>
-                  <select 
-                    id="pais" 
-                    v-model="editedUser.country" 
-                    class="form-select"
-                    required 
-                    @change="checkChanges"
-                  >
-                    <option value="">Seleccionar país</option>
-                    <option value="Colombia">Colombia</option>
-                    <option value="México">México</option>
-                    <option value="Argentina">Argentina</option>
-                    <option value="España">España</option>
-                    <option value="Estados Unidos">Estados Unidos</option>
-                  </select>
-                </div>
-                
-                <div class="form-group">
-                  <label for="estado" class="form-label">
-                    Departamento/Estado <span class="required">*</span>
-                  </label>
-                  <select 
-                    id="estado" 
-                    v-model="editedUser.state" 
-                    class="form-select"
-                    required 
-                    @change="checkChanges"
-                  >
-                    <option value="">Seleccionar departamento</option>
-                    <option value="Tolima">Tolima</option>
-                    <option value="Bogotá D.C.">Bogotá D.C.</option>
-                    <option value="Antioquia">Antioquia</option>
-                    <option value="Valle del Cauca">Valle del Cauca</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-section">
-              <h3 class="form-section__title">Seguridad</h3>
-              <div class="account-settings">
-                <div class="account-setting">
-                  <div class="account-setting__info">
-                    <h4>Contraseña</h4>
-                    <p>Cambia tu contraseña regularmente para mayor seguridad</p>
-                  </div>
-                  <button 
-                    type="button" 
-                    class="btn btn--outline"
-                    @click="showPasswordModal = true"
-                  >
-                    Cambiar contraseña
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-actions">
-              <button 
-                type="button" 
-                class="btn btn--ghost"
-                @click="resetForm"
-                :disabled="!hasChanges"
-              >
-                Cancelar
-              </button>
-              <button 
-                type="submit" 
-                class="btn btn--primary"
-                :disabled="!hasChanges"
-                :class="{ 'btn--loading': isSaving }"
-              >
-                <span v-if="isSaving">Guardando...</span>
-                <span v-else>Guardar Cambios</span>
-              </button>
-            </div>
-          </form>
+        <!-- Estado de carga -->
+        <div v-if="loading" class="loading-state">
+          <div class="spinner"></div>
+          <p>Cargando datos del perfil...</p>
         </div>
+        
+        <!-- Contenido del perfil -->
+        <template v-else>
+          <header class="section-header">
+            <h2>Información Personal</h2>
+            <p>Actualiza tus datos personales</p>
+          </header>
+          
+          <div class="profile__form-container">
+            <form class="profile__form" @submit.prevent="updateProfile">
+              <!-- Sección: Datos Personales -->
+              <div class="form-section">
+                <h3 class="form-section__title">Datos Personales</h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="nombreCompleto" class="form-label">
+                      Nombre Completo <span class="required">*</span>
+                    </label>
+                    <input 
+                      id="nombreCompleto" 
+                      v-model="editedUser.fullName" 
+                      type="text" 
+                      class="form-input"
+                      required 
+                      :disabled="isSaving"
+                      placeholder="Ej: Juan Pérez"
+                    />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input 
+                      id="telefono" 
+                      v-model="editedUser.phone" 
+                      type="tel" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="+57 123 456 7890"
+                    />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="correo" class="form-label">Correo electrónico</label>
+                    <input 
+                      id="correo" 
+                      v-model="editedUser.email" 
+                      type="email" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="admin@ejemplo.com"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Sección: Localización -->
+              <div class="form-section">
+                <h3 class="form-section__title">Localización</h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="pais" class="form-label">
+                      País
+                    </label>
+                    <input 
+                      id="pais" 
+                      v-model="editedUser.country" 
+                      type="text" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="Ej: Colombia, México, Argentina"
+                    />
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="estado" class="form-label">
+                      Departamento/Estado
+                    </label>
+                    <input 
+                      id="estado" 
+                      v-model="editedUser.state" 
+                      type="text" 
+                      class="form-input"
+                      :disabled="isSaving"
+                      placeholder="Ej: Tolima, Bogotá D.C., Antioquia"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Sección: Seguridad -->
+              <div class="form-section">
+                <h3 class="form-section__title">Seguridad</h3>
+                <div class="account-settings">
+                  <div class="account-setting">
+                    <div class="account-setting__info">
+                      <h4>Contraseña</h4>
+                      <p>Cambia tu contraseña regularmente para mayor seguridad</p>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn btn--outline"
+                      @click="showPasswordModal = true"
+                      :disabled="isSaving"
+                    >
+                      Cambiar contraseña
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Acciones del formulario -->
+              <div class="form-actions">
+                <button 
+                  type="button" 
+                  class="btn btn--ghost"
+                  @click="resetForm"
+                  :disabled="!hasChanges || isSaving"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  class="btn btn--primary"
+                  :disabled="!hasChanges || isSaving"
+                  :class="{ 'btn--loading': isSaving }"
+                >
+                  <span v-if="isSaving">Guardando...</span>
+                  <span v-else>Guardar Cambios</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </template>
       </div>
 
-      <!-- TAB: GESTIONAR CATEGORÍAS -->
+      <!-- ===== TAB 2: GESTIONAR CATEGORÍAS ===== -->
       <div v-if="activeTab === 'categorias'" id="categorias" role="tabpanel" class="tab-content">
         <header class="section-header">
           <h2>Gestionar Categorías</h2>
@@ -190,6 +178,7 @@
         </header>
         
         <div class="management-container">
+          <!-- Encabezado con estadísticas y botón de acción -->
           <div class="management-header">
             <div class="stats-overview">
               <div class="stat-card">
@@ -207,6 +196,7 @@
             </button>
           </div>
           
+          <!-- Grid de categorías -->
           <div class="categories-grid">
             <div 
               v-for="category in categories" 
@@ -236,6 +226,7 @@
             </div>
           </div>
           
+          <!-- Estado vacío -->
           <div v-if="categories.length === 0" class="empty-state">
             <div class="empty-state__icon">📂</div>
             <h3 class="empty-state__title">No hay categorías registradas</h3>
@@ -249,7 +240,7 @@
         </div>
       </div>
 
-      <!-- TAB: GESTIONAR INSTRUCTORES -->
+      <!-- ===== TAB 3: GESTIONAR INSTRUCTORES ===== -->
       <div v-if="activeTab === 'instructores'" id="instructores" role="tabpanel" class="tab-content">
         <header class="section-header">
           <h2>Gestionar Instructores</h2>
@@ -257,6 +248,7 @@
         </header>
         
         <div class="management-container">
+          <!-- Encabezado con estadísticas -->
           <div class="management-header">
             <div class="stats-overview">
               <div class="stat-card">
@@ -268,12 +260,14 @@
               </div>
             </div>
             
+            <!-- Botón para crear nuevo instructor -->
             <button class="btn btn--primary" @click="openCreateInstructorModal">
               <span class="btn-icon">👨‍🏫</span>
               Nuevo Instructor
             </button>
           </div>
           
+          <!-- Tabla de instructores -->
           <div class="table-container">
             <div class="table-responsive">
               <table class="data-table">
@@ -330,6 +324,7 @@
             </div>
           </div>
           
+          <!-- Estado vacío -->
           <div v-if="instructorsList.length === 0" class="empty-state">
             <div class="empty-state__icon">👨‍🏫</div>
             <h3 class="empty-state__title">No hay instructores registrados</h3>
@@ -343,7 +338,7 @@
         </div>
       </div>
 
-      <!-- TAB: ESTADÍSTICAS -->
+      <!-- ===== TAB 4: ESTADÍSTICAS (DASHBOARD) ===== -->
       <div v-if="activeTab === 'estadisticas'" id="estadisticas" role="tabpanel" class="tab-content">
         <header class="section-header">
           <h2>Dashboard de Estadísticas</h2>
@@ -380,6 +375,7 @@
           
           <!-- Gráficos y visualizaciones -->
           <div class="charts-grid">
+            <!-- Gráfico de inscripciones por curso -->
             <div class="chart-container">
               <div class="chart-header">
                 <h3>Inscripciones por Curso</h3>
@@ -405,6 +401,7 @@
               </div>
             </div>
             
+            <!-- Gráfico de distribución por categoría -->
             <div class="chart-container">
               <div class="chart-header">
                 <h3>Distribución por Categoría</h3>
@@ -438,7 +435,7 @@
 
     <!-- ===== MODALES ===== -->
     <teleport to="body">
-      <!-- Modal Cambio de Contraseña -->
+      <!-- Modal: Cambio de Contraseña -->
       <div v-if="showPasswordModal" class="modal-backdrop" @click.self="closePasswordModal">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="password-modal-title">
           <header class="modal__header">
@@ -568,7 +565,7 @@
         </div>
       </div>
 
-      <!-- Modal Categorías -->
+      <!-- Modal: Crear/Editar Categoría -->
       <div v-if="showCategoryModal" class="modal-backdrop" @click.self="closeCategoryModal">
         <div class="modal modal--large" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
           <header class="modal__header">
@@ -667,7 +664,7 @@
         </div>
       </div>
 
-      <!-- Modal Instructor -->
+      <!-- Modal: Crear Nuevo Instructor -->
       <div v-if="showInstructorModal" class="modal-backdrop" @click.self="closeInstructorModal">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="instructor-modal-title">
           <header class="modal__header">
@@ -835,33 +832,73 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+// =================================================================
+// IMPORTS - ORGANIZADOS POR FUNCIONALIDAD
+// =================================================================
+
+// Vue & Pinia
+import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
+import { useAuthStore } from '@/store/auth'
+
+// Componentes
 import ProfileHeader from '@/components/ProfileHeader.vue'
 
-// Estado principal
+// Servicios API
+import { 
+  obtenerDatosPerfil, 
+  actualizarDatosPerfil, 
+  cambiarContrasenaUsuario,
+  actualizarAvatarUsuario 
+} from '@/services/usuario.services'
+
+// Librerías externas
+import Swal from 'sweetalert2'
+
+// =================================================================
+// SECCIÓN 1: PERFIL Y CONTRASEÑA
+// =================================================================
+
+// ===== ESTADO =====
+const authStore = useAuthStore()
+
+// Estado principal del perfil
 const activeTab = ref('perfil')
 const hasChanges = ref(false)
 const isSaving = ref(false)
+const loading = ref(true)
+
+// Datos del usuario real desde el backend
+const user = reactive({
+  fullName: '',
+  phone: '',
+  email: '',
+  country: '',
+  state: '',
+  id_usuario: '',
+  img_usuario: ''
+})
+
+const editedUser = ref({
+  fullName: '',
+  phone: '',
+  email: '',
+  country: '',
+  state: ''
+})
+
+// Estado para contraseña
 const showPasswordModal = ref(false)
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 
-// Datos del usuario admin
-const user = reactive({
-  firstName: 'Admin',
-  lastName: 'Ejemplo',
-  phone: '+57 123 456 789',
-  email: 'admin@example.com',
-  country: 'Colombia',
-  state: 'Tolima',
-  fullName: computed(() => `${user.firstName} ${user.lastName}`),
-  role: 'Administrador - Academia Deportiva'
+const passwordForm = reactive({
+  current: '',
+  new: '',
+  confirm: ''
 })
 
-const editedUser = ref({ ...user })
-
-// Tabs
+// Tabs de navegación
 const tabs = [
   { id: 'perfil', label: 'Perfil', icon: '👤' },
   { id: 'categorias', label: 'Gestionar Categorías', icon: '📂' },
@@ -869,13 +906,7 @@ const tabs = [
   { id: 'estadisticas', label: 'Dashboard', icon: '📊' }
 ]
 
-// Contraseña
-const passwordForm = reactive({
-  current: '',
-  new: '',
-  confirm: ''
-})
-
+// ===== COMPUTED =====
 const passwordStrength = computed(() => {
   const password = passwordForm.new
   if (!password) return 0
@@ -912,7 +943,545 @@ const canSubmitPassword = computed(() => {
          passwordsMatch.value
 })
 
-// Cursos de ejemplo
+// ===== MÉTODOS =====
+/**
+ * Carga los datos del usuario desde el backend
+ */
+const cargarDatosUsuario = async () => {
+  try {
+    loading.value = true
+    
+    // CORREGIR: Usar 'id' en lugar de 'id_usuario'
+    const userId = authStore.user?.id
+    
+    if (!userId) {
+      console.error('No se encontró ID de usuario en el store')
+      Swal.fire({
+        icon: 'warning',
+        title: 'Datos incompletos',
+        text: 'No se pudo identificar al usuario',
+        timer: 2000
+      })
+      return
+    }
+    
+    console.log('🔍 Obteniendo datos para usuario ID:', userId)
+    const datos = await obtenerDatosPerfil(userId)
+    
+    if (!datos) {
+      throw new Error('El servidor no retornó datos')
+    }
+    
+    console.log('📊 Datos recibidos del backend:', datos)
+    
+    // Mapear datos del backend al frontend
+    // CORREGIR: Verificar qué propiedades vienen realmente del backend
+    user.fullName = datos.nombre || authStore.user?.nombre || ''
+    user.phone = datos.telefono || datos.phone || ''
+    user.email = datos.correo || datos.email || authStore.user?.correo || ''
+    user.country = datos.pais || datos.country || ''
+    user.state = datos.departamento || datos.state || datos.estado || ''
+    user.id_usuario = datos.id_usuario || datos.id || userId
+    user.img_usuario = datos.img_usuario || datos.imagen || '/src/assets/icons/LogoFondo.jpeg'
+    
+    console.log('✅ Usuario mapeado:', {
+      fullName: user.fullName,
+      email: user.email,
+      country: user.country,
+      state: user.state,
+      phone: user.phone
+    })
+    
+    // Inicializar editedUser con los datos del usuario
+    editedUser.value = { 
+      fullName: user.fullName,
+      phone: user.phone,
+      email: user.email,
+      country: user.country,
+      state: user.state
+    }
+    
+    // Mostrar datos en consola para debug
+    console.log('🎯 editedUser inicializado:', editedUser.value)
+    
+  } catch (error) {
+    console.error('❌ Error al cargar datos del usuario:', error)
+    console.error('Detalles del error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
+    
+    // Cargar datos mínimos desde el store de auth
+    user.fullName = authStore.user?.nombre || 'Usuario'
+    user.email = authStore.user?.correo || ''
+    user.id_usuario = authStore.user?.id || ''
+    
+    editedUser.value = {
+      fullName: user.fullName,
+      phone: '',
+      email: user.email,
+      country: '',
+      state: ''
+    }
+    
+    Swal.fire({
+      icon: 'warning',
+      title: 'Datos limitados',
+      text: 'Se cargaron datos básicos. Algunos campos pueden estar vacíos.',
+      timer: 3000
+    })
+    
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * Restablece el formulario a los valores originales
+ */
+const resetForm = () => {
+  editedUser.value = { 
+    fullName: user.fullName,
+    phone: user.phone,
+    email: user.email,
+    country: user.country,
+    state: user.state
+  }
+  hasChanges.value = false
+}
+
+/**
+ * Actualiza el perfil del usuario en el backend
+ */
+const updateProfile = async () => {
+  if (!hasChanges.value) return
+  
+  try {
+    isSaving.value = true
+    
+    // Preparar datos para enviar al backend
+    const datosActualizados = {
+      nombre: editedUser.value.fullName,
+      telefono: editedUser.value.phone,
+      correo: editedUser.value.email,
+      pais: editedUser.value.country,
+      departamento: editedUser.value.state
+    }
+    
+    await actualizarDatosPerfil(user.id_usuario, datosActualizados)
+    
+    // Actualizar el objeto user con los nuevos datos
+    user.fullName = editedUser.value.fullName
+    user.phone = editedUser.value.phone
+    user.email = editedUser.value.email
+    user.country = editedUser.value.country
+    user.state = editedUser.value.state
+
+    if (authStore.user) {
+      authStore.user.nombre = editedUser.value.fullName
+      authStore.user.correo = editedUser.value.email
+      // Si guardas teléfono, país, etc. en el store, actualízalos también
+      // authStore.user.telefono = editedUser.value.phone
+      // authStore.user.pais = editedUser.value.country
+      // etc.
+    }
+    
+    // Mostrar confirmación
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Perfil actualizado correctamente',
+      timer: 2000,
+      showConfirmButton: false
+    })
+    
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al actualizar el perfil'
+    })
+  } finally {
+    isSaving.value = false
+  }
+}
+
+/**
+ * Maneja el cambio de avatar del usuario
+ */
+const handleAvatarChange = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  try {
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Formato inválido',
+        text: 'Por favor selecciona una imagen válida'
+      })
+      return
+    }
+    
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Imagen muy grande',
+        text: 'La imagen debe ser menor a 5MB'
+      })
+      return
+    }
+    
+    const response = await actualizarAvatarUsuario(user.id_usuario, file)
+    
+    if (response.success) {
+      // Actualizar la imagen en el frontend
+      user.img_usuario = response.data.imagen
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: 'Avatar actualizado correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      })
+    }
+    
+  } catch (error) {
+    console.error('Error al cambiar avatar:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || 'Error al actualizar el avatar'
+    })
+  }
+}
+
+/**
+ * Cierra el modal de cambio de contraseña y limpia el formulario
+ */
+const closePasswordModal = () => {
+  showPasswordModal.value = false
+  passwordForm.current = ''
+  passwordForm.new = ''
+  passwordForm.confirm = ''
+  showCurrentPassword.value = false
+  showNewPassword.value = false
+  showConfirmPassword.value = false
+}
+
+/**
+ * Envía el formulario de cambio de contraseña al backend
+ */
+const submitChangePassword = async () => {
+  if (!canSubmitPassword.value) {
+    console.warn('Formulario de contraseña inválido')
+    return
+  }
+
+  try {
+    const userId = user.id_usuario
+
+    console.log('Intentando cambiar contraseña para userId:', userId)
+    console.log('Datos que se enviarán:', {
+      contrasenaActual: passwordForm.current,
+      nuevaContrasena: passwordForm.new
+    })
+
+    if (!userId) {
+      throw new Error('ID de usuario no encontrado. No se puede cambiar la contraseña.')
+    }
+
+    await cambiarContrasenaUsuario(userId, {
+      contrasenaActual: passwordForm.current,
+      nuevaContrasena: passwordForm.new
+    })
+
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Contraseña cambiada exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    })
+
+    closePasswordModal()
+
+  } catch (error) {
+    console.error('Error completo al cambiar contraseña:', error)
+    console.error('Response:', error.response?.data)
+    console.error('Status:', error.response?.status)
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al cambiar contraseña',
+      text: error.response?.data?.message || error.message || 'Error desconocido'
+    })
+  }
+}
+
+
+// =================================================================
+// SECCIÓN 2: GESTIÓN DE CATEGORÍAS
+// =================================================================
+
+// ===== ESTADO =====
+const categories = reactive([
+  {
+    id: 1,
+    name: 'Fitness',
+    badge: 'FIT',
+    description: 'Categoría dedicada al entrenamiento físico y acondicionamiento',
+    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop'
+  },
+  {
+    id: 2,
+    name: 'Yoga',
+    badge: 'YGA',
+    description: 'Categoría enfocada en yoga, meditación y bienestar mental',
+    image_url: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=300&fit=crop'
+  },
+  {
+    id: 3,
+    name: 'Nutrición',
+    badge: 'NUT',
+    description: 'Categoría especializada en alimentación y nutrición deportiva',
+    image_url: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=400&h=300&fit=crop'
+  }
+])
+
+const showCategoryModal = ref(false)
+const categoryModalTitle = ref('Nueva Categoría')
+const formCategory = ref({ id: null, name: '', badge: '', description: '', image_url: '' })
+const categoryImagePreview = ref('')
+
+// ===== MÉTODOS =====
+/**
+ * Abre el modal para crear una nueva categoría
+ */
+const openCreateCategoryModal = () => {
+  formCategory.value = { id: null, name: '', badge: '', description: '', image_url: '' }
+  categoryImagePreview.value = ''
+  categoryModalTitle.value = 'Nueva Categoría'
+  showCategoryModal.value = true
+}
+
+/**
+ * Abre el modal para editar una categoría existente
+ */
+const openEditCategoryModal = (category) => {
+  formCategory.value = { ...category }
+  categoryImagePreview.value = ''
+  categoryModalTitle.value = 'Editar Categoría'
+  showCategoryModal.value = true
+}
+
+/**
+ * Cierra el modal de categoría
+ */
+const closeCategoryModal = () => {
+  showCategoryModal.value = false
+  categoryImagePreview.value = ''
+}
+
+/**
+ * Maneja el cambio de imagen en el formulario de categoría
+ */
+const handleCategoryImageChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    categoryImagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+/**
+ * Guarda o actualiza una categoría
+ */
+const saveCategory = () => {
+  if (formCategory.value.name && formCategory.value.badge) {
+    if (formCategory.value.id) {
+      // Actualizar categoría existente
+      const index = categories.findIndex(c => c.id === formCategory.value.id)
+      if (index !== -1) {
+        categories[index] = { 
+          ...formCategory.value,
+          image_url: categoryImagePreview.value || categories[index].image_url
+        }
+      }
+    } else {
+      // Crear nueva categoría
+      categories.push({
+        id: categories.length + 1,
+        name: formCategory.value.name,
+        badge: formCategory.value.badge,
+        description: formCategory.value.description || '',
+        image_url: categoryImagePreview.value || '/src/assets/icons/LogoFondo.jpeg'
+      })
+    }
+    
+    Swal.fire({
+      icon: 'success',
+      title: '¡Éxito!',
+      text: 'Categoría guardada exitosamente',
+      timer: 2000,
+      showConfirmButton: false
+    })
+    
+    closeCategoryModal()
+  }
+}
+
+// =================================================================
+// SECCIÓN 3: GESTIÓN DE INSTRUCTORES
+// =================================================================
+
+// ===== ESTADO =====
+const instructorsList = reactive([
+  { 
+    id: 1, 
+    name: 'Carlos Rodríguez', 
+    email: 'carlos@academia.com', 
+    phone: '+57 311 222 3333',
+    specialty: 'Fitness y CrossFit',
+    bio: 'Entrenador certificado con 10 años de experiencia',
+    active: true,
+    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop'
+  },
+  { 
+    id: 2, 
+    name: 'Ana Martínez', 
+    email: 'ana@academia.com', 
+    phone: '+57 322 444 5555',
+    specialty: 'Yoga y Meditación',
+    bio: 'Instructora de yoga con certificación internacional',
+    active: true,
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop'
+  },
+  { 
+    id: 3, 
+    name: 'Luis Gómez', 
+    email: 'luis@academia.com', 
+    phone: '+57 300 666 7777',
+    specialty: 'Nutrición Deportiva',
+    bio: 'Nutricionista deportivo especializado en alto rendimiento',
+    active: false,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'
+  }
+])
+
+const newInstructor = ref({ 
+  name: '', 
+  email: '', 
+  phone: '', 
+  specialty: '', 
+  bio: '', 
+  password: '', 
+  confirmPassword: '' 
+})
+const showInstructorModal = ref(false)
+const showInstructorPassword = ref(false)
+const showConfirmInstructorPassword = ref(false)
+
+// ===== COMPUTED =====
+const activeInstructors = computed(() => {
+  return instructorsList.filter(i => i.active).length
+})
+
+const canCreateInstructor = computed(() => {
+  return newInstructor.value.name && 
+         newInstructor.value.email && 
+         newInstructor.value.password && 
+         newInstructor.value.password === newInstructor.value.confirmPassword
+})
+
+// ===== MÉTODOS =====
+/**
+ * Abre el modal para crear un nuevo instructor
+ */
+const openCreateInstructorModal = () => {
+  newInstructor.value = { 
+    name: '', 
+    email: '', 
+    phone: '', 
+    specialty: '', 
+    bio: '', 
+    password: '', 
+    confirmPassword: '' 
+  }
+  showInstructorModal.value = true
+}
+
+/**
+ * Cierra el modal de instructor
+ */
+const closeInstructorModal = () => {
+  showInstructorModal.value = false
+}
+
+/**
+ * Crea un nuevo instructor
+ */
+const createInstructor = () => {
+  if (!canCreateInstructor.value) return
+  
+  instructorsList.push({
+    id: instructorsList.length + 1,
+    name: newInstructor.value.name,
+    email: newInstructor.value.email,
+    phone: newInstructor.value.phone || '',
+    specialty: newInstructor.value.specialty || '',
+    bio: newInstructor.value.bio || '',
+    active: true,
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'
+  })
+  
+  newInstructor.value = { 
+    name: '', 
+    email: '', 
+    phone: '', 
+    specialty: '', 
+    bio: '', 
+    password: '', 
+    confirmPassword: '' 
+  }
+  showInstructorModal.value = false
+  
+  Swal.fire({
+    icon: 'success',
+    title: '¡Éxito!',
+    text: 'Instructor creado exitosamente',
+    timer: 2000,
+    showConfirmButton: false
+  })
+}
+
+/**
+ * Activa o desactiva el acceso de un instructor
+ */
+const toggleInstructorAccess = (id) => {
+  const instructor = instructorsList.find(i => i.id === id)
+  if (instructor) {
+    instructor.active = !instructor.active
+    
+    Swal.fire({
+      icon: 'success',
+      title: 'Acceso modificado',
+      text: `Acceso ${instructor.active ? 'activado' : 'desactivado'} para ${instructor.name}`,
+      timer: 2000,
+      showConfirmButton: false
+    })
+  }
+}
+
+// =================================================================
+// SECCIÓN 4: ESTADÍSTICAS (DASHBOARD)
+// =================================================================
+
+// ===== ESTADO =====
 const courses = reactive([
   {
     id: 1,
@@ -971,258 +1540,9 @@ const courses = reactive([
   }
 ])
 
-// Instructores mejorados
-const instructorsList = reactive([
-  { 
-    id: 1, 
-    name: 'Carlos Rodríguez', 
-    email: 'carlos@academia.com', 
-    phone: '+57 311 222 3333',
-    specialty: 'Fitness y CrossFit',
-    bio: 'Entrenador certificado con 10 años de experiencia',
-    active: true,
-    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop'
-  },
-  { 
-    id: 2, 
-    name: 'Ana Martínez', 
-    email: 'ana@academia.com', 
-    phone: '+57 322 444 5555',
-    specialty: 'Yoga y Meditación',
-    bio: 'Instructora de yoga con certificación internacional',
-    active: true,
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop'
-  },
-  { 
-    id: 3, 
-    name: 'Luis Gómez', 
-    email: 'luis@academia.com', 
-    phone: '+57 300 666 7777',
-    specialty: 'Nutrición Deportiva',
-    bio: 'Nutricionista deportivo especializado en alto rendimiento',
-    active: false,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'
-  }
-])
-
-// Categorías mejoradas
-const categories = reactive([
-  {
-    id: 1,
-    name: 'Fitness',
-    badge: 'FIT',
-    description: 'Categoría dedicada al entrenamiento físico y acondicionamiento',
-    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop'
-  },
-  {
-    id: 2,
-    name: 'Yoga',
-    badge: 'YGA',
-    description: 'Categoría enfocada en yoga, meditación y bienestar mental',
-    image_url: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=300&fit=crop'
-  },
-  {
-    id: 3,
-    name: 'Nutrición',
-    badge: 'NUT',
-    description: 'Categoría especializada en alimentación y nutrición deportiva',
-    image_url: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=400&h=300&fit=crop'
-  }
-])
-
-// Avatar
-const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
-
-// Métodos de perfil
-const checkChanges = () => {
-  hasChanges.value = JSON.stringify(editedUser.value) !== JSON.stringify({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    phone: user.phone,
-    email: user.email,
-    country: user.country,
-    state: user.state
-  })
-}
-
-const resetForm = () => {
-  editedUser.value = { ...user }
-  hasChanges.value = false
-}
-
-const updateProfile = async () => {
-  if (!hasChanges.value) return
-  
-  isSaving.value = true
-  await new Promise(resolve => setTimeout(resolve, 1500))
-  
-  Object.assign(user, editedUser.value)
-  hasChanges.value = false
-  isSaving.value = false
-  
-  alert('Perfil actualizado exitosamente')
-}
-
-const handleAvatarChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    avatarSrc.value = URL.createObjectURL(file)
-    alert('Imagen de perfil actualizada')
-  }
-}
-
-const closePasswordModal = () => {
-  showPasswordModal.value = false
-  passwordForm.current = ''
-  passwordForm.new = ''
-  passwordForm.confirm = ''
-  showCurrentPassword.value = false
-  showNewPassword.value = false
-  showConfirmPassword.value = false
-}
-
-const submitChangePassword = async () => {
-  if (!canSubmitPassword.value) return
-  
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  alert('Contraseña cambiada exitosamente')
-  closePasswordModal()
-}
-
-// Gestión de categorías
-const showCategoryModal = ref(false)
-const categoryModalTitle = ref('Nueva Categoría')
-const formCategory = ref({ id: null, name: '', badge: '', description: '', image_url: '' })
-const categoryImagePreview = ref('')
-
-const openCreateCategoryModal = () => {
-  formCategory.value = { id: null, name: '', badge: '', description: '', image_url: '' }
-  categoryImagePreview.value = ''
-  categoryModalTitle.value = 'Nueva Categoría'
-  showCategoryModal.value = true
-}
-
-const openEditCategoryModal = (category) => {
-  formCategory.value = { ...category }
-  categoryImagePreview.value = ''
-  categoryModalTitle.value = 'Editar Categoría'
-  showCategoryModal.value = true
-}
-
-const closeCategoryModal = () => {
-  showCategoryModal.value = false
-  categoryImagePreview.value = ''
-}
-
-const handleCategoryImageChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    categoryImagePreview.value = URL.createObjectURL(file)
-  }
-}
-
-const saveCategory = () => {
-  if (formCategory.value.name && formCategory.value.badge) {
-    if (formCategory.value.id) {
-      const index = categories.findIndex(c => c.id === formCategory.value.id)
-      if (index !== -1) {
-        categories[index] = { 
-          ...formCategory.value,
-          image_url: categoryImagePreview.value || categories[index].image_url
-        }
-      }
-    } else {
-      categories.push({
-        id: categories.length + 1,
-        name: formCategory.value.name,
-        badge: formCategory.value.badge,
-        description: formCategory.value.description || '',
-        image_url: categoryImagePreview.value || '/src/assets/icons/LogoFondo.jpeg'
-      })
-    }
-    alert('Categoría guardada exitosamente')
-    closeCategoryModal()
-  }
-}
-
-// Gestión de instructores
-const newInstructor = ref({ 
-  name: '', 
-  email: '', 
-  phone: '', 
-  specialty: '', 
-  bio: '', 
-  password: '', 
-  confirmPassword: '' 
-})
-const showInstructorModal = ref(false)
-const showInstructorPassword = ref(false)
-const showConfirmInstructorPassword = ref(false)
-
-const openCreateInstructorModal = () => {
-  newInstructor.value = { 
-    name: '', 
-    email: '', 
-    phone: '', 
-    specialty: '', 
-    bio: '', 
-    password: '', 
-    confirmPassword: '' 
-  }
-  showInstructorModal.value = true
-}
-
-const closeInstructorModal = () => showInstructorModal.value = false
-
-const canCreateInstructor = computed(() => {
-  return newInstructor.value.name && 
-         newInstructor.value.email && 
-         newInstructor.value.password && 
-         newInstructor.value.password === newInstructor.value.confirmPassword
-})
-
-const createInstructor = () => {
-  if (!canCreateInstructor.value) return
-  
-  instructorsList.push({
-    id: instructorsList.length + 1,
-    name: newInstructor.value.name,
-    email: newInstructor.value.email,
-    phone: newInstructor.value.phone || '',
-    specialty: newInstructor.value.specialty || '',
-    bio: newInstructor.value.bio || '',
-    active: true,
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'
-  })
-  
-  newInstructor.value = { 
-    name: '', 
-    email: '', 
-    phone: '', 
-    specialty: '', 
-    bio: '', 
-    password: '', 
-    confirmPassword: '' 
-  }
-  showInstructorModal.value = false
-  alert('Instructor creado exitosamente')
-}
-
-const toggleInstructorAccess = (id) => {
-  const instructor = instructorsList.find(i => i.id === id)
-  if (instructor) {
-    instructor.active = !instructor.active
-    alert(`Acceso ${instructor.active ? 'activado' : 'desactivado'} para ${instructor.name}`)
-  }
-}
-
-// Estadísticas
 const totalRegisteredUsers = ref(1245)
 
-const activeInstructors = computed(() => {
-  return instructorsList.filter(i => i.active).length
-})
-
+// ===== COMPUTED =====
 const totalEnrolled = computed(() => {
   return courses.reduce((sum, course) => sum + course.enrolled, 0)
 })
@@ -1257,13 +1577,57 @@ const categoryDistribution = computed(() => {
 
 const totalCourses = computed(() => courses.length)
 
+// ===== MÉTODOS =====
+/**
+ * Formatea números con separadores de miles
+ */
 const formatNumber = (num) => {
   return new Intl.NumberFormat('es-ES').format(num)
 }
+
+// =================================================================
+// Onmounted
+// =================================================================
+onMounted(async () => {
+  await nextTick()
+  
+  // Usar 'id' en lugar de 'id_usuario'
+  if (authStore.isAuthenticated && authStore.user?.id) {
+    await cargarDatosUsuario()
+  } else {
+    loading.value = false
+  }
+})
+
+// Actualizar el watch para usar 'id'
+watch(
+  () => authStore.user?.id,
+  (newId) => {    
+    if (newId && !loading.value) {
+      cargarDatosUsuario()
+    }
+  },
+  { immediate: true }
+)
+
+
+// Watch para detectar cambios en el formulario
+watch(editedUser, (newVal) => {
+  hasChanges.value = JSON.stringify(newVal) !== JSON.stringify({
+    fullName: user.fullName,
+    phone: user.phone,
+    email: user.email,
+    country: user.country,
+    state: user.state
+  })
+}, { deep: true })
 </script>
 
 <style scoped>
-/* Estilos Base */
+/* =================================================================
+   ESTILOS GENERALES
+   ================================================================= */
+
 .profile-admin {
   display: grid;
   gap: 2rem;
@@ -1272,7 +1636,10 @@ const formatNumber = (num) => {
   padding: 1rem;
 }
 
-/* Tabs */
+/* =================================================================
+   ESTILOS PARA TABS DE NAVEGACIÓN
+   ================================================================= */
+
 .profile__tabs {
   display: flex;
   gap: 0.25rem;
@@ -1329,7 +1696,10 @@ const formatNumber = (num) => {
   font-size: 0.95rem;
 }
 
-/* Contenido Principal */
+/* =================================================================
+   ESTILOS PARA CONTENIDO PRINCIPAL
+   ================================================================= */
+
 .profile__content {
   background: var(--color-blanco);
   border-radius: var(--border-radius-3);
@@ -1347,7 +1717,35 @@ const formatNumber = (num) => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Headers */
+/* Estado de carga */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--color-morado);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =================================================================
+   ESTILOS PARA HEADERS DE SECCIÓN
+   ================================================================= */
+
 .section-header {
   text-align: left;
   margin: 0 0 2rem;
@@ -1367,7 +1765,10 @@ const formatNumber = (num) => {
   font-size: 1.1rem;
 }
 
-/* Formulario (igual al de cliente) */
+/* =================================================================
+   ESTILOS PARA FORMULARIOS (PERFIL)
+   ================================================================= */
+
 .profile__form-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -1478,7 +1879,10 @@ const formatNumber = (num) => {
   font-size: 0.875rem;
 }
 
-/* Botones */
+/* =================================================================
+   ESTILOS PARA BOTONES
+   ================================================================= */
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1576,7 +1980,10 @@ const formatNumber = (num) => {
   padding-top: 0rem;
 }
 
-/* Gestionar Categorías */
+/* =================================================================
+   ESTILOS PARA GESTIÓN DE CATEGORÍAS
+   ================================================================= */
+
 .management-container {
   margin-top: 1rem;
 }
@@ -1696,7 +2103,10 @@ const formatNumber = (num) => {
   gap: 0.5rem;
 }
 
-/* Gestionar Instructores */
+/* =================================================================
+   ESTILOS PARA GESTIÓN DE INSTRUCTORES
+   ================================================================= */
+
 .table-container {
   margin-top: 1rem;
 }
@@ -1798,7 +2208,10 @@ const formatNumber = (num) => {
   gap: 0.5rem;
 }
 
-/* Dashboard de Estadísticas */
+/* =================================================================
+   ESTILOS PARA ESTADÍSTICAS (DASHBOARD)
+   ================================================================= */
+
 .dashboard-container {
   margin-top: 1rem;
 }
@@ -2018,7 +2431,10 @@ const formatNumber = (num) => {
   margin: 0 auto 1.5rem;
 }
 
-/* Modal Mejorado */
+/* =================================================================
+   ESTILOS PARA MODALES
+   ================================================================= */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -2256,7 +2672,10 @@ const formatNumber = (num) => {
   margin-top: 0.5rem;
 }
 
-/* Responsive */
+/* =================================================================
+   ESTILOS RESPONSIVE
+   ================================================================= */
+
 @media (max-width: 768px) {
   .profile__tabs {
     flex-wrap: nowrap;

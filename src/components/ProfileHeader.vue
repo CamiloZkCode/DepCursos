@@ -6,13 +6,7 @@
         <img :src="avatarSrc" alt="Avatar del usuario" class="profile__avatar-img" />
       </div>
       <label for="avatar-upload" class="profile__avatar-edit" aria-label="Cambiar foto de perfil">
-        <input 
-          id="avatar-upload" 
-          type="file" 
-          accept="image/*" 
-          @change="handleAvatarChange" 
-          class="hidden-input" 
-        />
+        <input id="avatar-upload" type="file" accept="image/*" @change="handleAvatarChange" class="hidden-input" />
         <span class="icon">📷</span>
       </label>
     </div>
@@ -59,7 +53,7 @@
 <script setup>
 import { useAuthStore } from '@/store/auth' // Ajusta la ruta si es necesario
 import { ref, computed, onMounted } from 'vue'
-import { actualizarAvatarUsuario,obtenerDatosPerfil } from '../services/usuario.services'
+import { actualizarAvatarUsuario, obtenerDatosPerfil } from '../services/usuario.services'
 
 
 const authStore = useAuthStore()
@@ -79,7 +73,7 @@ const userStats = computed(() => ({
 const rolDisplay = computed(() => {
   if (!authStore.user?.rol) return ''
   const rol = authStore.user.rol.toLowerCase()
-  if (rol === 'admin') return 'Administrador' 
+  if (rol === 'admin') return 'Administrador'
   if (rol === 'usuario') return 'Estudiante'
   if (rol === 'instructor') return 'Instructor'
   return 'Usuario'
@@ -94,27 +88,26 @@ const handleAvatarChange = async (event) => {
   avatarSrc.value = URL.createObjectURL(file);
 
   try {
-    const data = await actualizarAvatarUsuario(
-      authStore.user.id,
-      file
-    );
+    const data = await actualizarAvatarUsuario(authStore.user.id, file);
 
+    // Asumiendo que el backend devuelve { img_usuario: "nueva_url" } o { data: { imagen: "url" } }
+    const nuevaUrl = data?.img_usuario || data?.data?.imagen;
 
-    if (data?.img_usuario) {
-      authStore.user.img_usuario = data.img_usuario;
-      avatarSrc.value = data.img_usuario;
-    } else {
+    if (nuevaUrl) {
+      // Actualizar el store → esto hace que Navbar y todo se actualice
+      authStore.user.img_usuario = nuevaUrl;
+      avatarSrc.value = nuevaUrl;
     }
 
   } catch (error) {
-    console.error(error);
-    alert("Error al subir la imagen");
+    console.error("Error al subir avatar:", error);
+    alert("Error al cambiar la foto de perfil");
+    // Opcional: revertir preview
+    // avatarSrc.value = authStore.user.img_usuario || defaultAvatar;
   }
 };
 
-
 // Si el usuario ya tiene un avatar guardado, cargarlo
-
 onMounted(async () => {
   try {
     const res = await obtenerDatosPerfil(authStore.user.id);
@@ -127,8 +120,6 @@ onMounted(async () => {
 
   }
 });
-
-
 </script>
 
 <style scoped>
@@ -236,10 +227,29 @@ onMounted(async () => {
     padding: 1.5rem;
     gap: 1.5rem;
   }
-  .profile__info { order: 1; }
-  .profile__avatar-container { order: 2; }
-  .profile__stats { order: 3; flex-direction: row; justify-content: center; gap: 2.5rem; }
-  .profile__avatar { width: 120px; height: 120px; }
-  .profile__name { font-size: 1.9rem; }
+
+  .profile__info {
+    order: 1;
+  }
+
+  .profile__avatar-container {
+    order: 2;
+  }
+
+  .profile__stats {
+    order: 3;
+    flex-direction: row;
+    justify-content: center;
+    gap: 2.5rem;
+  }
+
+  .profile__avatar {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile__name {
+    font-size: 1.9rem;
+  }
 }
 </style>

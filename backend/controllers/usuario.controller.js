@@ -1,52 +1,59 @@
 const usuariosModel = require("../models/usuario.models");
-const { uploadToCloudinary,eliminarAvatarAntiguo } = require("../config/cloudinary");
+const {
+  uploadToCloudinary,
+  eliminarAvatarAntiguo,
+} = require("../config/cloudinary");
 const db = require("../config/db");
-const bcrypt = require('bcrypt');
-
+const bcrypt = require("bcrypt");
 
 async function registroUsuario(req, res) {
-  const { id_usuario, nombre,telefono,correo,contraseña_hash,id_rol} = req.body;
+  const { id_usuario, nombre, telefono, correo, contraseña_hash, id_rol } =
+    req.body;
 
   try {
     // Validar que los campos obligatorios estén presentes
-    if (!id_usuario || !nombre || !telefono|| !correo|| !contraseña_hash) {
-      return res.status(400).json({ message: 'Faltan campos obligatorios' });
+    if (!id_usuario || !nombre || !telefono || !correo || !contraseña_hash) {
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
 
-      const hash = await bcrypt.hash(contraseña_hash, 10);
+    const hash = await bcrypt.hash(contraseña_hash, 10);
 
     // Verificar si el usuario ya existe
-      const [existing] = await db.query(
-        'SELECT * FROM Usuarios WHERE id_usuario = ?',
-        [id_usuario] 
-      );
-      if (existing.length > 0) {
-        return res.status(400).json({ message: 'El Numero de Identificacion del Usuario ya esta Registrado' });
-      }
+    const [existing] = await db.query(
+      "SELECT * FROM Usuarios WHERE id_usuario = ?",
+      [id_usuario]
+    );
+    if (existing.length > 0) {
+      return res
+        .status(400)
+        .json({
+          message: "El Numero de Identificacion del Usuario ya esta Registrado",
+        });
+    }
 
     //Verificar si el correo ya existe
-      const [correoExistente] = await db.query(
-       'SELECT correo FROM usuarios WHERE correo = ?',
-        [correo]
-      );
+    const [correoExistente] = await db.query(
+      "SELECT correo FROM usuarios WHERE correo = ?",
+      [correo]
+    );
 
-      if (correoExistente.length > 0) {
-        return res.status(400).json({ message: 'El Correo ya está Registrado' });
-      }
+    if (correoExistente.length > 0) {
+      return res.status(400).json({ message: "El Correo ya está Registrado" });
+    }
 
     // Insertar el nuevo usuario
     await db.query(
       `INSERT INTO usuarios (id_usuario, nombre,telefono,correo,contraseña_hash,id_rol)
        VALUES (?, ?, ?, ?, ?,?)`,
-      [id_usuario, nombre,telefono,correo,hash,id_rol|| null]
+      [id_usuario, nombre, telefono, correo, hash, id_rol || null]
     );
 
-    res.status(201).json({ 
-      message: 'Usuario registrado correctamente',
+    res.status(201).json({
+      message: "Usuario registrado correctamente",
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error del servidor' });
+    res.status(500).json({ message: "Error del servidor" });
   }
 }
 
@@ -58,8 +65,6 @@ async function obtenerPerfilUsuario(req, res) {
   try {
     const datosUsuario = await usuariosModel.obtenerDatosUsuario(id);
 
-
-
     res.status(200).json(datosUsuario);
   } catch (err) {
     console.error("❌ Error backend:", err);
@@ -67,44 +72,38 @@ async function obtenerPerfilUsuario(req, res) {
   }
 }
 
-
-
-
 async function editarPerfilUsuario(req, res) {
-  const { id_usuario } = req.params;
-  const { nombre, telefono, correo } = req.body;
+  const { id } = req.params;
+  const { nombre, telefono, correo, pais, departamento } = req.body;
 
   try {
     if (!nombre || !telefono || !correo) {
-      return res.status(400).json({ message: 'Faltan campos obligatorios' });
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
 
-
-    // Verificar si el correo pertenece a otro usuario
     const [correoExistente] = await db.query(
-      'SELECT id_usuario FROM usuarios WHERE correo = ? AND id_usuario != ?',
-      [correo, id_usuario]
+      "SELECT id_usuario FROM usuarios WHERE correo = ? AND id_usuario != ?",
+      [correo, id]
     );
 
     if (correoExistente.length > 0) {
-      return res.status(400).json({ message: 'El correo ya está registrado' });
+      return res.status(400).json({ message: "El correo ya está registrado" });
     }
-    // Actualizar usuario
+
     await db.query(
       `UPDATE usuarios 
-       SET nombre = ?, telefono = ?, correo = ? WHERE id_usuario = ?`,
-      [nombre, telefono, correo, id_usuario]
+       SET nombre = ?, telefono = ?, correo = ?, pais = ?, departamento = ? 
+       WHERE id_usuario = ?`,
+      [nombre, telefono, correo, pais || null, departamento || null, id]
     );
 
-    res.status(200).json({
-      message: 'Perfil actualizado correctamente',
-    });
-
+    res.status(200).json({ message: "Perfil actualizado correctamente" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Error del servidor' });
+    res.status(500).json({ message: "Error del servidor" });
   }
 }
+
 //ActualizaAvatar y elimina el anterior del cloud
 async function actualizarAvatar(req, res) {
   const { id } = req.params;
@@ -113,7 +112,7 @@ async function actualizarAvatar(req, res) {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "No se envió ninguna imagen"
+        message: "No se envió ninguna imagen",
       });
     }
 
@@ -129,11 +128,11 @@ async function actualizarAvatar(req, res) {
     // Subir imagen a Cloudinary en carpeta específica para avatar Usuario
     const uploadResult = await uploadToCloudinary(req.file.buffer, {
       folder: "lms/avatares", // Carpeta específica para categorías
-      public_id: `user_${Date.now()}_${nombreUsuario.toLowerCase().replace(/\s+/g, '_')}`,
+      public_id: `user_${Date.now()}_${nombreUsuario.toLowerCase().replace(/\s+/g, "_")}`,
       transformation: [
-        { width: 300, height: 300, crop: 'fill',gravity: "face" },
-        { quality: 'auto:good' }
-      ]
+        { width: 300, height: 300, crop: "fill", gravity: "face" },
+        { quality: "auto:good" },
+      ],
     });
 
     const avatarUrl = uploadResult.secure_url;
@@ -158,60 +157,71 @@ async function actualizarAvatar(req, res) {
       message: "Avatar actualizado correctamente",
       data: {
         imagen: avatarUrl,
-        publicId: nuevoPublicId
-      }
+        publicId: nuevoPublicId,
+      },
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Error del servidor",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 }
 
 async function cambiarContrasena(req, res) {
+  const { id } = req.params;
+  const { contrasenaActual, nuevaContrasena } = req.body;
+
   try {
-    const { nuevaContrasena,contraseña } = req.body;
-    const { id } = req.params;
-
-    if (!nuevaContrasena|| !contraseña_hash) {
-    return res.status(400).json({ 
-      message: "Faltan campos requeridos",
-      receivedBody: req.body // Para debug
-    });
-  }
-
-    const match = await bcrypt.compare(contraseña, user.contraseña_hash);
-    if (!match) return res.status(401).json({ message: "La Contraseña es Incorrecta" });
-
-
-    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
-
-    const [resultado] = await db.query(
-      "UPDATE Usuarios SET contraseña_hash = ? WHERE id_usuario = ?",
-      [hashedPassword, id]
-    );
-
-    if (resultado.affectedRows === 0) {
-      return res.status(404).json({ message: 'Usuario no encontrado o no se pudo actualizar' });
+    if (!contrasenaActual || !nuevaContrasena) {
+      return res
+        .status(400)
+        .json({ message: "Faltan la contraseña actual o la nueva" });
     }
 
-    res.json({ message: 'Contraseña actualizada correctamente' });
+    // Buscar usuario
+    const [rows] = await db.query(
+      "SELECT contraseña_hash FROM usuarios WHERE id_usuario = ?",
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const usuario = rows[0];
+
+    // Verificar contraseña actual
+    const coincide = await bcrypt.compare(
+      contrasenaActual,
+      usuario.contraseña_hash
+    );
+    if (!coincide) {
+      return res
+        .status(401)
+        .json({ message: "La contraseña actual es incorrecta" });
+    }
+
+    // Hash de la nueva contraseña
+    const hashNueva = await bcrypt.hash(nuevaContrasena, 10);
+
+    // Actualizar en BD
+    await db.query(
+      "UPDATE usuarios SET contraseña_hash = ? WHERE id_usuario = ?",
+      [hashNueva, id]
+    );
+
+    res.json({ message: "Contraseña cambiada exitosamente" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error al actualizar contraseña' });
+    res.status(500).json({ message: "Error del servidor" });
   }
 }
 
-
-
-module.exports = { registroUsuario,editarPerfilUsuario,obtenerPerfilUsuario,actualizarAvatar,
-cambiarContrasena
+module.exports = {
+  registroUsuario,
+  editarPerfilUsuario,
+  obtenerPerfilUsuario,
+  actualizarAvatar,
+  cambiarContrasena,
 };
-
-
-
-
-

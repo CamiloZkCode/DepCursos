@@ -242,16 +242,7 @@ const isStudent = computed(() => {
 
 // Avatar del usuario
 const userAvatar = computed(() => {
-  // Primero verificar si tenemos datos del perfil
-  if (userProfileData.value?.img_usuario) {
-    return userProfileData.value.img_usuario;
-  }
-  // Si no, usar la imagen del usuario en authStore
-  if (user.value?.img_usuario) {
-    return user.value.img_usuario;
-  }
-  // Si no tiene imagen, usar la por defecto
-  return "/src/assets/icons/user.png";
+  return authStore.user?.img_usuario || "/src/assets/icons/user.png";
 });
 
 // Formato del nombre: primeras letras mayúsculas y solo primeros 2 nombres
