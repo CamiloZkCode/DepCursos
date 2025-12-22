@@ -155,7 +155,6 @@ async function actualizarCategoria(req, res) {
       img_public_id: nuevoPublicId,
       descripcion_categoria: descripcion_categoria || categoria.descripcion_categoria,
       insignia: insignia || categoria.insignia,
-      actualizado: new Date()
     };
 
     // 5. Actualizar en base de datos
@@ -166,7 +165,6 @@ async function actualizarCategoria(req, res) {
            img_public_id = ?,
            descripcion_categoria = ?, 
            insignia = ?, 
-           actualizado = ?
        WHERE id_categoria = ?`,
       [
         datosActualizar.nombre_categoria,
@@ -174,7 +172,6 @@ async function actualizarCategoria(req, res) {
         datosActualizar.img_public_id,
         datosActualizar.descripcion_categoria,
         datosActualizar.insignia,
-        datosActualizar.actualizado,
         id
       ]
     );
@@ -189,7 +186,6 @@ async function actualizarCategoria(req, res) {
         img_categoria: datosActualizar.img_categoria,
         descripcion_categoria: datosActualizar.descripcion_categoria,
         insignia: datosActualizar.insignia,
-        actualizado: datosActualizar.actualizado,
         imagen_actualizada: !!req.file,
         public_id: datosActualizar.img_public_id
       }
@@ -225,15 +221,18 @@ async function actualizarCategoria(req, res) {
 }
 
 
-const obtenerCategorias = async (req, res) => {
+async function obtenerCategorias(req, res) {
+  const { id } = req.params;
+
+  console.log(" ID recibido:", id);
+
   try {
-    const Categorias = await categoriasModelModel.obtenercategorias();
-    res.status(200).json(supervisores);
-  } catch (error) {
-    console.error("Error al obtener supervisores:", error);
-    res
-      .status(500)
-      .json({ mensaje: "Error del servidor al obtener supervisores" });
+    const datosCategoria = await categoriasModel.obtenerCategorias(id);
+
+    res.status(200).json(datosCategoria);
+  } catch (err) {
+    console.error("❌ Error backend:", err);
+    res.status(500).json({ mensaje: "Error del servidor" });
   }
-};
+}
 module.exports = { registrarCategoria,actualizarCategoria,obtenerCategorias};
