@@ -51,17 +51,16 @@
 </template>
 
 <script setup>
-import { useAuthStore } from '@/store/auth' // Ajusta la ruta si es necesario
+import { useAuthStore } from '@/store/auth'
 import { ref, computed, onMounted } from 'vue'
-import { actualizarAvatarUsuario, obtenerDatosPerfil } from '../services/usuario.services'
-
+import { actualizarAvatarUsuario } from '../services/usuario.services'
+import Swal from 'sweetalert2'  // ← Importamos SweetAlert2
 
 const authStore = useAuthStore()
 
-// Avatar local (preview al cambiar)
-const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
+// Preview del avatar
+const avatarSrc = ref('/src/assets/icons/user.png')
 
-// Estadísticas (valores que vienen del backend en authStore.user)
 const userStats = computed(() => ({
   badges: authStore.user?.badges || 0,
   completedCourses: authStore.user?.completedCourses || 0,
@@ -69,57 +68,71 @@ const userStats = computed(() => ({
   instructors: authStore.user?.instructors || 0
 }))
 
-// Texto bonito del rol (sin tocar el store)
 const rolDisplay = computed(() => {
   if (!authStore.user?.rol) return ''
   const rol = authStore.user.rol.toLowerCase()
-  if (rol === 'admin') return 'Administrador'
-  if (rol === 'usuario') return 'Estudiante'
+  if (rol === 'admin' || rol === 'administrador') return 'Administrador'
+  if (rol === 'usuario' || rol === 'estudiante' || rol === 'user') return 'Estudiante'
   if (rol === 'instructor') return 'Instructor'
   return 'Usuario'
 })
 
-// Cambio de avatar (solo preview local por ahora)
 const handleAvatarChange = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  const file = event.target.files[0]
+  if (!file) return
 
   // Preview inmediato
-  avatarSrc.value = URL.createObjectURL(file);
+  avatarSrc.value = URL.createObjectURL(file)
 
   try {
-    const data = await actualizarAvatarUsuario(authStore.user.id, file);
+    const data = await actualizarAvatarUsuario(authStore.user.id, file)
 
-    // Asumiendo que el backend devuelve { img_usuario: "nueva_url" } o { data: { imagen: "url" } }
-    const nuevaUrl = data?.img_usuario || data?.data?.imagen;
+    const nuevaUrl = data?.img_usuario || data?.data?.imagen || data?.imagen
 
     if (nuevaUrl) {
-      // Actualizar el store → esto hace que Navbar y todo se actualice
-      authStore.user.img_usuario = nuevaUrl;
-      avatarSrc.value = nuevaUrl;
-    }
+      // Actualizamos el store (Navbar y todo se actualiza al instante)
+      authStore.actualizarAvatar(nuevaUrl)
+      avatarSrc.value = nuevaUrl
 
-  } catch (error) {
-    console.error("Error al subir avatar:", error);
-    alert("Error al cambiar la foto de perfil");
-    // Opcional: revertir preview
-    // avatarSrc.value = authStore.user.img_usuario || defaultAvatar;
-  }
-};
-
-// Si el usuario ya tiene un avatar guardado, cargarlo
-onMounted(async () => {
-  try {
-    const res = await obtenerDatosPerfil(authStore.user.id);
-    if (res && res.img_usuario) {
-      avatarSrc.value = res.img_usuario;
+      // ← AQUÍ MOSTRAMOS LA ALERTA DE ÉXITO
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Foto de perfil actualizada!',
+        text: 'Tu nueva imagen se ha guardado correctamente.',
+        toast: false,
+        position: 'center',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#fff',
+        customClass: {
+          popup: 'animated fadeIn faster'
+        }
+      })
     } else {
+      throw new Error("No se recibió la URL de la nueva imagen")
     }
-
   } catch (error) {
+    console.error("Error al subir avatar:", error)
 
+    // Revertimos el preview en caso de error
+    avatarSrc.value = authStore.user?.img_usuario || "/src/assets/icons/user.png"
+
+    // Alerta de error (más bonita que el alert nativo)
+    await Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudo cambiar la foto de perfil. Inténtalo de nuevo.',
+      confirmButtonText: 'Aceptar'
+    })
   }
-});
+}
+
+onMounted(() => {
+  if (authStore.user?.img_usuario) {
+    avatarSrc.value = authStore.user.img_usuario
+  }
+})
 </script>
 
 <style scoped>

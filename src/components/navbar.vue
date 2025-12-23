@@ -206,192 +206,145 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
-import { useAuthStore } from "@/store/auth";
-import { RouterLink, useRouter } from "vue-router";
-import { obtenerDatosPerfil } from "@/services/usuario.services";
+import { ref, computed, onMounted, onUnmounted } from "vue"
+import { useAuthStore } from "@/store/auth"
+import { RouterLink, useRouter } from "vue-router"
 
-const authStore = useAuthStore();
-const router = useRouter();
+const authStore = useAuthStore()
+const router = useRouter()
 
-// Estado
-const menuOpen = ref(false);
-const isMobile = ref(false);
-const notificationDropdown = ref(false);
-const profileDropdown = ref(false);
-const langDropdown = ref(false);
-const currentLang = ref('ES');
-const hasNotifications = ref(true);
-const userProfileData = ref(null);
+// Estado UI
+const menuOpen = ref(false)
+const isMobile = ref(false)
+const notificationDropdown = ref(false)
+const profileDropdown = ref(false)
+const langDropdown = ref(false)
+const currentLang = ref('ES')
+const hasNotifications = ref(true)
 
 // Notificaciones de ejemplo
 const notifications = ref([
   { id: 1, type: 'course', title: 'Nuevo curso disponible', message: 'Fitness Avanzado ha sido publicado', time: 'Hace 2 horas', read: false },
   { id: 2, type: 'message', title: 'Mensaje del instructor', message: 'Tienes una nueva pregunta en tu curso', time: 'Hace 1 día', read: true },
   { id: 3, type: 'system', title: 'Actualización del sistema', message: 'Nuevas funciones disponibles', time: 'Hace 3 días', read: false }
-]);
+])
 
-// Computed
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-const user = computed(() => authStore.user);
-const isAdmin = computed(() => authStore.isAdmin);
-const isStudent = computed(() => {
-  const role = user.value?.rol?.toLowerCase();
-  return role === 'usuario' || role === 'estudiante' || role === 'user';
-});
+// Computed del store (todo reactivo)
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const user = computed(() => authStore.user)
+const isAdmin = computed(() => authStore.isAdmin)
+const isStudent = computed(() => authStore.isEstudiante)
 
-// Avatar del usuario
+// Avatar directo del store → se actualiza al instante
 const userAvatar = computed(() => {
-  return authStore.user?.img_usuario || "/src/assets/icons/user.png";
-});
+  return user.value?.img_usuario || "/src/assets/icons/user.png"
+})
 
-// Formato del nombre: primeras letras mayúsculas y solo primeros 2 nombres
+// Nombre formateado
 const formattedName = computed(() => {
-  if (!user.value?.nombre) return "Usuario";
+  if (!user.value?.nombre) return "Usuario"
+  const words = user.value.nombre.trim().split(/\s+/)
+  const capitalized = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  return capitalized.slice(0, 2).join(' ')
+})
 
-  const words = user.value.nombre.trim().split(/\s+/);
-  const capitalized = words.map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-  );
-
-  // Tomar solo los primeros 2 nombres
-  return capitalized.slice(0, 2).join(' ');
-});
-
-// Rol con inicial mayúscula
+// Rol formateado
 const formattedRole = computed(() => {
-  if (!user.value?.rol) return "";
-  const role = user.value.rol.toLowerCase();
-  if (role === 'admin' || role === 'administrador') return 'Administrador';
-  if (role === 'usuario' || role === 'estudiante' || role === 'user') return 'Estudiante';
-  if (role === 'instructor') return 'Instructor';
-  return user.value.rol.charAt(0).toUpperCase() + user.value.rol.slice(1).toLowerCase();
-});
+  if (!user.value?.rol) return ""
+  const rol = user.value.rol.toLowerCase()
+  if (rol === 'admin' || rol === 'administrador') return 'Administrador'
+  if (rol === 'usuario' || rol === 'estudiante' || rol === 'user') return 'Estudiante'
+  if (rol === 'instructor') return 'Instructor'
+  return user.value.rol.charAt(0).toUpperCase() + user.value.rol.slice(1).toLowerCase()
+})
 
-// Ruta dinámica del perfil
 const profileRoute = computed(() => {
-  if (authStore.isAdmin) return '/admin-perfil';
-  return '/perfil';
-});
+  return isAdmin.value ? '/admin-perfil' : '/perfil'
+})
 
-// Métodos
+// Métodos UI
 const toggleLangDropdown = () => {
-  langDropdown.value = !langDropdown.value;
-  if (profileDropdown.value) profileDropdown.value = false;
-  if (notificationDropdown.value) notificationDropdown.value = false;
-};
+  langDropdown.value = !langDropdown.value
+  profileDropdown.value = false
+  notificationDropdown.value = false
+}
 
 const toggleNotificationDropdown = () => {
-  notificationDropdown.value = !notificationDropdown.value;
-  if (profileDropdown.value) profileDropdown.value = false;
-  if (langDropdown.value) langDropdown.value = false;
-};
+  notificationDropdown.value = !notificationDropdown.value
+  profileDropdown.value = false
+  langDropdown.value = false
+}
 
 const toggleProfileDropdown = () => {
-  profileDropdown.value = !profileDropdown.value;
-  if (notificationDropdown.value) notificationDropdown.value = false;
-  if (langDropdown.value) langDropdown.value = false;
-};
+  profileDropdown.value = !profileDropdown.value
+  notificationDropdown.value = false
+  langDropdown.value = false
+}
 
 const changeLang = (lang) => {
-  currentLang.value = lang;
-  langDropdown.value = false;
-  closeMenu();
-};
+  currentLang.value = lang
+  langDropdown.value = false
+  closeMenu()
+}
 
-const toggleMenu = () => (menuOpen.value = !menuOpen.value);
-const closeMenu = () => (menuOpen.value = false);
+const toggleMenu = () => (menuOpen.value = !menuOpen.value)
+const closeMenu = () => (menuOpen.value = false)
 
 const handleLogout = () => {
-  authStore.logout();
-  profileDropdown.value = false;
-  notificationDropdown.value = false;
-  closeMenu();
-  router.push('/');
-};
+  authStore.logout()
+  profileDropdown.value = false
+  notificationDropdown.value = false
+  closeMenu()
+}
 
 const markAllAsRead = () => {
-  notifications.value.forEach(notification => notification.read = true);
-  hasNotifications.value = false;
-};
+  notifications.value.forEach(n => n.read = true)
+  hasNotifications.value = false
+}
 
 const getNotificationIcon = (type) => {
   const icons = {
     course: '@/assets/icons/course-notification.png',
     message: '@/assets/icons/message-notification.png',
     system: '@/assets/icons/system-notification.png'
-  };
-  return icons[type] || '@/assets/icons/Notify.png';
-};
-
-// Cargar datos del perfil del usuario
-const loadUserProfile = async () => {
-  if (isAuthenticated.value && user.value?.id) {
-    try {
-      const response = await obtenerDatosPerfil(user.value.id);
-      if (response) {
-        userProfileData.value = response;
-      }
-    } catch (error) {
-      console.error('Error al cargar datos del perfil:', error);
-    }
   }
-};
+  return icons[type] || '@/assets/icons/Notify.png'
+}
 
 // Detección de móvil
 const checkScreen = () => {
-  isMobile.value = window.innerWidth <= 900;
-};
+  isMobile.value = window.innerWidth <= 900
+}
 
-// Observar cambios en autenticación
-watch(isAuthenticated, (newValue) => {
-  if (newValue) {
-    loadUserProfile();
-  } else {
-    userProfileData.value = null;
+// Cerrar dropdowns al hacer clic fuera
+const handleClickOutside = (event) => {
+  if (isMobile.value) return
+
+  const profileEl = document.querySelector('.dropdown-profile')
+  const notificationEl = document.querySelector('.dropdown-notification')
+  const langEl = document.querySelector('.dropdown-lang')
+
+  if (profileDropdown.value && profileEl && !profileEl.contains(event.target)) {
+    profileDropdown.value = false
   }
-}, { immediate: true });
+  if (notificationDropdown.value && notificationEl && !notificationEl.contains(event.target)) {
+    notificationDropdown.value = false
+  }
+  if (langDropdown.value && langEl && !langEl.contains(event.target)) {
+    langDropdown.value = false
+  }
+}
 
 onMounted(() => {
-  checkScreen();
-  window.addEventListener("resize", checkScreen);
-  
-  // Cargar datos del perfil si está autenticado
-  if (isAuthenticated.value) {
-    loadUserProfile();
-  }
-  
-  // Cerrar dropdowns al hacer clic fuera
-  document.addEventListener('click', handleClickOutside);
-});
+  checkScreen()
+  window.addEventListener("resize", checkScreen)
+  document.addEventListener('click', handleClickOutside)
+})
 
 onUnmounted(() => {
-  window.removeEventListener("resize", checkScreen);
-  document.removeEventListener('click', handleClickOutside);
-});
-
-const handleClickOutside = (event) => {
-  const target = event.target;
-  
-  // Solo para desktop
-  if (!isMobile.value) {
-    const profileDropdownEl = document.querySelector('.dropdown-profile');
-    const notificationDropdownEl = document.querySelector('.dropdown-notification');
-    const langDropdownEl = document.querySelector('.dropdown-lang');
-    
-    if (profileDropdown.value && profileDropdownEl && !profileDropdownEl.contains(target)) {
-      profileDropdown.value = false;
-    }
-    
-    if (notificationDropdown.value && notificationDropdownEl && !notificationDropdownEl.contains(target)) {
-      notificationDropdown.value = false;
-    }
-    
-    if (langDropdown.value && langDropdownEl && !langDropdownEl.contains(target)) {
-      langDropdown.value = false;
-    }
-  }
-};
+  window.removeEventListener("resize", checkScreen)
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
