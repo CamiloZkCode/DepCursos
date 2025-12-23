@@ -178,65 +178,73 @@
         </header>
         
         <div class="management-container">
-          <!-- Encabezado con estadísticas y botón de acción -->
-          <div class="management-header">
-            <div class="stats-overview">
-              <div class="stat-card">
-                <div class="stat-card__icon">📂</div>
-                <div class="stat-card__content">
-                  <div class="stat-card__value">{{ categories.length }}</div>
-                  <div class="stat-card__label">Categorías Totales</div>
+          <!-- Estado de carga -->
+          <div v-if="loadingCategories" class="loading-state">
+            <div class="spinner"></div>
+            <p>Cargando categorías...</p>
+          </div>
+          
+          <template v-else>
+            <!-- Encabezado con estadísticas y botón de acción -->
+            <div class="management-header">
+              <div class="stats-overview">
+                <div class="stat-card">
+                  <div class="stat-card__icon">📂</div>
+                  <div class="stat-card__content">
+                    <div class="stat-card__value">{{ categories.length }}</div>
+                    <div class="stat-card__label">Categorías Totales</div>
+                  </div>
+                </div>
+              </div>
+              
+              <button class="btn btn--primary" @click="openCreateCategoryModal">
+                <span class="btn-icon">➕</span>
+                Nueva Categoría
+              </button>
+            </div>
+            
+            <!-- Grid de categorías -->
+            <div class="categories-grid">
+              <div 
+                v-for="category in categories" 
+                :key="category.id" 
+                class="category-card"
+              >
+                <div class="category-card__image" :style="{ backgroundImage: `url(${category.image_url})` }">
+                  <div class="category-card__badge">{{ category.badge || 'CAT' }}</div>
+                </div>
+                
+                <div class="category-card__content">
+                  <div class="category-card__header">
+                    <h3 class="category-card__title">{{ category.name }}</h3>
+                  </div>
+                  
+                  <p class="category-card__description">{{ category.description || 'Sin descripción' }}</p>
+                  
+                  <div class="category-card__actions">
+                    <button 
+                      class="btn btn--outline"
+                      @click="openEditCategoryModal(category)"
+                    >
+                      Editar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <button class="btn btn--primary" @click="openCreateCategoryModal">
-              <span class="btn-icon">➕</span>
-              Nueva Categoría
-            </button>
-          </div>
-          
-          <!-- Grid de categorías -->
-          <div class="categories-grid">
-            <div 
-              v-for="category in categories" 
-              :key="category.id" 
-              class="category-card"
-            >
-              <div class="category-card__image" :style="{ backgroundImage: `url(${category.image_url})` }">
-                <div class="category-card__badge">{{ category.badge || 'CAT' }}</div>
-              </div>
-              
-              <div class="category-card__content">
-                <div class="category-card__header">
-                  <h3 class="category-card__title">{{ category.name }}</h3>
-                </div>
-                
-                <p class="category-card__description">{{ category.description || 'Sin descripción' }}</p>
-                
-                <div class="category-card__actions">
-                  <button 
-                    class="btn btn--outline"
-                    @click="openEditCategoryModal(category)"
-                  >
-                    Editar
-                  </button>
-                </div>
-              </div>
+            <!-- Estado vacío -->
+            <div v-if="categories.length === 0" class="empty-state">
+              <div class="empty-state__icon">📂</div>
+              <h3 class="empty-state__title">No hay categorías registradas</h3>
+              <p class="empty-state__description">
+                Comienza creando tu primera categoría para organizar los cursos
+              </p>
+              <button class="btn btn--primary" @click="openCreateCategoryModal">
+                Crear Primera Categoría
+              </button>
             </div>
-          </div>
-          
-          <!-- Estado vacío -->
-          <div v-if="categories.length === 0" class="empty-state">
-            <div class="empty-state__icon">📂</div>
-            <h3 class="empty-state__title">No hay categorías registradas</h3>
-            <p class="empty-state__description">
-              Comienza creando tu primera categoría para organizar los cursos
-            </p>
-            <button class="btn btn--primary" @click="openCreateCategoryModal">
-              Crear Primera Categoría
-            </button>
-          </div>
+          </template>
         </div>
       </div>
 
@@ -585,7 +593,7 @@
                   </label>
                   <input 
                     id="category-name" 
-                    v-model="formCategory.name" 
+                    v-model="formCategory.nombre_categoria" 
                     type="text" 
                     class="form-input"
                     required 
@@ -599,7 +607,7 @@
                   </label>
                   <input 
                     id="category-badge" 
-                    v-model="formCategory.badge" 
+                    v-model="formCategory.insignia" 
                     type="text" 
                     class="form-input"
                     required 
@@ -614,7 +622,7 @@
                 <label for="category-description" class="form-label">Descripción</label>
                 <textarea 
                   id="category-description" 
-                  v-model="formCategory.description" 
+                  v-model="formCategory.descripcion_categoria" 
                   class="form-textarea"
                   rows="3"
                   placeholder="Describe la categoría..."
@@ -623,7 +631,9 @@
               
               <div class="form-group">
                 <label class="form-label">
-                  Imagen de la categoría <span class="required">*</span>
+                  Imagen de la categoría 
+                  <span v-if="!formCategory.id_categoria" class="required">*</span>
+                  <span v-else>(Opcional para actualizar)</span>
                 </label>
                 <div class="image-upload">
                   <input 
@@ -640,23 +650,33 @@
                   
                   <div v-if="categoryImagePreview" class="image-preview">
                     <img :src="categoryImagePreview" alt="Vista previa" />
-                    <button type="button" class="btn btn--xs btn--ghost" @click="categoryImagePreview = ''">
+                    <button type="button" class="btn btn--xs btn--ghost" @click="categoryImagePreview = ''; categoryImageFile = null;">
                       <span>✕</span>
                     </button>
                   </div>
-                  <div v-else-if="formCategory.image_url && formCategory.id" class="image-preview">
+                  <div v-else-if="formCategory.image_url && formCategory.id_categoria" class="image-preview">
                     <img :src="formCategory.image_url" alt="Imagen actual" />
                     <p class="image-caption">Imagen actual</p>
                   </div>
+                  <div v-else class="image-placeholder">
+                    <span>No hay imagen seleccionada</span>
+                  </div>
+                </div>
+                <div v-if="!formCategory.id_categoria" class="form-help">
+                  * La imagen es requerida para nuevas categorías
+                </div>
+                <div v-if="formCategory.id_categoria" class="form-help">
+                  * Si no seleccionas una nueva imagen, se mantendrá la actual
                 </div>
               </div>
               
               <div class="modal__actions">
-                <button type="button" class="btn btn--ghost" @click="closeCategoryModal">
+                <button type="button" class="btn btn--ghost" @click="closeCategoryModal" :disabled="isSubmittingCategory">
                   Cancelar
                 </button>
-                <button type="submit" class="btn btn--primary">
-                  {{ formCategory.id ? 'Actualizar' : 'Crear' }} Categoría
+                <button type="submit" class="btn btn--primary" :disabled="isSubmittingCategory">
+                  <span v-if="isSubmittingCategory">Guardando...</span>
+                  <span v-else>{{ formCategory.id_categoria ? 'Actualizar' : 'Crear' }} Categoría</span>
                 </button>
               </div>
             </form>
@@ -851,6 +871,9 @@ import {
   actualizarAvatarUsuario 
 } from '@/services/usuario.services'
 
+// Servicios de categorías
+import { categoriasService } from '@/services/categorias.services' 
+
 // Librerías externas
 import Swal from 'sweetalert2'
 
@@ -944,9 +967,7 @@ const canSubmitPassword = computed(() => {
 })
 
 // ===== MÉTODOS =====
-/**
- * Carga los datos del usuario desde el backend
- */
+//Carga los datos del usuario desde el backend
 const cargarDatosUsuario = async () => {
   try {
     loading.value = true
@@ -972,10 +993,7 @@ const cargarDatosUsuario = async () => {
       throw new Error('El servidor no retornó datos')
     }
     
-    console.log('📊 Datos recibidos del backend:', datos)
-    
     // Mapear datos del backend al frontend
-    // CORREGIR: Verificar qué propiedades vienen realmente del backend
     user.fullName = datos.nombre || authStore.user?.nombre || ''
     user.phone = datos.telefono || datos.phone || ''
     user.email = datos.correo || datos.email || authStore.user?.correo || ''
@@ -1037,9 +1055,7 @@ const cargarDatosUsuario = async () => {
   }
 }
 
-/**
- * Restablece el formulario a los valores originales
- */
+// Restablece el formulario a los valores originales
 const resetForm = () => {
   editedUser.value = { 
     fullName: user.fullName,
@@ -1051,16 +1067,13 @@ const resetForm = () => {
   hasChanges.value = false
 }
 
-/**
- * Actualiza el perfil del usuario en el backend
- */
+// Actualiza el perfil del usuario en el backend
 const updateProfile = async () => {
   if (!hasChanges.value) return
   
   try {
     isSaving.value = true
     
-    // Preparar datos para enviar al backend
     const datosActualizados = {
       nombre: editedUser.value.fullName,
       telefono: editedUser.value.phone,
@@ -1078,16 +1091,16 @@ const updateProfile = async () => {
     user.country = editedUser.value.country
     user.state = editedUser.value.state
 
+    // ¡SOLUCIÓN DIRECTA Y FUNCIONAL!
     if (authStore.user) {
+      // 1. Actualizar el store
       authStore.user.nombre = editedUser.value.fullName
       authStore.user.correo = editedUser.value.email
-      // Si guardas teléfono, país, etc. en el store, actualízalos también
-      // authStore.user.telefono = editedUser.value.phone
-      // authStore.user.pais = editedUser.value.country
-      // etc.
+      
+      // 2. ¡ESTO ES LO QUE TE FALTA! Actualizar localStorage
+      localStorage.setItem("user", JSON.stringify(authStore.user))
     }
     
-    // Mostrar confirmación
     Swal.fire({
       icon: 'success',
       title: '¡Éxito!',
@@ -1108,9 +1121,7 @@ const updateProfile = async () => {
   }
 }
 
-/**
- * Maneja el cambio de avatar del usuario
- */
+// Maneja el cambio de avatar del usuario
 const handleAvatarChange = async (event) => {
   const file = event.target.files[0]
   if (!file) return
@@ -1161,9 +1172,7 @@ const handleAvatarChange = async (event) => {
   }
 }
 
-/**
- * Cierra el modal de cambio de contraseña y limpia el formulario
- */
+//Cierra el modal de cambio de contraseña y limpia el formulario
 const closePasswordModal = () => {
   showPasswordModal.value = false
   passwordForm.current = ''
@@ -1174,9 +1183,7 @@ const closePasswordModal = () => {
   showConfirmPassword.value = false
 }
 
-/**
- * Envía el formulario de cambio de contraseña al backend
- */
+// Envía el formulario de cambio de contraseña al backend
 const submitChangePassword = async () => {
   if (!canSubmitPassword.value) {
     console.warn('Formulario de contraseña inválido')
@@ -1224,114 +1231,193 @@ const submitChangePassword = async () => {
   }
 }
 
-
 // =================================================================
 // SECCIÓN 2: GESTIÓN DE CATEGORÍAS
 // =================================================================
 
-// ===== ESTADO =====
-const categories = reactive([
-  {
-    id: 1,
-    name: 'Fitness',
-    badge: 'FIT',
-    description: 'Categoría dedicada al entrenamiento físico y acondicionamiento',
-    image_url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop'
-  },
-  {
-    id: 2,
-    name: 'Yoga',
-    badge: 'YGA',
-    description: 'Categoría enfocada en yoga, meditación y bienestar mental',
-    image_url: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=300&fit=crop'
-  },
-  {
-    id: 3,
-    name: 'Nutrición',
-    badge: 'NUT',
-    description: 'Categoría especializada en alimentación y nutrición deportiva',
-    image_url: 'https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=400&h=300&fit=crop'
-  }
-])
+// Estado reactivo para categorías
+const categories = ref([])
+const loadingCategories = ref(false)
+const isSubmittingCategory = ref(false)
+const categoryImageFile = ref(null)
 
+// Estado del modal
 const showCategoryModal = ref(false)
 const categoryModalTitle = ref('Nueva Categoría')
-const formCategory = ref({ id: null, name: '', badge: '', description: '', image_url: '' })
 const categoryImagePreview = ref('')
 
+const formCategory = reactive({
+  id_categoria: null,
+  nombre_categoria: '',
+  insignia: '',
+  descripcion_categoria: '',
+  image_url: ''
+})
+
 // ===== MÉTODOS =====
-/**
- * Abre el modal para crear una nueva categoría
- */
+
+// Cargar categorías desde el backend
+const cargarCategorias = async () => {
+  try {
+    loadingCategories.value = true
+    const response = await categoriasService.obtenerCategorias()
+    
+    if (response.success) {
+      categories.value = response.data.map(cat => ({
+        id: cat.id_categoria,
+        name: cat.nombre_categoria,
+        badge: cat.insignia,
+        description: cat.descripcion_categoria,
+        image_url: cat.img_categoria,
+        originalData: cat
+      }))
+    }
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudieron cargar las categorías'
+    })
+  } finally {
+    loadingCategories.value = false
+  }
+}
+
+// Abre el modal para crear una nueva categoría
 const openCreateCategoryModal = () => {
-  formCategory.value = { id: null, name: '', badge: '', description: '', image_url: '' }
+  // Resetear el formulario
+  formCategory.id_categoria = null
+  formCategory.nombre_categoria = ''
+  formCategory.insignia = ''
+  formCategory.descripcion_categoria = ''
+  formCategory.image_url = ''
+  categoryImageFile.value = null
   categoryImagePreview.value = ''
+  
   categoryModalTitle.value = 'Nueva Categoría'
   showCategoryModal.value = true
 }
 
-/**
- * Abre el modal para editar una categoría existente
- */
+// Abre el modal para editar una categoría existente
 const openEditCategoryModal = (category) => {
-  formCategory.value = { ...category }
+  // Cargar datos de la categoría
+  formCategory.id_categoria = category.id
+  formCategory.nombre_categoria = category.name
+  formCategory.insignia = category.badge
+  formCategory.descripcion_categoria = category.description
+  formCategory.image_url = category.image_url
+  
+  categoryImageFile.value = null
   categoryImagePreview.value = ''
+  
   categoryModalTitle.value = 'Editar Categoría'
   showCategoryModal.value = true
 }
 
-/**
- * Cierra el modal de categoría
- */
+// Cierra el modal de categoría
 const closeCategoryModal = () => {
   showCategoryModal.value = false
+  // Resetear el formulario
+  formCategory.id_categoria = null
+  formCategory.nombre_categoria = ''
+  formCategory.insignia = ''
+  formCategory.descripcion_categoria = ''
+  formCategory.image_url = ''
+  categoryImageFile.value = null
   categoryImagePreview.value = ''
 }
 
-/**
- * Maneja el cambio de imagen en el formulario de categoría
- */
+// Maneja el cambio de imagen en el formulario de categoría
 const handleCategoryImageChange = (event) => {
   const file = event.target.files[0]
   if (file) {
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Formato inválido',
+        text: 'Por favor selecciona una imagen válida'
+      })
+      return
+    }
+    
+    // Validar tamaño (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Imagen muy grande',
+        text: 'La imagen debe ser menor a 5MB'
+      })
+      return
+    }
+    
+    categoryImageFile.value = file
     categoryImagePreview.value = URL.createObjectURL(file)
   }
 }
 
-/**
- * Guarda o actualiza una categoría
- */
-const saveCategory = () => {
-  if (formCategory.value.name && formCategory.value.badge) {
-    if (formCategory.value.id) {
+// Guarda o actualiza una categoría
+const saveCategory = async () => {
+  try {
+    isSubmittingCategory.value = true
+    
+    // Validar campos
+    if (!formCategory.nombre_categoria || !formCategory.insignia) {
+      throw new Error('Nombre e insignia son campos requeridos')
+    }
+    
+    // Para nueva categoría, validar que tenga imagen
+    if (!formCategory.id_categoria && !categoryImageFile.value) {
+      throw new Error('La imagen es requerida para nuevas categorías')
+    }
+    
+    // Crear FormData
+    const formData = new FormData()
+    formData.append('nombre_categoria', formCategory.nombre_categoria)
+    formData.append('insignia', formCategory.insignia)
+    formData.append('descripcion_categoria', formCategory.descripcion_categoria)
+    
+    if (categoryImageFile.value) {
+      formData.append('img_categoria', categoryImageFile.value)
+    }
+    
+    let response
+    
+    if (formCategory.id_categoria) {
       // Actualizar categoría existente
-      const index = categories.findIndex(c => c.id === formCategory.value.id)
-      if (index !== -1) {
-        categories[index] = { 
-          ...formCategory.value,
-          image_url: categoryImagePreview.value || categories[index].image_url
-        }
-      }
+      response = await categoriasService.actualizarCategoria(formCategory.id_categoria, formData)
     } else {
       // Crear nueva categoría
-      categories.push({
-        id: categories.length + 1,
-        name: formCategory.value.name,
-        badge: formCategory.value.badge,
-        description: formCategory.value.description || '',
-        image_url: categoryImagePreview.value || '/src/assets/icons/LogoFondo.jpeg'
+      response = await categoriasService.crearCategoria(formData)
+    }
+    
+    if (response.success) {
+      // Recargar categorías
+      await cargarCategorias()
+      
+      // Cerrar modal
+      closeCategoryModal()
+      
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: response.message,
+        timer: 2000,
+        showConfirmButton: false
       })
     }
     
+  } catch (error) {
+    console.error('Error al guardar categoría:', error)
     Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: 'Categoría guardada exitosamente',
-      timer: 2000,
-      showConfirmButton: false
+      icon: 'error',
+      title: 'Error',
+      text: error.response?.data?.message || error.message || 'Error al guardar la categoría'
     })
-    
-    closeCategoryModal()
+  } finally {
+    isSubmittingCategory.value = false
   }
 }
 
@@ -1597,6 +1683,18 @@ onMounted(async () => {
   } else {
     loading.value = false
   }
+
+   if (activeTab.value === 'categorias') {
+    cargarCategorias()
+}
+})
+
+
+// También puedes cargar cuando se cambie a la pestaña
+watch(() => activeTab.value, (newTab) => {
+  if (newTab === 'categorias' && categories.value.length === 0) {
+    cargarCategorias()
+  }
 })
 
 // Actualizar el watch para usar 'id'
@@ -1609,7 +1707,6 @@ watch(
   },
   { immediate: true }
 )
-
 
 // Watch para detectar cambios en el formulario
 watch(editedUser, (newVal) => {

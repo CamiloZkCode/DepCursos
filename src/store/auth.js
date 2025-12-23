@@ -61,6 +61,13 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
+    actualizarNombre(nuevoNombre) {
+  if (this.user) {
+    this.user.nombre = nuevoNombre;
+    localStorage.setItem("user", JSON.stringify(this.user));
+  }
+},
+
     async logout() {
       this.isAuthenticated = false;
       this.user = null;

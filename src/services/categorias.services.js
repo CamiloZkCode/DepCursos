@@ -1,10 +1,11 @@
+// services/categorias.services.js
 import API from "@/services/axios";
 
 export const categoriasService = {
   // Obtener todas las categorías
   async obtenerCategorias() {
     try {
-      const res = await API.get("/categorias");
+      const res = await API.get("/categorias/obtenerCategorias");
       return res.data;
     } catch (err) {
       console.error("Error al obtener categorías:", err);
@@ -12,29 +13,10 @@ export const categoriasService = {
     }
   },
 
-  // Obtener una categoría por ID
-  async obtenerCategoria(id) {
-    try {
-      const res = await API.get(`/categorias/${id}`);
-      return res.data;
-    } catch (err) {
-      console.error("Error al obtener categoría:", err);
-      throw err.response?.data || { message: "Error al obtener categoría" };
-    }
-  },
-
   // Crear nueva categoría
-  async crearCategoria(categoriaData, imagen) {
+  async crearCategoria(formData) {
     try {
-      const formData = new FormData();
-      formData.append("nombre_categoria", categoriaData.nombre_categoria);
-      formData.append("descripcion_categoria", categoriaData.descripcion_categoria);
-      formData.append("insignia", categoriaData.insignia);
-      if (imagen) {
-        formData.append("imagen", imagen);
-      }
-
-      const res = await API.post("/categorias/registrar", formData, {
+      const res = await API.post("/categorias/crearCategorias", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -47,17 +29,9 @@ export const categoriasService = {
   },
 
   // Actualizar categoría
-  async actualizarCategoria(id, categoriaData, imagen) {
+  async actualizarCategoria(id, formData) {
     try {
-      const formData = new FormData();
-      formData.append("nombre_categoria", categoriaData.nombre_categoria);
-      formData.append("descripcion_categoria", categoriaData.descripcion_categoria);
-      formData.append("insignia", categoriaData.insignia);
-      if (imagen) {
-        formData.append("imagen", imagen);
-      }
-
-      const res = await API.put(`/categorias/${id}`, formData, {
+      const res = await API.put(`/categorias/editarCategoria/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -67,16 +41,5 @@ export const categoriasService = {
       console.error("Error al actualizar categoría:", err);
       throw err.response?.data || { message: "Error al actualizar categoría" };
     }
-  },
-
-  // Eliminar categoría
-  async eliminarCategoria(id) {
-    try {
-      const res = await API.delete(`/categorias/${id}`);
-      return res.data;
-    } catch (err) {
-      console.error("Error al eliminar categoría:", err);
-      throw err.response?.data || { message: "Error al eliminar categoría" };
-    }
-  },
+  }
 };

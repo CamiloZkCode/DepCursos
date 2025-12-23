@@ -1,11 +1,14 @@
+// routes/categorias.routes.js
 const express = require('express');
 const router = express.Router();
-const { registrarCategoria,obtenerCategorias,actualizarCategoria } = require('../controllers/categorias.controller');
+const { obtenerCategorias, registrarCategoria, actualizarCategoria } = require('../controllers/categorias.controller');
 const { verificarToken, verificarRoles } = require('../middlewares/auth.middlewares');
+const { upload } = require("../config/cloudinary");
 
+router.get('/obtenerCategorias', obtenerCategorias);
+router.post('/crearCategorias',verificarToken, verificarRoles('admin'),upload.single('img_categoria'), registrarCategoria);
+// Actualizar categoría (solo admin)
+router.put('/editarCategoria/:id',verificarToken, verificarRoles('admin'),upload.single('img_categoria'),actualizarCategoria);
 
-router.post('/crearCategoria',verificarToken,upload.single('img_categoria'),registrarCategoria,)
-router.get('/Categorias',verificarToken,obtenerCategorias)
-router.put('/Categorias/:id',verificarToken,upload.single('img_categoria'),actualizarCategoria)
-
+module.exports = router;
 
