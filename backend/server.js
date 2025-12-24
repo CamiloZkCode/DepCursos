@@ -8,6 +8,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth.routes");
 const usuarioRoutes =require("./routes/usuario.routes");
 const categoriasRoutes = require("./routes/categorias.routes");
+const dificultadRoutes = require("./routes/dificultad.routes");
 
 const app = express();
 app.use(cors());
@@ -15,8 +16,10 @@ app.use(express.json());
 
 //url de endpoint
 app.use("/api/auth", authRoutes);
-app.use("/api/usuario",usuarioRoutes)
-app.use("/api/categorias",categoriasRoutes)
+app.use("/api/usuario",usuarioRoutes);
+app.use("/api/categorias",categoriasRoutes);
+app.use("/api/dificultad",dificultadRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

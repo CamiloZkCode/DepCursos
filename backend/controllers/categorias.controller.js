@@ -1,21 +1,20 @@
 // controllers/categorias.controller.js
 const db = require("../config/db");
-const categoriasModel = require("../models/categorias.models");
+const Categoria = require("../models/categorias.models");
 const { uploadToCloudinary, cloudinary } = require("../config/cloudinary");
 
 // Obtener todas las categorías (corregido)
 async function obtenerCategorias(req, res) {
   try {
-    // Usar query directa para obtener todas las categorías
-    const [categorias] = await db.query("SELECT * FROM Categorias ORDER BY nombre_categoria");
-    
+    const categorias = await Categoria.obtenerCategoria();
+
     res.status(200).json({
       success: true,
       data: categorias
     });
   } catch (err) {
     console.error("Error al obtener categorías:", err);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: "Error del servidor al obtener categorías"
     });

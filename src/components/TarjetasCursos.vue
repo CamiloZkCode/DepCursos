@@ -13,34 +13,44 @@
             <div class="field">
               <div class="field__icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M7 7H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M19 11H5M19 11C20.1046 11 21 11.8954 21 13V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V13C3 11.8954 3.89543 11 5 11M19 11V9C19 7.89543 18.1046 7 17 7M5 11V9C5 7.89543 5.89543 7 7 7M7 7V5C7 3.89543 7.89543 3 9 3H15C16.1046 3 17 3.89543 17 5V7M7 7H17"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
               <label for="f-categoria">Categoría</label>
               <select id="f-categoria" v-model="filters.category">
                 <option value="">Todas las categorías</option>
-                <option v-for="cat in categories" :key="cat" :value="cat">{{ cat }}</option>
+                <option v-for="cat in categorias" :key="cat.id_categoria" :value="cat.nombre_categoria">
+                  {{ cat.nombre_categoria }}
+                </option>
               </select>
             </div>
 
             <div class="field">
               <div class="field__icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M19.4 15C19.2669 15.923 18.9771 16.818 18.5433 17.648C18.1095 18.478 17.5392 19.23 16.8572 19.871C16.1752 20.512 15.3921 21.033 14.5422 21.41C13.6922 21.787 12.7884 22.014 11.8673 22.081C10.9462 22.148 10.0214 22.055 9.13156 21.806C8.24169 21.557 7.40018 21.155 6.64501 20.618L3 22L4.382 18.355C3.84499 17.5998 3.44332 16.7583 3.19411 15.8684C2.9449 14.9786 2.85183 14.0538 2.91844 13.1327C2.98506 12.2116 3.21202 11.3078 3.58905 10.4578C3.96608 9.60792 4.48708 8.82484 5.12813 8.14284C5.76917 7.46085 6.5209 6.89052 7.3509 6.45672C8.18089 6.02292 9.07591 5.73307 9.999 5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path
+                    d="M19.4 15C19.2669 15.923 18.9771 16.818 18.5433 17.648C18.1095 18.478 17.5392 19.23 16.8572 19.871C16.1752 20.512 15.3921 21.033 14.5422 21.41C13.6922 21.787 12.7884 22.014 11.8673 22.081C10.9462 22.148 10.0214 22.055 9.13156 21.806C8.24169 21.557 7.40018 21.155 6.64501 20.618L3 22L4.382 18.355C3.84499 17.5998 3.44332 16.7583 3.19411 15.8684C2.9449 14.9786 2.85183 14.0538 2.91844 13.1327C2.98506 12.2116 3.21202 11.3078 3.58905 10.4578C3.96608 9.60792 4.48708 8.82484 5.12813 8.14284C5.76917 7.46085 6.5209 6.89052 7.3509 6.45672C8.18089 6.02292 9.07591 5.73307 9.999 5.6"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
               </div>
               <label for="f-dificultad">Nivel</label>
               <select id="f-dificultad" v-model="filters.difficulty">
                 <option value="">Todos los niveles</option>
-                <option v-for="dif in difficulties" :key="dif" :value="dif">{{ dif }}</option>
+                <option v-for="dif in dificultades" :key="dif.id_dificultad" :value="dif.dificultad">
+                  {{ dif.dificultad }}
+                </option>
               </select>
             </div>
           </div>
 
           <button class="btn btn--ghost btn--icon" @click="clearFilters">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 6L5 18M5 6L19 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M19 6L5 18M5 6L19 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
             Limpiar filtros
           </button>
@@ -50,7 +60,7 @@
           <span class="filters__count">{{ filteredCourses.length }} cursos disponibles</span>
           <span v-if="filtersSummary" class="filters__active">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M10 18H14M6 12H18M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M10 18H14M6 12H18M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
             {{ filtersSummary }}
           </span>
@@ -63,7 +73,9 @@
       <div v-if="filteredCourses.length === 0" class="empty-state">
         <div class="empty-state__icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 15V9M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M12 15V9M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
         <h3>No se encontraron cursos</h3>
@@ -87,7 +99,8 @@
                 <h3 class="course-card__title">{{ course.name }}</h3>
                 <div class="course-card__rating">
                   <div class="stars">
-                    <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= Math.round(course.rating) }">★</span>
+                    <span v-for="n in 5" :key="n" class="star"
+                      :class="{ filled: n <= Math.round(course.rating) }">★</span>
                   </div>
                   <span class="rating-value">{{ course.rating.toFixed(1) }}</span>
                 </div>
@@ -119,24 +132,24 @@
       <div class="pagination" v-if="filteredCourses.length > perPage && filteredCourses.length > 0">
         <button class="btn btn--ghost btn--icon" @click="prevPage" :disabled="currentPage === 1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
           </svg>
           Anterior
         </button>
-        
+
         <div class="pagination__pages">
-          <button v-for="page in totalPages" :key="page" 
-                  class="btn btn--ghost pagination__page"
-                  :class="{ 'pagination__page--active': page === currentPage }" 
-                  @click="currentPage = page">
+          <button v-for="page in totalPages" :key="page" class="btn btn--ghost pagination__page"
+            :class="{ 'pagination__page--active': page === currentPage }" @click="currentPage = page">
             {{ page }}
           </button>
         </div>
-        
+
         <button class="btn btn--ghost btn--icon" @click="nextPage" :disabled="currentPage === totalPages">
           Siguiente
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" />
           </svg>
         </button>
       </div>
@@ -145,34 +158,101 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { onMounted, ref, reactive, computed, watch } from "vue";
+import { categoriasService } from "../services/categorias.services";
+import { DificultadServices } from "../services/dificultad.services";
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const courseImage = 'https://images.unsplash.com/photo-1588912914078-2fe5224fd8b8?q=80&w=870&auto=format&fit=crop';
+// Estados de los select
+const categorias = ref([]);
+const dificultades = ref([]);
 
-const courses = ref([
-  { id: 1, name: 'CCNA Routing & Switching', category: 'Redes', difficulty: 'Principiante', rating: 4.7, price: 120000 },
-  { id: 2, name: 'Ciberseguridad Esencial', category: 'Seguridad', difficulty: 'Intermedio', rating: 4.5, price: 120000 },
-  { id: 3, name: 'JavaScript Profesional', category: 'Programación', difficulty: 'Avanzado', rating: 4.9, price: 120000 },
-  { id: 4, name: 'Python para Data Science', category: 'Data Science', difficulty: 'Intermedio', rating: 4.8, price: 120000 },
-  { id: 5, name: 'Diseño UI/UX con Figma', category: 'Diseño', difficulty: 'Principiante', rating: 4.6, price: 120000 },
-  { id: 6, name: 'DevOps con Docker y Kubernetes', category: 'DevOps', difficulty: 'Avanzado', rating: 4.4, price: 120000 },
-]);
-
-const categories = computed(() => [...new Set(courses.value.map(c => c.category))].sort());
-const difficulties = computed(() => ['Principiante', 'Intermedio', 'Avanzado']);
-
+// Filtros - Nombres corregidos
 const filters = reactive({
-  category: '',
-  difficulty: '',
+  category: "", // Cambiado de categoryId a category
+  difficulty: "", // Cambiado de difficultyId a difficulty
 });
 
+// Cargar categorias y dificultades
+onMounted(async () => {
+  try {
+    const resCategorias = await categoriasService.obtenerCategorias();
+    categorias.value = resCategorias.data;
+    console.log("Categorías cargadas:", categorias.value); // Debug
+
+    const resDificultades = await DificultadServices.obtenerDificultades();
+    dificultades.value = resDificultades.data;
+    console.log("Dificultades cargadas:", dificultades.value); // Debug
+  } catch (error) {
+    console.error("Error cargando filtros:", error);
+  }
+});
+
+const courseImage = 'https://images.unsplash.com/photo-1588912914078-2fe5224fd8b8?q=80&w=870&auto=format&fit=crop';
+
+// Cursos con estructura mejorada
+const courses = ref([
+  {
+    id: 1,
+    name: 'CCNA Routing & Switching',
+    category: 'Redes',
+    difficulty: 'Principiante',
+    rating: 4.7,
+    price: 120000
+  },
+  {
+    id: 2,
+    name: 'Ciberseguridad Esencial',
+    category: 'Seguridad',
+    difficulty: 'Intermedio',
+    rating: 4.5,
+    price: 120000
+  },
+  {
+    id: 3,
+    name: 'JavaScript Profesional',
+    category: 'Programación',
+    difficulty: 'Avanzado',
+    rating: 4.9,
+    price: 120000
+  },
+  {
+    id: 4,
+    name: 'Python para Data Science',
+    category: 'Data Science',
+    difficulty: 'Intermedio',
+    rating: 4.8,
+    price: 120000
+  },
+  {
+    id: 5,
+    name: 'Diseño UI/UX con Figma',
+    category: 'Diseño',
+    difficulty: 'Principiante',
+    rating: 4.6,
+    price: 120000
+  },
+  {
+    id: 6,
+    name: 'DevOps con Docker y Kubernetes',
+    category: 'DevOps',
+    difficulty: 'Avanzado',
+    rating: 4.4,
+    price: 120000
+  },
+]);
+
+// Filtro corregido - usando las propiedades correctas
 const filteredCourses = computed(() => {
   return courses.value.filter(course => {
+    // Si hay filtro de categoría y no coincide, excluir
     if (filters.category && course.category !== filters.category) return false;
+
+    // Si hay filtro de dificultad y no coincide, excluir
     if (filters.difficulty && course.difficulty !== filters.difficulty) return false;
+
     return true;
   });
 });
@@ -192,10 +272,17 @@ const currentPageCourses = computed(() => {
   return filteredCourses.value.slice(start, start + perPage);
 });
 
-watch(filteredCourses, () => { currentPage.value = 1; });
+watch(filteredCourses, () => {
+  currentPage.value = 1;
+});
 
-function prevPage() { if (currentPage.value > 1) currentPage.value--; }
-function nextPage() { if (currentPage.value < totalPages.value) currentPage.value++; }
+function prevPage() {
+  if (currentPage.value > 1) currentPage.value--;
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++;
+}
 
 function clearFilters() {
   filters.category = '';
@@ -203,7 +290,7 @@ function clearFilters() {
 }
 
 function goToCourse(id) {
-  router.push(`/ver-curso`);
+  router.push(`/ver-curso/${id}`); // Añadido el id en la ruta
 }
 
 function getDifficultyClass(difficulty) {
@@ -385,7 +472,8 @@ function formatPrice(value) {
 
 /* IMAGEN MÁS ALTA */
 .course-card__image {
-  height: 180px; /* 20px más alto que antes */
+  height: 180px;
+  /* 20px más alto que antes */
   background-size: cover;
   background-position: center;
   position: relative;
@@ -400,7 +488,7 @@ function formatPrice(value) {
   left: 0;
   right: 0;
   height: 40%;
-  background: linear-gradient(to top, rgba(0,0,0,0.25), transparent);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.25), transparent);
 }
 
 .course-card__category {

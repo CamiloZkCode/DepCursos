@@ -1,13 +1,12 @@
 const db = require("../config/db");
 
-async function obtenerCategorias(id_categoria) {
+async function obtenerCategoria() {
   const [rows] = await db.query(
-    "SELECT * FROM Categorias WHERE id_categoria = ?",
-    [id_categoria]
+    "SELECT * FROM Categorias ORDER BY nombre_categoria"
   );
-  return rows[0] || null;
+  return rows;
 }
 
 module.exports = {
-  obtenerCategorias
+  obtenerCategoria
 };
