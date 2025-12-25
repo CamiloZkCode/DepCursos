@@ -101,28 +101,34 @@ const router = createRouter({
 /* =========================
    GUARD GLOBAL (AUTH + ROLES)
 ========================= */
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
+router.beforeEach(async (to, from, next) => {
+  const auth = useAuthStore();
 
-  // 🚫 Usuario logueado intentando ir al login
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
+  // Login
+  if (to.meta.guestOnly && auth.isAuthenticated) {
     return next({ name: "Home" });
   }
 
-  // 🔒 Ruta protegida
+  // Protegidas
   if (to.meta.requiresAuth) {
-    // ❌ No autenticado
-    if (!authStore.isAuthenticated) {
-      return next({ name: "Login" });
+    if (!auth.initialized) {
+      await auth.initializeAuth();
     }
 
-    // ❌ Rol incorrecto
-    if (to.meta.role && authStore.user?.rol !== to.meta.role) {
-      return next({ name: "Home" }); // o ruta 403
+    if (!auth.isAuthenticated) {
+      return next({
+        name: "Login",
+        query: { redirect: to.fullPath }
+      });
+    }
+
+    if (to.meta.role && auth.user?.rol !== to.meta.role) {
+      return next({ name: "Home" });
     }
   }
 
   next();
 });
+
 
 export default router;

@@ -1,20 +1,17 @@
 import axios from 'axios'
 
-// Crea una instancia de Axios con la URL base de backend
 const API = axios.create({
   baseURL: 'http://localhost:3000/api',
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 })
 
-// Agregar token automáticamente a cada request si existe
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+// Interceptor de respuesta optimizado
+API.interceptors.response.use(
+  res => res,
+  err => Promise.reject(err)
+);
 
-export default API
+export default API;

@@ -6,30 +6,55 @@ import { obtenerDatosPerfil } from "@/services/usuario.services"; // Lo usamos s
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    isAuthenticated: localStorage.getItem("token") !== null,
-    user: JSON.parse(localStorage.getItem("user")) || null,
-    token: localStorage.getItem("token") || null,
+    user: JSON.parse(localStorage.getItem("user")),
+    isAuthenticated: !!localStorage.getItem("user"),
+    initialized: false,
+    loading: false,
   }),
 
   actions: {
+    async initializeAuth() {
+      if (this.initialized) return;
+
+      this.loading = true;
+      try {
+        const { data } = await API.get("/auth/verify");
+
+        if (data.success) {
+          this.user = data.user;
+          this.isAuthenticated = true;
+          localStorage.setItem("user", JSON.stringify(data.user));
+        }
+      } catch (_) {
+
+        this.user = null;
+        this.isAuthenticated = false;
+      } finally {
+        this.initialized = true;
+        this.loading = false;
+      }
+    },
+
+    async checkAuth() {
+      if (!this.initialized) {
+        await this.initializeAuth();
+      }
+      return this.isAuthenticated;
+    },
+
     async login(correo, password) {
       try {
-        const response = await API.post("/auth/login", {
-          correo,
-          contraseña: password,
-        });
-
-        const { token, user: userFromLogin } = response.data;
+        const { data } = await API.post("/auth/login", {
+        correo,
+        contraseña: password
+      });
 
         // Guardamos lo básico
-        this.token = token;
-        this.isAuthenticated = true;
-        this.user = userFromLogin;
-
-        // Persistimos temporalmente
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(this.user));
-
+       this.user = data.user;
+       this.isAuthenticated = true;
+       this.initialized = true;
+       localStorage.setItem("user", JSON.stringify(data.user));
+    
         // ¡Importante! Traemos datos frescos del perfil (incluye img_usuario actualizada)
         if (this.user?.id) {
           try {
@@ -62,19 +87,16 @@ export const useAuthStore = defineStore("auth", {
     },
 
     actualizarNombre(nuevoNombre) {
-  if (this.user) {
-    this.user.nombre = nuevoNombre;
-    localStorage.setItem("user", JSON.stringify(this.user));
-  }
-},
+    if (this.user) {
+      this.user.nombre = nuevoNombre;
+      localStorage.setItem("user", JSON.stringify(this.user));
+    }
+    },
 
     async logout() {
-      this.isAuthenticated = false;
-      this.user = null;
-      this.token = null;
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      await API.post("/auth/logout");
+      this.cleanLocalAuth();
 
       await Swal.fire({
         icon: "success",
@@ -86,6 +108,19 @@ export const useAuthStore = defineStore("auth", {
 
       router.push("/login");
     },
+
+    cleanLocalAuth() {
+      this.user = null;
+      this.isAuthenticated = false;
+      this.initialized = false;
+      localStorage.removeItem("user");
+    },
+    actualizarDatosUsuario(datos) {
+      if (this.user) {
+        this.user = { ...this.user, ...datos };
+        localStorage.setItem("user", JSON.stringify(this.user));
+      }
+    }
   },
 
   getters: {
@@ -94,5 +129,8 @@ export const useAuthStore = defineStore("auth", {
       state.user?.rol?.toLowerCase() === "administrador",
     isInstructor: (state) => state.user?.rol?.toLowerCase() === "instructor",
     isEstudiante: (state) => state.user?.rol?.toLowerCase() === "usuario",
+    isLoading: (state) => state.loadingSession,
+    nombreCompleto: (state) => state.user?.nombre || 'Usuario',
+    avatarUrl: (state) => state.user?.img_usuario || '/avatar-default.png'
   },
 });
