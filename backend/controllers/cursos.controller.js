@@ -69,7 +69,7 @@ async function actualizarCurso(req, res) {
   const { titulo_curso,descripcion,precio,id_categoria,id_dificultad,id_instructor,estatus } = req.body;
 
   try {
-    // 1. Validar que la categoría existe
+    // 1. Validar que el curso existe
     const [cursoExistente] = await db.query(
       `SELECT * FROM Cursos WHERE id_curso = ?`,
       [id]
@@ -82,7 +82,7 @@ async function actualizarCurso(req, res) {
       });
     }
 
-    const curso = categoriaExistente[0];
+    const curso = cursoExistente[0];
     let nuevaImagenUrl = curso.img_portada;
     let nuevoPublicId = curso.img_public_id;
     let uploadResult = null;
