@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require("../config/db.config");
 
 //Obtener todas las dificultades (principiante, intermedio, avanzado)
 async function obtenerDificultades() {

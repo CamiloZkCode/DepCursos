@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require("../config/db.config");
 const Modulos= require("../models/modulos.models");
 
 
@@ -120,9 +120,23 @@ async function actualizarModulo(req,res) {
 }
 
 async function obtenerModulosByCurso(req,res) {
+  try {
+      const cursos = await Cursos.obtenerCursos();
+
+      res.status(200).json({
+        success: true,
+        data: cursos
+      });
+    } catch (err) {
+      console.error("Error al obtener cursos:", err);
+      res.status(500).json({
+        success: false,
+        message: "Error del servidor al obtener cursos"
+      });
+    }
 }
 
 
 
-module.exports={crearModulo,actualizarModulo}
+module.exports={crearModulo,actualizarModulo,obtenerModulosByCurso}
 

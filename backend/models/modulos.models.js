@@ -1,10 +1,11 @@
-const db = require("../config/db");
+const db = require("../config/db.config");
 
-async function obtenerModulosByCurso() {
+async function obtenerModulosByCurso(id_curso) {
   const [rows] = await db.query(
-    "SELECT * FROM Cursos ORDER BY titulo_curso"
+  `SELECT * FROM Modulos WHERE id_curso = 0 ORDER BY titulo`,
+  [id_curso]
   );
-  return rows;
+  return rows[0];
 }
 
 

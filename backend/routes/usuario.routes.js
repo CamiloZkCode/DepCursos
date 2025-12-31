@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const {  upload, handleUploadErrors } = require("../config/cloudinary");
+const {  upload, handleUploadErrors } = require("../config/cloudinary.config");
 
 
 const { registroUsuario,editarPerfilUsuario,obtenerPerfilUsuario,actualizarAvatar, cambiarContrasena} = require('../controllers/usuario.controller');

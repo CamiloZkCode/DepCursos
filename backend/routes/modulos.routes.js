@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const {} = require('../controllers/modulos.controller');
+const {crearModulo,actualizarModulo,obtenerModulosByCurso} = require('../controllers/modulos.controller');
 const { verificarToken, verificarRoles } = require('../middlewares/auth.middlewares');
 
-router.post('/modulo',verificarToken,crearCurso)
-router.get('/obtenerCursos',verificarToken,obtenerCursos)
+router.post('/modulo',verificarToken,crearModulo)
+router.get('/obtenerModulosByCurso',obtenerModulosByCurso)
 
 module.exports = router;

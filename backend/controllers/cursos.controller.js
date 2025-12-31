@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require("../config/db.config");
 const Cursos= require("../models/cursos.models");
 const { uploadResultCursos } = require("../utils/cloudinary/cursosCloudinary");
 const { cloudinary } = require("../config/cloudinary.config");

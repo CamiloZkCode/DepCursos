@@ -2,8 +2,8 @@ const usuariosModel = require("../models/usuario.models");
 const {
   uploadToCloudinary,
   eliminarAvatarAntiguo,
-} = require("../config/cloudinary");
-const db = require("../config/db");
+} = require("../config/cloudinary.config");
+const db = require("../config/db.config");
 const bcrypt = require("bcrypt");
 
 async function registroUsuario(req, res) {

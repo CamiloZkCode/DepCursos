@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require("../config/db.config");
 
 async function obtenerCursos() {
   const [rows] = await db.query(

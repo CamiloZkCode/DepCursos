@@ -12,7 +12,7 @@ const usuarioRoutes =require("./routes/usuario.routes");
 const categoriasRoutes = require("./routes/categorias.routes");
 const dificultadRoutes = require("./routes/dificultad.routes");
 const cursosRoutes = require ("./routes/cursos.routes");
-const modulosRoutes = requier("./routes/modulos.routes");
+const modulosRoutes = require("./routes/modulos.routes");
 
 
 const app = express();
