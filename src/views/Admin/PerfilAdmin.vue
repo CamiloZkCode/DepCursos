@@ -986,7 +986,6 @@ const cargarDatosUsuario = async () => {
       return
     }
     
-    console.log('🔍 Obteniendo datos para usuario ID:', userId)
     const datos = await obtenerDatosPerfil(userId)
     
     if (!datos) {
@@ -1001,15 +1000,7 @@ const cargarDatosUsuario = async () => {
     user.state = datos.departamento || datos.state || datos.estado || ''
     user.id_usuario = datos.id_usuario || datos.id || userId
     user.img_usuario = datos.img_usuario || datos.imagen || '/src/assets/icons/LogoFondo.jpeg'
-    
-    console.log('✅ Usuario mapeado:', {
-      fullName: user.fullName,
-      email: user.email,
-      country: user.country,
-      state: user.state,
-      phone: user.phone
-    })
-    
+      
     // Inicializar editedUser con los datos del usuario
     editedUser.value = { 
       fullName: user.fullName,
@@ -1017,11 +1008,7 @@ const cargarDatosUsuario = async () => {
       email: user.email,
       country: user.country,
       state: user.state
-    }
-    
-    // Mostrar datos en consola para debug
-    console.log('🎯 editedUser inicializado:', editedUser.value)
-    
+    }    
   } catch (error) {
     console.error('❌ Error al cargar datos del usuario:', error)
     console.error('Detalles del error:', {
@@ -1192,12 +1179,6 @@ const submitChangePassword = async () => {
 
   try {
     const userId = user.id_usuario
-
-    console.log('Intentando cambiar contraseña para userId:', userId)
-    console.log('Datos que se enviarán:', {
-      contrasenaActual: passwordForm.current,
-      nuevaContrasena: passwordForm.new
-    })
 
     if (!userId) {
       throw new Error('ID de usuario no encontrado. No se puede cambiar la contraseña.')

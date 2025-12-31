@@ -119,9 +119,18 @@
 
               <div class="course-card__footer">
                 <div class="course-card__price">{{ formatPrice(course.price) }}</div>
-                <button class="btn btn--primary" @click="goToCourse(course.id)">
-                  Ver curso
-                </button>
+                <div class="course-card__actions">
+                  <button class="btn btn--ghost btn--icon" @click="addToCart(course)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.707 15.293C4.077 15.923 4.523 17 5.414 17H17M17 17C15.895 17 15 17.895 15 19C15 20.105 15.895 21 17 21C18.105 21 19 20.105 19 19C19 17.895 18.105 17 17 17ZM9 19C9 20.105 8.105 21 7 21C5.895 21 5 20.105 5 19C5 17.895 5.895 17 7 17C8.105 17 9 17.895 9 19Z" 
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Carrito
+                  </button>
+                  <button class="btn btn--primary" @click="goToCourse(course.id)">
+                    Ver curso
+                  </button>
+                </div>
               </div>
             </div>
           </article>
@@ -162,8 +171,10 @@ import { onMounted, ref, reactive, computed, watch } from "vue";
 import { categoriasService } from "../services/categorias.services";
 import { DificultadServices } from "../services/dificultad.services";
 import { useRouter } from 'vue-router';
+import { useCartStore } from "../store/cartStore"; // Importa el store
 
 const router = useRouter();
+const cartStore = useCartStore(); // Crea la instancia del store
 
 // Estados de los select
 const categorias = ref([]);
@@ -309,6 +320,34 @@ function formatPrice(value) {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
+}
+
+function addToCart(course) {
+  // Crear un objeto producto compatible con el store
+  const product = {
+    id: course.id,
+    title: course.name,
+    price: course.price,
+    image: courseImage, // Usa la misma imagen que muestra la tarjeta
+    category: course.category,
+    difficulty: course.difficulty,
+    rating: course.rating
+  };
+  
+  // Agregar al carrito usando el store
+  cartStore.addToCart(product);
+  
+  // Opcional: Mostrar notificación o feedback
+  showAddToCartFeedback(course.name);
+}
+
+// Función opcional para mostrar feedback
+function showAddToCartFeedback(courseName) {
+  // Puedes implementar una notificación toast aquí
+  console.log(`✅ "${courseName}" agregado al carrito`);
+  
+  // Ejemplo simple con alert (cambiar por una notificación más elegante)
+  // alert(`"${courseName}" se ha agregado al carrito`);
 }
 </script>
 
@@ -473,7 +512,6 @@ function formatPrice(value) {
 /* IMAGEN MÁS ALTA */
 .course-card__image {
   height: 180px;
-  /* 20px más alto que antes */
   background-size: cover;
   background-position: center;
   position: relative;
@@ -636,6 +674,12 @@ function formatPrice(value) {
   line-height: 1;
 }
 
+/* ===== ESTILOS PARA LOS BOTONES EN LA TARJETA ===== */
+.course-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* ===== BOTONES MÁS COMPACTOS ===== */
 .btn {
   padding: 0.6rem 1.2rem;
@@ -669,12 +713,13 @@ function formatPrice(value) {
   background: transparent;
   color: var(--color-oscuro);
   border: 1.5px solid #e9ecef;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.8rem;
 }
 
 .btn--ghost:hover {
-  background: #f8f9fa;
-  border-color: #dee2e6;
+  background: rgba(106, 17, 203, 0.05);
+  border-color: var(--color-morado);
+  color: var(--color-morado);
 }
 
 .btn--icon {
@@ -785,12 +830,21 @@ function formatPrice(value) {
     align-items: stretch;
   }
 
+  .course-card__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .course-card__price {
     align-self: flex-start;
   }
 
   .btn--primary {
-    width: 100%;
+    flex: 1;
+  }
+
+  .btn--ghost {
+    flex: 1;
   }
 
   .pagination {

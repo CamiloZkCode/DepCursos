@@ -1,10 +1,12 @@
 <template>
   <router-view />
   <BackToTop />
+  <CartShop />
 </template>
 
 <script setup>
-import BackToTop from '@/components/backtotp.vue'  // Ajusta la ruta si es necesario
+import BackToTop from '@/components/backtotp.vue'  
+import CartShop from '@/components/CartShop.vue'
 </script>
 
 <style>
