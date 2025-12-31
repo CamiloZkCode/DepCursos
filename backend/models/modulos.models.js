@@ -1,6 +1,6 @@
 const db = require("../config/db");
 
-async function obtenerCursos() {
+async function obtenerModulosByCurso() {
   const [rows] = await db.query(
     "SELECT * FROM Cursos ORDER BY titulo_curso"
   );
@@ -9,5 +9,5 @@ async function obtenerCursos() {
 
 
 module.exports = {
-  obtenerCursos
+  obtenerModulosByCurso
 };

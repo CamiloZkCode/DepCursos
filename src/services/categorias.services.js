@@ -1,4 +1,3 @@
-// services/categorias.services.js
 import API from "@/services/axios";
 
 export const categoriasService = {

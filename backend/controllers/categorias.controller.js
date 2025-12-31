@@ -1,9 +1,9 @@
 // controllers/categorias.controller.js
-const db = require("../config/db");
+const db = require("../config/db.config");
 const Categoria = require("../models/categorias.models");
-const { uploadToCloudinary, cloudinary } = require("../config/cloudinary");
+const { uploadToCloudinary, cloudinary } = require("../config/cloudinary.config");
 
-// Obtener todas las categorías (corregido)
+// Obtener todas las categorías
 async function obtenerCategorias(req, res) {
   try {
     const categorias = await Categoria.obtenerCategoria();

@@ -1,4 +1,4 @@
-const db = require("../config/db");
+const db = require("../config/db.config");
 
 async function obtenerCategoria() {
   const [rows] = await db.query(
