@@ -324,6 +324,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue'
+import Swal from 'sweetalert2'
 import ProfileHeader from '@/components/ProfileHeader.vue'
 import CourseModals from '@/components/CourseModals.vue'
 import { cursoService } from '@/services/cursos.services'
@@ -500,7 +501,7 @@ const getCategoryName = (categoryId) => {
 const getDifficultyName = (difficultyId) => {
   if (!difficultyId || !difficulties.value.length) return 'No asignada'
   const difficulty = difficulties.value.find(d => d.id_dificultad === difficultyId)
-  return difficulty ? difficulty.nombre_dificultad : 'No asignada'
+  return difficulty ? difficulty.dificultad : 'No asignada'
 }
 
 const getModulesForCourse = (courseId) => {
@@ -632,7 +633,7 @@ const handleSaveCourse = async (courseData) => {
     
     // Agregar imagen si hay una nueva
     if (selectedCoverFile.value) {
-      formData.append('image', selectedCoverFile.value)
+      formData.append('img_portada', selectedCoverFile.value)
     }
 
     let response
@@ -647,14 +648,46 @@ const handleSaveCourse = async (courseData) => {
     if (response.success) {
       // Recargar cursos
       await loadCourses()
-      alert(response.message || 'Curso guardado exitosamente')
+      
+      // ✅ SweetAlert para éxito
+      Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: response.message || 'Curso guardado exitosamente',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#7c3aed',
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      })
+      
       closeCourseModal()
     } else {
-      alert(response.message || 'Error al guardar el curso')
+      // ✅ SweetAlert para error del servidor
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: response.message || 'Error al guardar el curso',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#ef4444'
+      })
     }
   } catch (err) {
     console.error('Error al guardar curso:', err)
-    alert(err.message || 'Error al guardar el curso. Por favor, intenta de nuevo.')
+    
+    // ✅ SweetAlert para error de conexión/excepción
+    Swal.fire({
+      icon: 'error',
+      title: 'Error del sistema',
+      text: err.message || 'Error al guardar el curso. Por favor, intenta de nuevo.',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#ef4444'
+    })
   } finally {
     loading.save = false
   }

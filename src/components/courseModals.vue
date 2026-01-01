@@ -1,596 +1,460 @@
 <template>
-  <!-- Modal: Detalles del Curso -->
-  <div v-if="showCourseDetailModal" class="modal-backdrop" @click.self="$emit('close-course-detail')">
-    <div class="modal modal--xlarge" role="dialog" aria-modal="true" aria-labelledby="course-detail-title">
-      <header class="modal__header">
-        <div class="modal-header-content">
-          <div>
-            <h3 id="course-detail-title">{{ selectedCourse?.titulo_curso }}</h3>
+  <!-- Elemento raíz único -->
+  <div>
+    <!-- Modal: Detalles del Curso -->
+    <div v-if="showCourseDetailModal" class="modal-backdrop" @click.self="$emit('close-course-detail')">
+      <div class="modal modal--xlarge" role="dialog" aria-modal="true" aria-labelledby="course-detail-title">
+        <header class="modal__header">
+          <div class="modal-header-content">
+            <div>
+              <h3 id="course-detail-title">{{ selectedCourse?.titulo_curso }}</h3>
+            </div>
+            <button class="modal__close" @click="$emit('close-course-detail')" aria-label="Cerrar">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
           </div>
-          <button class="modal__close" @click="$emit('close-course-detail')" aria-label="Cerrar">
+        </header>
+        <div class="modal__body">
+          <div class="course-detail-content">
+            <div class="course-detail-section">
+              <div class="section-header">
+                <h4>Descripción del Curso</h4>
+                <button 
+                  class="btn btn--outline btn--small"
+                  @click="$emit('edit-course', selectedCourse)"
+                >
+                  <span class="btn-icon">✏️</span>
+                  Editar Curso
+                </button>
+              </div>
+              <p class="course-description">{{ selectedCourse?.descripcion }}</p>
+              
+              <div class="course-details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">Estado:</span>
+                  <span class="status-badge" :class="`status-badge--${selectedCourse?.estatus === 'Publicado' ? 'active' : 'inactive'}`">
+                    {{ selectedCourse?.estatus }}
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Precio:</span>
+                  <span class="detail-value">${{ selectedCourse?.precio }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Dificultad:</span>
+                  <span class="detail-value">{{ getDifficultyName(selectedCourse?.id_dificultad) }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Categoría:</span>
+                  <span class="detail-value">{{ getCategoryName(selectedCourse?.id_categoria) }}</span>
+                </div>
+              </div>
+              
+              <div class="detail-item">
+                <span class="detail-label">Instructor:</span>
+                <span class="detail-value">
+                  {{ getInstructorName(selectedCourse?.id_instructor) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Gestión de Módulos -->
+            <div class="course-detail-section">
+              <div class="section-header">
+                <h4>Módulos del Curso</h4>
+                <button 
+                  class="btn btn--primary btn--small"
+                  @click="$emit('create-module', selectedCourse)"
+                >
+                  <span class="btn-icon">➕</span>
+                  Nuevo Módulo
+                </button>
+              </div>
+              
+              <div v-if="courseModules.length" class="modules-list">
+                <div 
+                  v-for="module in courseModules" 
+                  :key="module.id" 
+                  class="module-item"
+                  :class="{ 'is-expanded': expandedModule === module.id }"
+                >
+                  <div class="module-header" @click="$emit('toggle-module', module.id)">
+                    <div class="module-info">
+                      <div class="module-order">{{ module.order }}.</div>
+                      <div>
+                        <h5 class="module-title">{{ module.title }}</h5>
+                      </div>
+                    </div>
+                    <div class="module-actions">
+                      <button 
+                        class="btn btn--ghost btn--xs"
+                        @click.stop="$emit('edit-module', module)"
+                        title="Editar módulo"
+                      >
+                        <span>✏️</span>
+                      </button>
+                      <span class="toggle-icon">{{ expandedModule === module.id ? '▲' : '▼' }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Lecciones del módulo -->
+                  <div v-if="expandedModule === module.id" class="module-content">
+                    <div class="lesson-management">
+                      <div class="lesson-header">
+                        <h6>Lecciones del Módulo</h6>
+                        <button 
+                          class="btn btn--primary btn--xs"
+                          @click="$emit('create-lesson', selectedCourse?.id_curso, module.id)"
+                        >
+                          <span class="btn-icon">➕</span>
+                          Nueva Lección
+                        </button>
+                      </div>
+                      
+                      <div v-if="moduleLessons(module.id).length" class="lessons-list">
+                        <div 
+                          v-for="lesson in moduleLessons(module.id)" 
+                          :key="lesson.id" 
+                          class="lesson-item"
+                        >
+                          <div class="lesson-info">
+                            <div class="lesson-type-badge" :class="`type-${lesson.type}`">
+                              {{ getLessonTypeLabel(lesson.type) }}
+                            </div>
+                            <div>
+                              <div class="lesson-title">{{ lesson.order }}. {{ lesson.title }}</div>
+                              <div v-if="lesson.duration" class="lesson-meta">
+                                <span class="meta-icon">⏱️</span>
+                                <span>{{ lesson.duration }} min</span>
+                              </div>
+                            </div>
+                          </div>
+                          <button 
+                            class="btn btn--ghost btn--xs"
+                            @click="$emit('edit-lesson', lesson)"
+                            title="Editar lección"
+                          >
+                            <span>✏️</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div v-else class="empty-lessons">
+                        <p>No hay lecciones en este módulo</p>
+                        <button 
+                          class="btn btn--outline btn--small"
+                          @click="$emit('create-lesson', selectedCourse?.id_curso, module.id)"
+                        >
+                          <span class="btn-icon">➕</span>
+                          Crear Primera Lección
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="empty-modules">
+                <p>No hay módulos en este curso</p>
+                <button 
+                  class="btn btn--outline"
+                  @click="$emit('create-module', selectedCourse)"
+                >
+                  <span class="btn-icon">➕</span>
+                  Crear Primer Módulo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <footer class="modal__footer">
+          <button class="btn btn--ghost" @click="$emit('close-course-detail')">
+            Cerrar
+          </button>
+          <button 
+            class="btn btn--primary"
+            @click="$emit('create-lesson', selectedCourse?.id_curso)"
+          >
+            <span class="btn-icon">➕</span>
+            Nueva Lección (en cualquier módulo)
+          </button>
+        </footer>
+      </div>
+    </div>
+
+    <!-- Modal Curso -->
+    <div v-if="showCourseModal" class="modal-backdrop" @click.self="$emit('close-course-modal')">
+      <div class="modal modal--large" role="dialog" aria-modal="true" aria-labelledby="course-modal-title">
+        <header class="modal__header">
+          <h3 id="course-modal-title">{{ courseModalTitle }}</h3>
+          <button class="modal__close" @click="$emit('close-course-modal')" aria-label="Cerrar">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
-        </div>
-      </header>
-      <div class="modal__body">
-        <div class="course-detail-content">
-          <div class="course-detail-section">
-            <div class="section-header">
-              <h4>Descripción del Curso</h4>
-              <button 
-                class="btn btn--outline btn--small"
-                @click="$emit('edit-course', selectedCourse)"
-              >
-                <span class="btn-icon">✏️</span>
-                Editar Curso
-              </button>
-            </div>
-            <p class="course-description">{{ selectedCourse?.descripcion }}</p>
-            
-            <div class="course-details-grid">
-              <div class="detail-item">
-                <span class="detail-label">Estado:</span>
-                <span class="status-badge" :class="`status-badge--${selectedCourse?.estatus === 'Publicado' ? 'active' : 'inactive'}`">
-                  {{ selectedCourse?.estatus }}
-                </span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Precio:</span>
-                <span class="detail-value">${{ selectedCourse?.precio }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Dificultad:</span>
-                <span class="detail-value">{{ getDifficultyName(selectedCourse?.id_dificultad) }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Categoría:</span>
-                <span class="detail-value">{{ getCategoryName(selectedCourse?.id_categoria) }}</span>
-              </div>
-            </div>
-            
-            <div class="detail-item">
-              <span class="detail-label">Instructor:</span>
-              <span class="detail-value">{{ selectedCourse?.id_instructor }}</span>
-            </div>
-          </div>
-          
-          <!-- Gestión de Módulos -->
-          <div class="course-detail-section">
-            <div class="section-header">
-              <h4>Módulos del Curso</h4>
-              <button 
-                class="btn btn--primary btn--small"
-                @click="$emit('create-module', selectedCourse)"
-              >
-                <span class="btn-icon">➕</span>
-                Nuevo Módulo
-              </button>
-            </div>
-            
-            <div v-if="courseModules.length" class="modules-list">
-              <div 
-                v-for="module in courseModules" 
-                :key="module.id" 
-                class="module-item"
-                :class="{ 'is-expanded': expandedModule === module.id }"
-              >
-                <div class="module-header" @click="$emit('toggle-module', module.id)">
-                  <div class="module-info">
-                    <div class="module-order">{{ module.order }}.</div>
-                    <div>
-                      <h5 class="module-title">{{ module.title }}</h5>
-                    </div>
-                  </div>
-                  <div class="module-actions">
-                    <button 
-                      class="btn btn--ghost btn--xs"
-                      @click.stop="$emit('edit-module', module)"
-                      title="Editar módulo"
-                    >
-                      <span>✏️</span>
-                    </button>
-                    <span class="toggle-icon">{{ expandedModule === module.id ? '▲' : '▼' }}</span>
-                  </div>
-                </div>
-                
-                <!-- Lecciones del módulo -->
-                <div v-if="expandedModule === module.id" class="module-content">
-                  <div class="lesson-management">
-                    <div class="lesson-header">
-                      <h6>Lecciones del Módulo</h6>
-                      <button 
-                        class="btn btn--primary btn--xs"
-                        @click="$emit('create-lesson', selectedCourse?.id_curso, module.id)"
-                      >
-                        <span class="btn-icon">➕</span>
-                        Nueva Lección
-                      </button>
-                    </div>
-                    
-                    <div v-if="moduleLessons(module.id).length" class="lessons-list">
-                      <div 
-                        v-for="lesson in moduleLessons(module.id)" 
-                        :key="lesson.id" 
-                        class="lesson-item"
-                      >
-                        <div class="lesson-info">
-                          <div class="lesson-type-badge" :class="`type-${lesson.type}`">
-                            {{ getLessonTypeLabel(lesson.type) }}
-                          </div>
-                          <div>
-                            <div class="lesson-title">{{ lesson.order }}. {{ lesson.title }}</div>
-                            <div v-if="lesson.duration" class="lesson-meta">
-                              <span class="meta-icon">⏱️</span>
-                              <span>{{ lesson.duration }} min</span>
-                            </div>
-                          </div>
-                        </div>
-                        <button 
-                          class="btn btn--ghost btn--xs"
-                          @click="$emit('edit-lesson', lesson)"
-                          title="Editar lección"
-                        >
-                          <span>✏️</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div v-else class="empty-lessons">
-                      <p>No hay lecciones en este módulo</p>
-                      <button 
-                        class="btn btn--outline btn--small"
-                        @click="$emit('create-lesson', selectedCourse?.id_curso, module.id)"
-                      >
-                        <span class="btn-icon">➕</span>
-                        Crear Primera Lección
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="empty-modules">
-              <p>No hay módulos en este curso</p>
-              <button 
-                class="btn btn--outline"
-                @click="$emit('create-module', selectedCourse)"
-              >
-                <span class="btn-icon">➕</span>
-                Crear Primer Módulo
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <footer class="modal__footer">
-        <button class="btn btn--ghost" @click="$emit('close-course-detail')">
-          Cerrar
-        </button>
-        <button 
-          class="btn btn--primary"
-          @click="$emit('create-lesson', selectedCourse?.id_curso)"
-        >
-          <span class="btn-icon">➕</span>
-          Nueva Lección (en cualquier módulo)
-        </button>
-      </footer>
-    </div>
-  </div>
-
-  <!-- Modal Curso -->
-  <div v-if="showCourseModal" class="modal-backdrop" @click.self="$emit('close-course-modal')">
-    <div class="modal modal--large" role="dialog" aria-modal="true" aria-labelledby="course-modal-title">
-      <header class="modal__header">
-        <h3 id="course-modal-title">{{ courseModalTitle }}</h3>
-        <button class="modal__close" @click="$emit('close-course-modal')" aria-label="Cerrar">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </header>
-      <div class="modal__body">
-        <form class="course-form" @submit.prevent="$emit('save-course', formCourse)">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="course-title" class="form-label">
-                Título del curso <span class="required">*</span>
-              </label>
-              <input 
-                id="course-title" 
-                v-model="formCourse.titulo_curso" 
-                type="text" 
-                class="form-input"
-                required 
-                placeholder="Ej: Curso de Yoga para Principiantes"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="course-category" class="form-label">
-                Categoría <span class="required">*</span>
-              </label>
-              <select 
-                id="course-category" 
-                v-model="formCourse.id_categoria" 
-                class="form-select"
-                required
-                :disabled="loading.categories"
-              >
-                <option value="">Seleccionar categoría</option>
-                <option 
-                  v-for="category in categories" 
-                  :key="category.id_categoria" 
-                  :value="category.id_categoria"
-                >
-                  {{ category.nombre_categoria }}
-                </option>
-              </select>
-              <div v-if="loading.categories" class="loading-indicator">
-                Cargando categorías...
-              </div>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="course-description" class="form-label">Descripción</label>
-            <textarea 
-              id="course-description" 
-              v-model="formCourse.descripcion" 
-              class="form-textarea"
-              rows="3"
-              placeholder="Describe el contenido y objetivos del curso..."
-            ></textarea>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="course-price" class="form-label">
-                Precio (USD) <span class="required">*</span>
-              </label>
-              <div class="input-with-icon">
-                <span class="input-icon">$</span>
-                <input 
-                  id="course-price" 
-                  v-model.number="formCourse.precio" 
-                  type="number" 
-                  min="0" 
-                  step="0.01"
-                  class="form-input"
-                  required 
-                  placeholder="49.99"
-                />
-              </div>
-            </div>
-            
-            <div class="form-group">
-              <label for="course-difficulty" class="form-label">
-                Dificultad <span class="required">*</span>
-              </label>
-              <select 
-                id="course-difficulty" 
-                v-model="formCourse.id_dificultad" 
-                class="form-select"
-                required
-                :disabled="loading.difficulties"
-              >
-                <option value="">Seleccionar dificultad</option>
-                <option 
-                  v-for="difficulty in difficulties" 
-                  :key="difficulty.id_dificultad" 
-                  :value="difficulty.id_dificultad"
-                >
-                  {{ difficulty.dificultad }}
-                </option>
-              </select>
-              <div v-if="loading.difficulties" class="loading-indicator">
-                Cargando dificultades...
-              </div>
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="course-instructor" class="form-label">
-                Instructor <span class="required">*</span>
-              </label>
-              <input 
-                id="course-instructor" 
-                v-model.number="formCourse.id_instructor" 
-                type="number" 
-                class="form-input"
-                required 
-                placeholder="ID del instructor"
-              />
-              <small class="form-hint">Ingresa el ID numérico del instructor</small>
-            </div>
-            
-            <div class="form-group">
-              <label for="course-status" class="form-label">
-                Estado <span class="required">*</span>
-              </label>
-              <select 
-                id="course-status" 
-                v-model="formCourse.estatus" 
-                class="form-select"
-                required
-              >
-                <option value="Borrador">Borrador</option>
-                <option value="Publicado">Publicado</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label class="form-label">
-              Portada del curso <span class="required">*</span>
-            </label>
-            <div class="image-upload">
-              <input 
-                type="file" 
-                id="course-cover-upload"
-                accept="image/*"
-                @change="$emit('cover-change', $event)"
-                class="file-input"
-                :required="!formCourse.id_curso"
-              />
-              <label for="course-cover-upload" class="upload-label">
-                <span class="upload-icon">📷</span>
-                <span>Subir portada</span>
-                <small>Recomendado: 1200x600px</small>
-              </label>
-              
-              <div v-if="coverPreview" class="image-preview">
-                <img :src="coverPreview" alt="Vista previa" />
-                <button type="button" class="btn btn--xs btn--ghost" @click="$emit('clear-cover')">
-                  <span>✕</span>
-                </button>
-              </div>
-              <div v-else-if="formCourse.img_portada && formCourse.id_curso" class="image-preview">
-                <img :src="formCourse.img_portada" alt="Portada actual" />
-                <p class="image-caption">Portada actual</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="modal__actions">
-            <button type="button" class="btn btn--ghost" @click="$emit('close-course-modal')">
-              Cancelar
-            </button>
-            <button type="submit" class="btn btn--primary" :disabled="loading.save">
-              {{ loading.save ? 'Guardando...' : (formCourse.id_curso ? 'Actualizar' : 'Crear') }} Curso
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Módulo -->
-  <div v-if="showModuleModal" class="modal-backdrop" @click.self="$emit('close-module-modal')">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="module-modal-title">
-      <header class="modal__header">
-        <h3 id="module-modal-title">{{ moduleModalTitle }}</h3>
-        <button class="modal__close" @click="$emit('close-module-modal')" aria-label="Cerrar">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </header>
-      <div class="modal__body">
-        <form class="module-form" @submit.prevent="$emit('save-module', formModule)">
-          <!-- Campo de curso como texto (solo lectura) cuando se crea desde detalle de curso -->
-          <div class="form-group" v-if="preSelectedCourse">
-            <label class="form-label">
-              Curso <span class="required">*</span>
-            </label>
-            <div class="course-readonly-field">
-              <input 
-                type="text" 
-                v-model="preSelectedCourse.titulo_curso" 
-                class="form-input"
-                readonly
-                disabled
-              />
-              <input 
-                type="hidden" 
-                v-model="formModule.courseId" 
-              />
-              <div class="readonly-hint">
-                <span>ℹ️</span>
-                <small>Este módulo se creará para el curso "{{ preSelectedCourse.titulo_curso }}"</small>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Select de curso (solo para cuando se crea desde otro lugar) -->
-          <div class="form-group" v-else>
-            <label for="module-course" class="form-label">
-              Curso <span class="required">*</span>
-            </label>
-            <select 
-              id="module-course" 
-              v-model="formModule.courseId" 
-              class="form-select"
-              required
-              :disabled="loading.courses"
-            >
-              <option value="">Seleccionar curso</option>
-              <option v-for="course in courses" :key="course.id_curso" :value="course.id_curso">
-                {{ course.titulo_curso }}
-              </option>
-            </select>
-            <div v-if="loading.courses" class="loading-indicator">
-              Cargando cursos...
-            </div>
-          </div>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="module-order" class="form-label">
-                Orden <span class="required">*</span>
-              </label>
-              <input 
-                id="module-order" 
-                v-model.number="formModule.order" 
-                type="number" 
-                min="1" 
-                class="form-input"
-                required 
-                placeholder="1"
-              />
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="module-title" class="form-label">
-              Título del módulo <span class="required">*</span>
-            </label>
-            <input 
-              id="module-title" 
-              v-model="formModule.title" 
-              type="text" 
-              class="form-input"
-              required 
-              placeholder="Ej: Introducción al Yoga"
-            />
-          </div>
-          
-          <div class="modal__actions">
-            <button type="button" class="btn btn--ghost" @click="$emit('close-module-modal')">
-              Cancelar
-            </button>
-            <button type="submit" class="btn btn--primary">
-              {{ formModule.id ? 'Actualizar' : 'Crear' }} Módulo
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Lección -->
-  <div v-if="showLessonModal" class="modal-backdrop" @click.self="$emit('close-lesson-modal')">
-    <div class="modal modal--xlarge" role="dialog" aria-modal="true" aria-labelledby="lesson-modal-title">
-      <header class="modal__header">
-        <h3 id="lesson-modal-title">{{ lessonModalTitle }}</h3>
-        <button class="modal__close" @click="$emit('close-lesson-modal')" aria-label="Cerrar">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      </header>
-      <div class="modal__body">
-        <form class="lesson-form" @submit.prevent="$emit('save-lesson', formLesson)">
-          <div class="form-tabs">
-            <button 
-              type="button" 
-              class="form-tab"
-              :class="{ 'is-active': lessonTab === 'info' }"
-              @click="lessonTab = 'info'"
-            >
-              Información
-            </button>
-            <button 
-              v-if="formLesson.type === 'quiz'" 
-              type="button" 
-              class="form-tab"
-              :class="{ 'is-active': lessonTab === 'quiz' }"
-              @click="lessonTab = 'quiz'"
-            >
-              Configurar Quiz
-            </button>
-          </div>
-          
-          <div v-if="lessonTab === 'info'" class="form-tab-content">
+        </header>
+        <div class="modal__body">
+          <form class="course-form" @submit.prevent="$emit('save-course', formCourse)">
             <div class="form-grid">
               <div class="form-group">
-                <label for="lesson-course" class="form-label">
-                  Curso <span class="required">*</span>
-                </label>
-                <select 
-                  id="lesson-course" 
-                  v-model="formLesson.courseId" 
-                  class="form-select"
-                  required
-                  @change="$emit('lesson-course-change', formLesson.courseId)"
-                  :disabled="loading.courses"
-                >
-                  <option value="">Seleccionar curso</option>
-                  <option v-for="course in courses" :key="course.id_curso" :value="course.id_curso">
-                    {{ course.titulo_curso }}
-                  </option>
-                </select>
-                <div v-if="loading.courses" class="loading-indicator">
-                  Cargando cursos...
-                </div>
-              </div>
-              
-              <div class="form-group">
-                <label for="lesson-module" class="form-label">
-                  Módulo <span class="required">*</span>
-                </label>
-                <select 
-                  id="lesson-module" 
-                  v-model="formLesson.moduleId" 
-                  class="form-select"
-                  required
-                  :disabled="!formLesson.courseId"
-                >
-                  <option value="">Seleccionar módulo</option>
-                  <option 
-                    v-for="module in availableModulesForLesson" 
-                    :key="module.id" 
-                    :value="module.id"
-                  >
-                    {{ module.order }}. {{ module.title }}
-                  </option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="lesson-title" class="form-label">
-                  Título <span class="required">*</span>
+                <label for="course-title" class="form-label">
+                  Título del curso <span class="required">*</span>
                 </label>
                 <input 
-                  id="lesson-title" 
-                  v-model="formLesson.title" 
+                  id="course-title" 
+                  v-model="formCourse.titulo_curso" 
                   type="text" 
                   class="form-input"
                   required 
-                  placeholder="Título de la lección"
+                  placeholder="Ej: Curso de Yoga para Principiantes"
                 />
               </div>
               
               <div class="form-group">
-                <label for="lesson-type" class="form-label">
-                  Tipo <span class="required">*</span>
+                <label for="course-category" class="form-label">
+                  Categoría <span class="required">*</span>
                 </label>
                 <select 
-                  id="lesson-type" 
-                  v-model="formLesson.type" 
+                  id="course-category" 
+                  v-model="formCourse.id_categoria" 
                   class="form-select"
                   required
+                  :disabled="loading.categories"
                 >
-                  <option value="video">🎬 Video</option>
-                  <option value="texto">📝 Texto</option>
-                  <option value="archivo">📎 Archivo</option>
-                  <option value="quiz">❓ Quiz</option>
+                  <option value="">Seleccionar categoría</option>
+                  <option 
+                    v-for="category in categories" 
+                    :key="category.id_categoria" 
+                    :value="category.id_categoria"
+                  >
+                    {{ category.nombre_categoria }}
+                  </option>
                 </select>
+                <div v-if="loading.categories" class="loading-indicator">
+                  Cargando categorías...
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="course-description" class="form-label">Descripción</label>
+              <textarea 
+                id="course-description" 
+                v-model="formCourse.descripcion" 
+                class="form-textarea"
+                rows="3"
+                placeholder="Describe el contenido y objetivos del curso..."
+              ></textarea>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="course-price" class="form-label">
+                  Precio (USD) <span class="required">*</span>
+                </label>
+                <div class="input-with-icon">
+                  <span class="input-icon">$</span>
+                  <input 
+                    id="course-price" 
+                    v-model.number="formCourse.precio" 
+                    type="number" 
+                    min="0" 
+                    step="0.01"
+                    class="form-input"
+                    required 
+                    placeholder="49.99"
+                  />
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="course-difficulty" class="form-label">
+                  Dificultad <span class="required">*</span>
+                </label>
+                <select 
+                  id="course-difficulty" 
+                  v-model="formCourse.id_dificultad" 
+                  class="form-select"
+                  required
+                  :disabled="loading.difficulties"
+                >
+                  <option value="">Seleccionar dificultad</option>
+                  <option 
+                    v-for="difficulty in difficulties" 
+                    :key="difficulty.id_dificultad" 
+                    :value="difficulty.id_dificultad"
+                  >
+                    {{ difficulty.dificultad }}
+                  </option>
+                </select>
+                <div v-if="loading.difficulties" class="loading-indicator">
+                  Cargando dificultades...
+                </div>
               </div>
             </div>
             
             <div class="form-grid">
               <div class="form-group">
-                <label for="lesson-order" class="form-label">
+                <label for="course-instructor" class="form-label">
+                  Instructor <span class="required">*</span>
+                </label>
+                <select 
+                  id="course-instructor" 
+                  v-model.number="formCourse.id_instructor" 
+                  class="form-select"
+                  required
+                  :disabled="loadingInstructors"
+                >
+                  <option value="">Seleccionar instructor</option>
+                  <option 
+                    v-for="instructor in instructorsList" 
+                    :key="instructor.id_usuario" 
+                    :value="instructor.id_usuario"
+                  >
+                    {{ getInstructorDisplayName(instructor) }}
+                  </option>
+                </select>
+                <div v-if="loadingInstructors" class="loading-indicator">
+                  Cargando instructores...
+                </div>
+                <!-- Mensaje de depuración -->
+                <div v-if="!loadingInstructors && instructorsList.length === 0" class="error-message" style="color: red; font-size: 12px; margin-top: 5px;">
+                  No se pudieron cargar los instructores
+                </div>
+                <div v-if="!loadingInstructors && instructorsList.length > 0" class="success-message" style="color: green; font-size: 12px; margin-top: 5px;">
+                  {{ instructorsList.length }} instructores cargados
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="course-status" class="form-label">
+                  Estado <span class="required">*</span>
+                </label>
+                <select 
+                  id="course-status" 
+                  v-model="formCourse.estatus" 
+                  class="form-select"
+                  required
+                >
+                  <option value="Borrador">Borrador</option>
+                  <option value="Publicado">Publicado</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">
+                Portada del curso <span class="required">*</span>
+              </label>
+              <div class="image-upload">
+                <input 
+                  type="file" 
+                  id="course-cover-upload"
+                  accept="image/*"
+                  @change="$emit('cover-change', $event)"
+                  class="file-input"
+                  :required="!formCourse.id_curso"
+                />
+                <label for="course-cover-upload" class="upload-label">
+                  <span class="upload-icon">📷</span>
+                  <span>Subir portada</span>
+                  <small>Recomendado: 1200x600px, máximo 2MB, formatos: JPG, PNG</small>
+                </label>
+                
+                <div v-if="coverPreview" class="image-preview">
+                  <img :src="coverPreview" alt="Vista previa" />
+                  <button type="button" class="btn btn--xs btn--ghost" @click="$emit('clear-cover')">
+                    <span>✕</span>
+                  </button>
+                </div>
+                <div v-else-if="formCourse.img_portada && formCourse.id_curso" class="image-preview">
+                  <img :src="formCourse.img_portada" alt="Portada actual" />
+                  <p class="image-caption">Portada actual</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="modal__actions">
+              <button type="button" class="btn btn--ghost" @click="$emit('close-course-modal')">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn--primary" :disabled="loading.save">
+                {{ loading.save ? 'Guardando...' : (formCourse.id_curso ? 'Actualizar' : 'Crear') }} Curso
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Módulo -->
+    <div v-if="showModuleModal" class="modal-backdrop" @click.self="$emit('close-module-modal')">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="module-modal-title">
+        <header class="modal__header">
+          <h3 id="module-modal-title">{{ moduleModalTitle }}</h3>
+          <button class="modal__close" @click="$emit('close-module-modal')" aria-label="Cerrar">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </header>
+        <div class="modal__body">
+          <form class="module-form" @submit.prevent="$emit('save-module', formModule)">
+            <!-- Campo de curso como texto (solo lectura) cuando se crea desde detalle de curso -->
+            <div class="form-group" v-if="preSelectedCourse">
+              <label class="form-label">
+                Curso <span class="required">*</span>
+              </label>
+              <div class="course-readonly-field">
+                <input 
+                  type="text" 
+                  v-model="preSelectedCourse.titulo_curso" 
+                  class="form-input"
+                  readonly
+                  disabled
+                />
+                <input 
+                  type="hidden" 
+                  v-model="formModule.courseId" 
+                />
+                <div class="readonly-hint">
+                  <span>ℹ️</span>
+                  <small>Este módulo se creará para el curso "{{ preSelectedCourse.titulo_curso }}"</small>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Select de curso (solo para cuando se crea desde otro lugar) -->
+            <div class="form-group" v-else>
+              <label for="module-course" class="form-label">
+                Curso <span class="required">*</span>
+              </label>
+              <select 
+                id="module-course" 
+                v-model="formModule.courseId" 
+                class="form-select"
+                required
+                :disabled="loading.courses"
+              >
+                <option value="">Seleccionar curso</option>
+                <option v-for="course in localCourses" :key="course.id_curso" :value="course.id_curso">
+                  {{ course.titulo_curso }}
+                </option>
+              </select>
+              <div v-if="loading.courses" class="loading-indicator">
+                Cargando cursos...
+              </div>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="module-order" class="form-label">
                   Orden <span class="required">*</span>
                 </label>
                 <input 
-                  id="lesson-order" 
-                  v-model.number="formLesson.order" 
+                  id="module-order" 
+                  v-model.number="formModule.order" 
                   type="number" 
                   min="1" 
                   class="form-input"
@@ -598,214 +462,372 @@
                   placeholder="1"
                 />
               </div>
-              
-              <div class="form-group" v-if="formLesson.type !== 'quiz'">
-                <label for="lesson-duration" class="form-label">
-                  Duración (minutos)
-                </label>
-                <input 
-                  id="lesson-duration" 
-                  v-model.number="formLesson.duration" 
-                  type="number" 
-                  min="0" 
-                  class="form-input"
-                  placeholder="0"
-                />
-              </div>
             </div>
             
-            <!-- Contenido específico por tipo -->
-            <div v-if="formLesson.type === 'video'" class="form-group">
-              <label class="form-label">
-                Video <span class="required">*</span>
+            <div class="form-group">
+              <label for="module-title" class="form-label">
+                Título del módulo <span class="required">*</span>
               </label>
-              <div class="file-upload">
-                <input 
-                  type="file" 
-                  id="lesson-video-upload"
-                  accept="video/*"
-                  @change="$emit('file-change', $event)"
-                  class="file-input"
-                />
-                <label for="lesson-video-upload" class="upload-label">
-                  <span class="upload-icon">🎬</span>
-                  <span>Subir video</span>
-                  <small>Formatos: MP4, WebM, MOV</small>
-                </label>
+              <input 
+                id="module-title" 
+                v-model="formModule.title" 
+                type="text" 
+                class="form-input"
+                required 
+                placeholder="Ej: Introducción al Yoga"
+              />
+            </div>
+            
+            <div class="modal__actions">
+              <button type="button" class="btn btn--ghost" @click="$emit('close-module-modal')">
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn--primary">
+                {{ formModule.id ? 'Actualizar' : 'Crear' }} Módulo
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Lección -->
+    <div v-if="showLessonModal" class="modal-backdrop" @click.self="$emit('close-lesson-modal')">
+      <div class="modal modal--xlarge" role="dialog" aria-modal="true" aria-labelledby="lesson-modal-title">
+        <header class="modal__header">
+          <h3 id="lesson-modal-title">{{ lessonModalTitle }}</h3>
+          <button class="modal__close" @click="$emit('close-lesson-modal')" aria-label="Cerrar">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </header>
+        <div class="modal__body">
+          <form class="lesson-form" @submit.prevent="$emit('save-lesson', formLesson)">
+            <div class="form-tabs">
+              <button 
+                type="button" 
+                class="form-tab"
+                :class="{ 'is-active': lessonTab === 'info' }"
+                @click="lessonTab = 'info'"
+              >
+                Información
+              </button>
+              <button 
+                v-if="formLesson.type === 'quiz'" 
+                type="button" 
+                class="form-tab"
+                :class="{ 'is-active': lessonTab === 'quiz' }"
+                @click="lessonTab = 'quiz'"
+              >
+                Configurar Quiz
+              </button>
+            </div>
+            
+            <div v-if="lessonTab === 'info'" class="form-tab-content">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="lesson-course" class="form-label">
+                    Curso <span class="required">*</span>
+                  </label>
+                  <select 
+                    id="lesson-course" 
+                    v-model="formLesson.courseId" 
+                    class="form-select"
+                    required
+                    @change="$emit('lesson-course-change', formLesson.courseId)"
+                    :disabled="loading.courses"
+                  >
+                    <option value="">Seleccionar curso</option>
+                    <option v-for="course in localCourses" :key="course.id_curso" :value="course.id_curso">
+                      {{ course.titulo_curso }}
+                    </option>
+                  </select>
+                  <div v-if="loading.courses" class="loading-indicator">
+                    Cargando cursos...
+                  </div>
+                </div>
                 
-                <div v-if="selectedFileName" class="file-preview">
-                  <p><strong>Archivo:</strong> {{ selectedFileName }}</p>
-                  <video v-if="filePreviewUrl" controls class="video-preview">
-                    <source :src="filePreviewUrl" />
-                  </video>
+                <div class="form-group">
+                  <label for="lesson-module" class="form-label">
+                    Módulo <span class="required">*</span>
+                  </label>
+                  <select 
+                    id="lesson-module" 
+                    v-model="formLesson.moduleId" 
+                    class="form-select"
+                    required
+                    :disabled="!formLesson.courseId"
+                  >
+                    <option value="">Seleccionar módulo</option>
+                    <option 
+                      v-for="module in availableModulesForLesson" 
+                      :key="module.id" 
+                      :value="module.id"
+                    >
+                      {{ module.order }}. {{ module.title }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="lesson-title" class="form-label">
+                    Título <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="lesson-title" 
+                    v-model="formLesson.title" 
+                    type="text" 
+                    class="form-input"
+                    required 
+                    placeholder="Título de la lección"
+                  />
+                </div>
+                
+                <div class="form-group">
+                  <label for="lesson-type" class="form-label">
+                    Tipo <span class="required">*</span>
+                  </label>
+                  <select 
+                    id="lesson-type" 
+                    v-model="formLesson.type" 
+                    class="form-select"
+                    required
+                  >
+                    <option value="video">🎬 Video</option>
+                    <option value="texto">📝 Texto</option>
+                    <option value="archivo">📎 Archivo</option>
+                    <option value="quiz">❓ Quiz</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="lesson-order" class="form-label">
+                    Orden <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="lesson-order" 
+                    v-model.number="formLesson.order" 
+                    type="number" 
+                    min="1" 
+                    class="form-input"
+                    required 
+                    placeholder="1"
+                  />
+                </div>
+                
+                <div class="form-group" v-if="formLesson.type !== 'quiz'">
+                  <label for="lesson-duration" class="form-label">
+                    Duración (minutos)
+                  </label>
+                  <input 
+                    id="lesson-duration" 
+                    v-model.number="formLesson.duration" 
+                    type="number" 
+                    min="0" 
+                    class="form-input"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+              
+              <!-- Contenido específico por tipo -->
+              <div v-if="formLesson.type === 'video'" class="form-group">
+                <label class="form-label">
+                  Video <span class="required">*</span>
+                </label>
+                <div class="file-upload">
+                  <input 
+                    type="file" 
+                    id="lesson-video-upload"
+                    accept="video/*"
+                    @change="$emit('file-change', $event)"
+                    class="file-input"
+                  />
+                  <label for="lesson-video-upload" class="upload-label">
+                    <span class="upload-icon">🎬</span>
+                    <span>Subir video</span>
+                    <small>Formatos: MP4, WebM, MOV</small>
+                  </label>
+                  
+                  <div v-if="selectedFileName" class="file-preview">
+                    <p><strong>Archivo:</strong> {{ selectedFileName }}</p>
+                    <video v-if="filePreviewUrl" controls class="video-preview">
+                      <source :src="filePreviewUrl" />
+                    </video>
+                  </div>
+                </div>
+              </div>
+              
+              <div v-if="formLesson.type === 'texto'" class="form-group">
+                <label for="lesson-content" class="form-label">
+                  Contenido <span class="required">*</span>
+                </label>
+                <textarea 
+                  id="lesson-content" 
+                  v-model="formLesson.contentText" 
+                  class="form-textarea"
+                  rows="8"
+                  placeholder="Escribe el contenido de la lección..."
+                ></textarea>
+              </div>
+              
+              <div v-if="formLesson.type === 'archivo'" class="form-group">
+                <label class="form-label">
+                  Archivo <span class="required">*</span>
+                </label>
+                <div class="file-upload">
+                  <input 
+                    type="file" 
+                    id="lesson-file-upload"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    @change="$emit('file-change', $event)"
+                    class="file-input"
+                  />
+                  <label for="lesson-file-upload" class="upload-label">
+                    <span class="upload-icon">📎</span>
+                    <span>Subir archivo</span>
+                    <small>PDF, Word, Excel, PowerPoint, Texto</small>
+                  </label>
+                  
+                  <div v-if="selectedFileName" class="file-preview">
+                    <p><strong>Archivo:</strong> {{ selectedFileName }}</p>
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div v-if="formLesson.type === 'texto'" class="form-group">
-              <label for="lesson-content" class="form-label">
-                Contenido <span class="required">*</span>
-              </label>
-              <textarea 
-                id="lesson-content" 
-                v-model="formLesson.contentText" 
-                class="form-textarea"
-                rows="8"
-                placeholder="Escribe el contenido de la lección..."
-              ></textarea>
-            </div>
-            
-            <div v-if="formLesson.type === 'archivo'" class="form-group">
-              <label class="form-label">
-                Archivo <span class="required">*</span>
-              </label>
-              <div class="file-upload">
-                <input 
-                  type="file" 
-                  id="lesson-file-upload"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
-                  @change="$emit('file-change', $event)"
-                  class="file-input"
-                />
-                <label for="lesson-file-upload" class="upload-label">
-                  <span class="upload-icon">📎</span>
-                  <span>Subir archivo</span>
-                  <small>PDF, Word, Excel, PowerPoint, Texto</small>
-                </label>
-                
-                <div v-if="selectedFileName" class="file-preview">
-                  <p><strong>Archivo:</strong> {{ selectedFileName }}</p>
+            <!-- Pestaña de Quiz -->
+            <div v-if="lessonTab === 'quiz' && formLesson.type === 'quiz'" class="form-tab-content">
+              <div class="quiz-config">
+                <div class="form-group">
+                  <label for="quiz-title" class="form-label">
+                    Título del quiz <span class="required">*</span>
+                  </label>
+                  <input 
+                    id="quiz-title" 
+                    v-model="formLesson.quiz.title" 
+                    type="text" 
+                    class="form-input"
+                    required 
+                    placeholder="Ej: Examen del módulo 1"
+                  />
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Pestaña de Quiz -->
-          <div v-if="lessonTab === 'quiz' && formLesson.type === 'quiz'" class="form-tab-content">
-            <div class="quiz-config">
-              <div class="form-group">
-                <label for="quiz-title" class="form-label">
-                  Título del quiz <span class="required">*</span>
-                </label>
-                <input 
-                  id="quiz-title" 
-                  v-model="formLesson.quiz.title" 
-                  type="text" 
-                  class="form-input"
-                  required 
-                  placeholder="Ej: Examen del módulo 1"
-                />
-              </div>
-              
-              <div class="quiz-settings">
-                <h4>Preguntas</h4>
                 
-                <div 
-                  v-for="(question, qIndex) in formLesson.quiz.questions" 
-                  :key="qIndex" 
-                  class="question-card"
-                >
-                  <div class="question-header">
-                    <h5>Pregunta {{ qIndex + 1 }}</h5>
-                    <button 
-                      type="button" 
-                      class="btn btn--danger btn--xs"
-                      @click="$emit('remove-question', qIndex)"
-                      :disabled="formLesson.quiz.questions.length <= 1"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+                <div class="quiz-settings">
+                  <h4>Preguntas</h4>
                   
-                  <div class="form-group">
-                    <label class="form-label">
-                      Enunciado <span class="required">*</span>
-                    </label>
-                    <textarea 
-                      v-model="question.text" 
-                      class="form-textarea"
-                      rows="2"
-                      placeholder="Escribe la pregunta..."
-                      required
-                    ></textarea>
-                  </div>
-                  
-                  <div class="options-section">
-                    <h6>Opciones de respuesta</h6>
-                    
-                    <div 
-                      v-for="(option, oIndex) in question.options" 
-                      :key="oIndex" 
-                      class="option-row"
-                    >
-                      <div class="option-content">
-                        <input 
-                          type="radio" 
-                          :name="'correct-' + qIndex" 
-                          v-model="question.correctOption" 
-                          :value="oIndex"
-                          class="correct-radio"
-                        />
-                        <input 
-                          v-model="option.text" 
-                          type="text" 
-                          class="form-input"
-                          placeholder="Texto de la opción..."
-                          required
-                        />
-                      </div>
+                  <div 
+                    v-for="(question, qIndex) in formLesson.quiz.questions" 
+                    :key="qIndex" 
+                    class="question-card"
+                  >
+                    <div class="question-header">
+                      <h5>Pregunta {{ qIndex + 1 }}</h5>
                       <button 
                         type="button" 
-                        class="btn btn--ghost btn--xs"
-                        @click="$emit('remove-option', qIndex, oIndex)"
-                        :disabled="question.options.length <= 2"
+                        class="btn btn--danger btn--xs"
+                        @click="$emit('remove-question', qIndex)"
+                        :disabled="formLesson.quiz.questions.length <= 1"
                       >
-                        ✕
+                        Eliminar
                       </button>
                     </div>
                     
-                    <button 
-                      type="button" 
-                      class="btn btn--outline btn--small"
-                      @click="$emit('add-option', qIndex)"
-                    >
-                      + Agregar opción
-                    </button>
+                    <div class="form-group">
+                      <label class="form-label">
+                        Enunciado <span class="required">*</span>
+                      </label>
+                      <textarea 
+                        v-model="question.text" 
+                        class="form-textarea"
+                        rows="2"
+                        placeholder="Escribe la pregunta..."
+                        required
+                      ></textarea>
+                    </div>
                     
-                    <div class="correct-hint" v-if="question.correctOption !== undefined">
-                      ✅ Opción {{ question.correctOption + 1 }} marcada como correcta
+                    <div class="options-section">
+                      <h6>Opciones de respuesta</h6>
+                      
+                      <div 
+                        v-for="(option, oIndex) in question.options" 
+                        :key="oIndex" 
+                        class="option-row"
+                      >
+                        <div class="option-content">
+                          <input 
+                            type="radio" 
+                            :name="'correct-' + qIndex" 
+                            v-model="question.correctOption" 
+                            :value="oIndex"
+                            class="correct-radio"
+                          />
+                          <input 
+                            v-model="option.text" 
+                            type="text" 
+                            class="form-input"
+                            placeholder="Texto de la opción..."
+                            required
+                          />
+                        </div>
+                        <button 
+                          type="button" 
+                          class="btn btn--ghost btn--xs"
+                          @click="$emit('remove-option', qIndex, oIndex)"
+                          :disabled="question.options.length <= 2"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      
+                      <button 
+                        type="button" 
+                        class="btn btn--outline btn--small"
+                        @click="$emit('add-option', qIndex)"
+                      >
+                        + Agregar opción
+                      </button>
+                      
+                      <div class="correct-hint" v-if="question.correctOption !== undefined">
+                        ✅ Opción {{ question.correctOption + 1 }} marcada como correcta
+                      </div>
                     </div>
                   </div>
+                  
+                  <button 
+                    type="button" 
+                    class="btn btn--primary"
+                    @click="$emit('add-question')"
+                  >
+                    + Agregar pregunta
+                  </button>
                 </div>
-                
-                <button 
-                  type="button" 
-                  class="btn btn--primary"
-                  @click="$emit('add-question')"
-                >
-                  + Agregar pregunta
-                </button>
               </div>
             </div>
-          </div>
-          
-          <div class="modal__actions">
-            <button type="button" class="btn btn--ghost" @click="$emit('close-lesson-modal')">
-              Cancelar
-            </button>
-            <button 
-              v-if="lessonTab === 'quiz'" 
-              type="button" 
-              class="btn btn--outline"
-              @click="lessonTab = 'info'"
-            >
-              ← Volver
-            </button>
-            <button type="submit" class="btn btn--primary">
-              {{ formLesson.id ? 'Actualizar' : 'Crear' }} Lección
-            </button>
-          </div>
-        </form>
+            
+            <div class="modal__actions">
+              <button type="button" class="btn btn--ghost" @click="$emit('close-lesson-modal')">
+                Cancelar
+              </button>
+              <button 
+                v-if="lessonTab === 'quiz'" 
+                type="button" 
+                class="btn btn--outline"
+                @click="lessonTab = 'info'"
+              >
+                ← Volver
+              </button>
+              <button type="submit" class="btn btn--primary">
+                {{ formLesson.id ? 'Actualizar' : 'Crear' }} Lección
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -816,6 +838,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { cursoService } from '@/services/cursos.services'
 import { categoriasService } from '@/services/categorias.services'
 import { DificultadServices } from '@/services/dificultad.services'
+import { obtenerInstructores } from '@/services/usuario.services'
 
 const props = defineProps({
   // Course Detail Modal
@@ -843,7 +866,10 @@ const props = defineProps({
   formLesson: Object,
   availableModulesForLesson: Array,
   selectedFileName: String,
-  filePreviewUrl: String
+  filePreviewUrl: String,
+  
+  // Prop renombrado para evitar conflicto
+  parentCourses: Array
 })
 
 const emit = defineEmits([
@@ -877,11 +903,16 @@ const emit = defineEmits([
   'remove-option'
 ])
 
+// Instructores
+const instructorsList = ref([])
+const loadingInstructors = ref(false)
+
 // Local state
 const lessonTab = ref('info')
 const categories = ref([])
 const difficulties = ref([])
-const courses = ref([])
+// Variable local renombrada para evitar conflicto con el prop
+const localCourses = ref([])
 const loading = ref({
   categories: false,
   difficulties: false,
@@ -899,19 +930,20 @@ watch(() => props.showCourseModal, (isOpen) => {
   if (isOpen) {
     if (categories.value.length === 0) loadCategories()
     if (difficulties.value.length === 0) loadDifficulties()
+    if (instructorsList.value.length === 0) loadInstructors()
   }
 })
 
 // Observar cuando se abre el modal de módulo para cargar cursos si es necesario
 watch(() => props.showModuleModal, (isOpen) => {
-  if (isOpen && courses.value.length === 0) {
+  if (isOpen && localCourses.value.length === 0) {
     loadCourses()
   }
 })
 
 // Observar cuando se abre el modal de lección para cargar cursos si es necesario
 watch(() => props.showLessonModal, (isOpen) => {
-  if (isOpen && courses.value.length === 0) {
+  if (isOpen && localCourses.value.length === 0) {
     loadCourses()
   }
 })
@@ -921,20 +953,66 @@ const loadInitialData = async () => {
   await Promise.all([
     loadCourses(),
     loadCategories(),
-    loadDifficulties()
+    loadDifficulties(),
+    loadInstructors()
   ])
+}
+
+const loadInstructors = async () => {
+  loadingInstructors.value = true
+  try {
+    console.log('🔄 Cargando instructores... enviando id_rol = 3')
+    // El endpoint necesita el valor 3 para obtener instructores
+    const response = await obtenerInstructores(3)
+    console.log('✅ Respuesta de API (tipo):', typeof response)
+    console.log('✅ Respuesta de API (valor):', response)
+    
+    // Tu API está devolviendo un array directamente, no un objeto con success/data
+    if (Array.isArray(response)) {
+      instructorsList.value = response
+      console.log(`📋 Instructores cargados: ${instructorsList.value.length} registros`)
+      console.log('📝 Lista de instructores:', instructorsList.value)
+      
+      // Verifica la estructura del primer instructor
+      if (instructorsList.value.length > 0) {
+        const firstInstructor = instructorsList.value[0]
+        console.log('🔍 Estructura del primer instructor:', Object.keys(firstInstructor))
+        console.log('📊 Datos del primer instructor:', firstInstructor)
+      }
+    } else if (response && Array.isArray(response.data)) {
+      // Si la API cambia y empieza a devolver {success: true, data: [...]}
+      instructorsList.value = response.data
+      console.log(`📋 Instructores cargados (con wrapper): ${instructorsList.value.length} registros`)
+    } else if (response && response.success && Array.isArray(response.data)) {
+      // Otra posible estructura
+      instructorsList.value = response.data
+      console.log(`📋 Instructores cargados (con success): ${instructorsList.value.length} registros`)
+    } else {
+      console.error('❌ Respuesta inesperada:', response)
+      instructorsList.value = []
+    }
+  } catch (error) {
+    console.error('❌ Error al cargar instructores:', error)
+    console.error('Detalles del error:', error.response || error.message)
+    instructorsList.value = []
+  } finally {
+    loadingInstructors.value = false
+  }
 }
 
 const loadCourses = async () => {
   loading.value.courses = true
   try {
     const response = await cursoService.obtenerCursos()
+    // Ajusta según la estructura real de tu API
     if (response.success && response.data) {
-      courses.value = response.data
+      localCourses.value = response.data
+    } else if (Array.isArray(response)) {
+      localCourses.value = response
     }
   } catch (error) {
     console.error('Error al cargar cursos:', error)
-    courses.value = []
+    localCourses.value = []
   } finally {
     loading.value.courses = false
   }
@@ -972,8 +1050,8 @@ const loadDifficulties = async () => {
 
 // Variables computadas
 const preSelectedCourse = computed(() => {
-  if (props.formModule?.courseId && courses.value?.length) {
-    const course = courses.value.find(c => c.id_curso === props.formModule.courseId)
+  if (props.formModule?.courseId && localCourses.value?.length) {
+    const course = localCourses.value.find(c => c.id_curso === props.formModule.courseId)
     return course || null
   }
   return null
@@ -997,13 +1075,50 @@ const getLessonTypeLabel = (type) => {
 const getDifficultyName = (difficultyId) => {
   if (!difficultyId || !difficulties.value.length) return 'No asignada'
   const difficulty = difficulties.value.find(d => d.id_dificultad === difficultyId)
-  return difficulty ? difficulty.nombre_dificultad : 'No asignada'
+  return difficulty ? difficulty.dificultad : 'No asignada'
 }
 
 const getCategoryName = (categoryId) => {
   if (!categoryId || !categories.value.length) return 'No asignada'
   const category = categories.value.find(c => c.id_categoria === categoryId)
   return category ? category.nombre_categoria : 'No asignada'
+}
+
+const getInstructorDisplayName = (instructor) => {
+  if (!instructor) return 'Desconocido'
+  
+  // Intenta diferentes formatos de nombre
+  if (instructor.nombre_completo) {
+    return instructor.nombre_completo
+  }
+  
+  if (instructor.nombre && instructor.apellido) {
+    return `${instructor.nombre} ${instructor.apellido}`
+  }
+  
+  if (instructor.nombre) {
+    return instructor.nombre
+  }
+  
+  return `Instructor ${instructor.id_usuario}`
+}
+
+const getInstructorName = (instructorId) => {
+  if (!instructorId) {
+    return 'No asignado'
+  }
+  
+  if (!instructorsList.value.length) {
+    return 'No asignado'
+  }
+  
+  const instructor = instructorsList.value.find(i => i.id_usuario === instructorId)
+  
+  if (instructor) {
+    return getInstructorDisplayName(instructor)
+  }
+  
+  return 'No asignado'
 }
 
 // Exponer métodos para uso externo

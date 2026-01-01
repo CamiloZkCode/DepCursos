@@ -21,7 +21,7 @@
               <label for="f-categoria">Categoría</label>
               <select id="f-categoria" v-model="filters.category">
                 <option value="">Todas las categorías</option>
-                <option v-for="cat in categorias" :key="cat.id_categoria" :value="cat.nombre_categoria">
+                <option v-for="cat in categorias" :key="cat.id_categoria" :value="cat.id_categoria">
                   {{ cat.nombre_categoria }}
                 </option>
               </select>
@@ -41,8 +41,8 @@
               <label for="f-dificultad">Nivel</label>
               <select id="f-dificultad" v-model="filters.difficulty">
                 <option value="">Todos los niveles</option>
-                <option v-for="dif in dificultades" :key="dif.id_dificultad" :value="dif.dificultad">
-                  {{ dif.dificultad }}
+                <option v-for="dif in dificultades" :key="dif.id_dificultad" :value="dif.id_dificultad">
+                  {{ dif.dificultad}}
                 </option>
               </select>
             </div>
@@ -70,7 +70,24 @@
 
     <!-- ===== LISTADO DE CURSOS ===== -->
     <section class="results">
-      <div v-if="filteredCourses.length === 0" class="empty-state">
+      <!-- Estado de carga -->
+      <div v-if="loading" class="loading-state">
+        <div class="spinner-large"></div>
+        <p>Cargando cursos...</p>
+      </div>
+
+      <!-- Error al cargar -->
+      <div v-else-if="error" class="error-state">
+        <div class="error-state__icon">⚠️</div>
+        <h3>Error al cargar cursos</h3>
+        <p>{{ error }}</p>
+        <button class="btn btn--primary" @click="loadCourses">
+          Reintentar
+        </button>
+      </div>
+
+      <!-- Sin cursos -->
+      <div v-else-if="filteredCourses.length === 0 && !loading" class="empty-state">
         <div class="empty-state__icon">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -83,42 +100,47 @@
         <button class="btn btn--primary" @click="clearFilters">Mostrar todos los cursos</button>
       </div>
 
+      <!-- Cursos disponibles -->
       <ul class="cards" v-else>
-        <li v-for="course in currentPageCourses" :key="course.id" class="card">
+        <li v-for="course in currentPageCourses" :key="course.id_curso" class="card">
           <article class="course-card">
-            <!-- Imagen del curso - MÁS ALTA -->
-            <div class="course-card__image" :style="{ 'background-image': `url(${courseImage})` }">
+            <!-- Imagen del curso -->
+            <div class="course-card__image" :style="{ 'background-image': `url(${course.img_portada || defaultImage})` }">
               <div class="course-card__category">
-                {{ course.category }}
+                {{ getCategoryName(course.id_categoria) }}
+              </div>
+              <!-- Estado del curso -->
+              <div v-if="course.estatus === 'Publicado'" class="course-card__status">
+                {{ course.estatus }}
               </div>
             </div>
 
-            <!-- Contenido del curso - MÁS COMPACTO -->
+            <!-- Contenido del curso -->
             <div class="course-card__content">
               <div class="course-card__header">
-                <h3 class="course-card__title">{{ course.name }}</h3>
+                <h3 class="course-card__title">{{ course.titulo_curso }}</h3>
                 <div class="course-card__rating">
                   <div class="stars">
                     <span v-for="n in 5" :key="n" class="star"
-                      :class="{ filled: n <= Math.round(course.rating) }">★</span>
+                      :class="{ filled: n <= Math.round(course.rating || 0) }">★</span>
                   </div>
-                  <span class="rating-value">{{ course.rating.toFixed(1) }}</span>
+                  <span class="rating-value">{{ (course.rating || 0).toFixed(1) }}</span>
                 </div>
               </div>
 
               <p class="course-card__description">
-                Fundamentos de {{ course.category.toLowerCase() }}, conceptos clave y mejores prácticas.
+                {{ truncateDescription(course.descripcion) }}
               </p>
 
               <div class="course-card__details">
-                <div class="course-card__difficulty" :class="getDifficultyClass(course.difficulty)">
+                <div class="course-card__difficulty" :class="getDifficultyClass(course.id_dificultad)">
                   <span class="difficulty-dot"></span>
-                  {{ course.difficulty }}
+                  {{ getDifficultyName(course.id_dificultad) }}
                 </div>
               </div>
 
               <div class="course-card__footer">
-                <div class="course-card__price">{{ formatPrice(course.price) }}</div>
+                <div class="course-card__price">{{ formatPrice(course.precio) }}</div>
                 <div class="course-card__actions">
                   <button class="btn btn--ghost btn--icon" @click="addToCart(course)">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -127,7 +149,7 @@
                     </svg>
                     Carrito
                   </button>
-                  <button class="btn btn--primary" @click="goToCourse(course.id)">
+                  <button class="btn btn--primary" @click="goToCourse(course.id_curso)">
                     Ver curso
                   </button>
                 </div>
@@ -138,7 +160,7 @@
       </ul>
 
       <!-- Paginación -->
-      <div class="pagination" v-if="filteredCourses.length > perPage && filteredCourses.length > 0">
+      <div class="pagination" v-if="filteredCourses.length > perPage && filteredCourses.length > 0 && !loading">
         <button class="btn btn--ghost btn--icon" @click="prevPage" :disabled="currentPage === 1">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -168,125 +190,149 @@
 
 <script setup>
 import { onMounted, ref, reactive, computed, watch } from "vue";
+import { cursoService } from "../services/cursos.services";
 import { categoriasService } from "../services/categorias.services";
 import { DificultadServices } from "../services/dificultad.services";
 import { useRouter } from 'vue-router';
-import { useCartStore } from "../store/cartStore"; // Importa el store
+import { useCartStore } from "../store/cartStore";
 
 const router = useRouter();
-const cartStore = useCartStore(); // Crea la instancia del store
+const cartStore = useCartStore();
 
-// Estados de los select
+// Imagen por defecto
+const defaultImage = 'https://images.unsplash.com/photo-1588912914078-2fe5224fd8b8?q=80&w=870&auto=format&fit=crop';
+
+// Estados
+const loading = ref(false);
+const error = ref(null);
+const courses = ref([]);
 const categorias = ref([]);
 const dificultades = ref([]);
 
-// Filtros - Nombres corregidos
+// Filtros
 const filters = reactive({
-  category: "", // Cambiado de categoryId a category
-  difficulty: "", // Cambiado de difficultyId a difficulty
+  category: "",
+  difficulty: "",
 });
 
-// Cargar categorias y dificultades
+// Paginación
+const perPage = 12;
+const currentPage = ref(1);
+
+// Cargar datos iniciales
 onMounted(async () => {
-  try {
-    const resCategorias = await categoriasService.obtenerCategorias();
-    categorias.value = resCategorias.data;
-    console.log("Categorías cargadas:", categorias.value); // Debug
-
-    const resDificultades = await DificultadServices.obtenerDificultades();
-    dificultades.value = resDificultades.data;
-    console.log("Dificultades cargadas:", dificultades.value); // Debug
-  } catch (error) {
-    console.error("Error cargando filtros:", error);
-  }
+  await Promise.all([
+    loadCourses(),
+    loadCategories(),
+    loadDifficulties()
+  ]);
 });
 
-const courseImage = 'https://images.unsplash.com/photo-1588912914078-2fe5224fd8b8?q=80&w=870&auto=format&fit=crop';
+// Cargar cursos desde la API
+const loadCourses = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const response = await cursoService.obtenerCursos();
+    console.log("📦 Cursos cargados:", response);
+    
+    if (response.success && Array.isArray(response.data)) {
+      courses.value = response.data.map(course => ({
+        ...course,
+        // Asegurar que todos los campos existan
+        rating: course.rating || 0,
+        estatus: course.estatus || 'Borrador',
+      }));
+    } else if (Array.isArray(response)) {
+      // Si la API devuelve directamente un array
+      courses.value = response.map(course => ({
+        ...course,
+        rating: course.rating || 0,
+        estatus: course.estatus || 'Borrador',
+      }));
+    } else {
+      throw new Error("Formato de respuesta inválido");
+    }
+  } catch (err) {
+    console.error("❌ Error cargando cursos:", err);
+    error.value = err.message || "No se pudieron cargar los cursos";
+    courses.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
 
-// Cursos con estructura mejorada
-const courses = ref([
-  {
-    id: 1,
-    name: 'CCNA Routing & Switching',
-    category: 'Redes',
-    difficulty: 'Principiante',
-    rating: 4.7,
-    price: 120000
-  },
-  {
-    id: 2,
-    name: 'Ciberseguridad Esencial',
-    category: 'Seguridad',
-    difficulty: 'Intermedio',
-    rating: 4.5,
-    price: 120000
-  },
-  {
-    id: 3,
-    name: 'JavaScript Profesional',
-    category: 'Programación',
-    difficulty: 'Avanzado',
-    rating: 4.9,
-    price: 120000
-  },
-  {
-    id: 4,
-    name: 'Python para Data Science',
-    category: 'Data Science',
-    difficulty: 'Intermedio',
-    rating: 4.8,
-    price: 120000
-  },
-  {
-    id: 5,
-    name: 'Diseño UI/UX con Figma',
-    category: 'Diseño',
-    difficulty: 'Principiante',
-    rating: 4.6,
-    price: 120000
-  },
-  {
-    id: 6,
-    name: 'DevOps con Docker y Kubernetes',
-    category: 'DevOps',
-    difficulty: 'Avanzado',
-    rating: 4.4,
-    price: 120000
-  },
-]);
+// Cargar categorías
+const loadCategories = async () => {
+  try {
+    const response = await categoriasService.obtenerCategorias();
+    if (response.success && Array.isArray(response.data)) {
+      categorias.value = response.data;
+    } else if (Array.isArray(response)) {
+      categorias.value = response;
+    }
+  } catch (err) {
+    console.error("Error cargando categorías:", err);
+  }
+};
 
-// Filtro corregido - usando las propiedades correctas
+// Cargar dificultades
+const loadDifficulties = async () => {
+  try {
+    const response = await DificultadServices.obtenerDificultades();
+    if (response.success && Array.isArray(response.data)) {
+      dificultades.value = response.data;
+    } else if (Array.isArray(response)) {
+      dificultades.value = response;
+    }
+  } catch (err) {
+    console.error("Error cargando dificultades:", err);
+  }
+};
+
+// Filtro de cursos
 const filteredCourses = computed(() => {
   return courses.value.filter(course => {
     // Si hay filtro de categoría y no coincide, excluir
-    if (filters.category && course.category !== filters.category) return false;
+    if (filters.category && course.id_categoria !== parseInt(filters.category)) return false;
 
     // Si hay filtro de dificultad y no coincide, excluir
-    if (filters.difficulty && course.difficulty !== filters.difficulty) return false;
+    if (filters.difficulty && course.id_dificultad !== parseInt(filters.difficulty)) return false;
+
+    // Solo mostrar cursos publicados
+    if (course.estatus !== 'Publicado') return false;
 
     return true;
   });
 });
 
+// Resumen de filtros activos
 const filtersSummary = computed(() => {
   const parts = [];
-  if (filters.category) parts.push(filters.category);
-  if (filters.difficulty) parts.push(filters.difficulty);
+  if (filters.category) {
+    const cat = categorias.value.find(c => c.id_categoria === parseInt(filters.category));
+    if (cat) parts.push(cat.nombre_categoria);
+  }
+  if (filters.difficulty) {
+    const dif = dificultades.value.find(d => d.id_dificultad === parseInt(filters.difficulty));
+    if (dif) parts.push(dif.dificultad);
+  }
   return parts.length ? parts.join(' • ') : '';
 });
 
-const perPage = 12;
-const currentPage = ref(1);
+// Paginación
 const totalPages = computed(() => Math.ceil(filteredCourses.value.length / perPage));
 const currentPageCourses = computed(() => {
   const start = (currentPage.value - 1) * perPage;
   return filteredCourses.value.slice(start, start + perPage);
 });
 
+// Watchers
 watch(filteredCourses, () => {
   currentPage.value = 1;
 });
 
+// Funciones de paginación
 function prevPage() {
   if (currentPage.value > 1) currentPage.value--;
 }
@@ -295,25 +341,38 @@ function nextPage() {
   if (currentPage.value < totalPages.value) currentPage.value++;
 }
 
+// Funciones auxiliares
 function clearFilters() {
   filters.category = '';
   filters.difficulty = '';
 }
 
 function goToCourse(id) {
-  router.push(`/ver-curso/${id}`); // Añadido el id en la ruta
+  router.push(`/cursos/${id}`);
 }
 
-function getDifficultyClass(difficulty) {
+function getCategoryName(categoryId) {
+  const category = categorias.value.find(c => c.id_categoria === categoryId);
+  return category ? category.nombre_categoria : 'Sin categoría';
+}
+
+function getDifficultyName(difficultyId) {
+  const difficulty = dificultades.value.find(d => d.id_dificultad === difficultyId);
+  return difficulty ? difficulty.dificultad : 'Sin definir';
+}
+
+function getDifficultyClass(difficultyId) {
+  const difficultyName = getDifficultyName(difficultyId);
   const classes = {
     'Principiante': 'difficulty--beginner',
     'Intermedio': 'difficulty--intermediate',
     'Avanzado': 'difficulty--advanced'
   };
-  return classes[difficulty] || '';
+  return classes[difficultyName] || '';
 }
 
 function formatPrice(value) {
+  if (!value && value !== 0) return 'Gratis';
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -322,32 +381,34 @@ function formatPrice(value) {
   }).format(value);
 }
 
+function truncateDescription(text, maxLength = 100) {
+  if (!text) return 'Sin descripción disponible';
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
 function addToCart(course) {
   // Crear un objeto producto compatible con el store
   const product = {
-    id: course.id,
-    title: course.name,
-    price: course.price,
-    image: courseImage, // Usa la misma imagen que muestra la tarjeta
-    category: course.category,
-    difficulty: course.difficulty,
-    rating: course.rating
+    id: course.id_curso,
+    title: course.titulo_curso,
+    price: course.precio,
+    image: course.img_portada || defaultImage,
+    category: getCategoryName(course.id_categoria),
+    difficulty: getDifficultyName(course.id_dificultad),
+    rating: course.rating || 0,
+    description: course.descripcion
   };
   
   // Agregar al carrito usando el store
   cartStore.addToCart(product);
   
-  // Opcional: Mostrar notificación o feedback
-  showAddToCartFeedback(course.name);
+  // Mostrar feedback
+  showAddToCartFeedback(course.titulo_curso);
 }
 
-// Función opcional para mostrar feedback
 function showAddToCartFeedback(courseName) {
-  // Puedes implementar una notificación toast aquí
   console.log(`✅ "${courseName}" agregado al carrito`);
-  
-  // Ejemplo simple con alert (cambiar por una notificación más elegante)
-  // alert(`"${courseName}" se ha agregado al carrito`);
+  // Aquí puedes agregar un toast notification si lo deseas
 }
 </script>
 
@@ -539,6 +600,23 @@ function showAddToCartFeedback(courseName) {
   border-radius: 1.5rem;
   font-size: 0.75rem;
   font-weight: 600;
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+/* Estado del curso */
+.course-card__status {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(40, 167, 69, 0.95);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   backdrop-filter: blur(4px);
   z-index: 2;
 }
@@ -790,6 +868,53 @@ function showAddToCartFeedback(courseName) {
   margin: 0 0 1.5rem 0;
   font-size: 0.95rem;
   opacity: 0.8;
+}
+
+/* ===== ESTADO DE CARGA ===== */
+.loading-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.spinner-large {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-morado);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== ESTADO DE ERROR ===== */
+.error-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: #fee2e2;
+  border-radius: 1rem;
+  margin: 1.5rem 0;
+}
+
+.error-state__icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #dc3545;
+}
+
+.error-state h3 {
+  color: #991b1b;
+  margin: 0 0 0.5rem;
+}
+
+.error-state p {
+  color: #991b1b;
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
 }
 
 /* ===== RESPONSIVE ===== */
