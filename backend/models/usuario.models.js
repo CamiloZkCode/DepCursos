@@ -33,11 +33,20 @@ async function obtenerDatosUsuario(id_usuario) {
   return rows[0] || null;
 }
 
+async function obtenerInstructores(id_rol) {
+  const [rows] = await db.query(
+    "SELECT * FROM Usuarios WHERE id_rol = ? ORDER by nombre ",
+    [id_rol]
+  );
+  return rows[0] || null;
+}
+
 
 module.exports = {
   getAllUsuarios,
   findUserByUsername,
   getRolById,
   findByCorreo,
-  obtenerDatosUsuario
+  obtenerDatosUsuario,
+  obtenerInstructores
   };

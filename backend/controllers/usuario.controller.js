@@ -218,10 +218,23 @@ async function cambiarContrasena(req, res) {
   }
 }
 
+async function obtenerInstructores(req, res) {
+  try {
+    let id_rol = 3;
+    const datosInstructores = await usuariosModel.obtenerDatosUsuario(id_rol);
+    
+    res.status(200).json(datosInstructores);
+  } catch (err) {
+    res.status(500).json({ mensaje: "Error del servidor" });
+  }
+}
+
+
 module.exports = {
   registroUsuario,
   editarPerfilUsuario,
   obtenerPerfilUsuario,
   actualizarAvatar,
   cambiarContrasena,
+  obtenerInstructores
 };
