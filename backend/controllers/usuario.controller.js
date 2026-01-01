@@ -218,14 +218,25 @@ async function cambiarContrasena(req, res) {
   }
 }
 
+// En controllers/usuario.controllers.js
 async function obtenerInstructores(req, res) {
   try {
-    let id_rol = 3;
-    const datosInstructores = await usuariosModel.obtenerDatosUsuario(id_rol);
+    // Obtener el id_rol del parámetro de la ruta o usar 3 por defecto
+    const id_rol = req.params.id_rol || 3;
     
-    res.status(200).json(datosInstructores);
+    // Usar la función correcta del modelo
+    const instructores = await usuariosModel.obtenerInstructores(id_rol);
+        if (!instructores || instructores.length === 0) {
+      return res.status(200).json([]);
+    }
+    
+    res.status(200).json(instructores);
   } catch (err) {
-    res.status(500).json({ mensaje: "Error del servidor" });
+    console.error("Error al obtener instructores:", err);
+    res.status(500).json({ 
+      mensaje: "Error del servidor al obtener instructores",
+      error: err.message 
+    });
   }
 }
 

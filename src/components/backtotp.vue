@@ -52,8 +52,8 @@ const scrollToTop = () => {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  width: 44px;
-  height: 44px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: linear-gradient(145deg, #7c3aed, var(--color-morado));
   color: white;
@@ -107,8 +107,8 @@ const scrollToTop = () => {
 
 /* Icono SVG más moderno y minimalista */
 .arrow-icon {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   fill: currentColor;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);

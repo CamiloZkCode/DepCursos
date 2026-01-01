@@ -123,8 +123,8 @@ const proceedToCheckout = () => {
   position: fixed;
   bottom: 1.5rem;
   left: 1.5rem; /* ← Lado izquierdo */
-  width: 56px;
-  height: 56px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: linear-gradient(145deg, #7c3aed, var(--color-morado));
   color: white;
@@ -151,13 +151,13 @@ const proceedToCheckout = () => {
 }
 
 .cart-button:active {
-  transform: translateY(-1px) scale(1.05);
+  transform: translateY(-1px) scale(1.1);
 }
 
 /* Icono/imagen del carrito */
 .cart-icon {
-  width: 28px;
-  height: 28px;
+  width: 25px;
+  height: 25px;
   filter: brightness(0) invert(1); /* Hace la imagen blanca si es oscura */
 }
 

@@ -5,7 +5,7 @@
       <header class="modal__header">
         <div class="modal-header-content">
           <div>
-            <h3 id="course-detail-title">{{ selectedCourse?.title }}</h3>
+            <h3 id="course-detail-title">{{ selectedCourse?.titulo_curso }}</h3>
           </div>
           <button class="modal__close" @click="$emit('close-course-detail')" aria-label="Cerrar">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -27,23 +27,32 @@
                 Editar Curso
               </button>
             </div>
-            <p class="course-description">{{ selectedCourse?.description }}</p>
+            <p class="course-description">{{ selectedCourse?.descripcion }}</p>
             
             <div class="course-details-grid">
               <div class="detail-item">
                 <span class="detail-label">Estado:</span>
-                <span class="status-badge" :class="`status-badge--${selectedCourse?.status === 'Publicado' ? 'active' : 'inactive'}`">
-                  {{ selectedCourse?.status }}
+                <span class="status-badge" :class="`status-badge--${selectedCourse?.estatus === 'Publicado' ? 'active' : 'inactive'}`">
+                  {{ selectedCourse?.estatus }}
                 </span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Precio:</span>
-                <span class="detail-value">${{ selectedCourse?.price }}</span>
+                <span class="detail-value">${{ selectedCourse?.precio }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">Dificultad:</span>
-                <span class="detail-value">{{ selectedCourse?.difficulty }}</span>
+                <span class="detail-value">{{ getDifficultyName(selectedCourse?.id_dificultad) }}</span>
               </div>
+              <div class="detail-item">
+                <span class="detail-label">Categoría:</span>
+                <span class="detail-value">{{ getCategoryName(selectedCourse?.id_categoria) }}</span>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <span class="detail-label">Instructor:</span>
+              <span class="detail-value">{{ selectedCourse?.id_instructor }}</span>
             </div>
           </div>
           
@@ -93,7 +102,7 @@
                       <h6>Lecciones del Módulo</h6>
                       <button 
                         class="btn btn--primary btn--xs"
-                        @click="$emit('create-lesson', selectedCourse?.id, module.id)"
+                        @click="$emit('create-lesson', selectedCourse?.id_curso, module.id)"
                       >
                         <span class="btn-icon">➕</span>
                         Nueva Lección
@@ -131,7 +140,7 @@
                       <p>No hay lecciones en este módulo</p>
                       <button 
                         class="btn btn--outline btn--small"
-                        @click="$emit('create-lesson', selectedCourse?.id, module.id)"
+                        @click="$emit('create-lesson', selectedCourse?.id_curso, module.id)"
                       >
                         <span class="btn-icon">➕</span>
                         Crear Primera Lección
@@ -161,7 +170,7 @@
         </button>
         <button 
           class="btn btn--primary"
-          @click="$emit('create-lesson', selectedCourse?.id)"
+          @click="$emit('create-lesson', selectedCourse?.id_curso)"
         >
           <span class="btn-icon">➕</span>
           Nueva Lección (en cualquier módulo)
@@ -190,7 +199,7 @@
               </label>
               <input 
                 id="course-title" 
-                v-model="formCourse.title" 
+                v-model="formCourse.titulo_curso" 
                 type="text" 
                 class="form-input"
                 required 
@@ -204,15 +213,23 @@
               </label>
               <select 
                 id="course-category" 
-                v-model="formCourse.category" 
+                v-model="formCourse.id_categoria" 
                 class="form-select"
                 required
+                :disabled="loading.categories"
               >
                 <option value="">Seleccionar categoría</option>
-                <option v-for="cat in categories" :key="cat.id" :value="cat.name">
-                  {{ cat.name }}
+                <option 
+                  v-for="category in categories" 
+                  :key="category.id_categoria" 
+                  :value="category.id_categoria"
+                >
+                  {{ category.nombre_categoria }}
                 </option>
               </select>
+              <div v-if="loading.categories" class="loading-indicator">
+                Cargando categorías...
+              </div>
             </div>
           </div>
           
@@ -220,7 +237,7 @@
             <label for="course-description" class="form-label">Descripción</label>
             <textarea 
               id="course-description" 
-              v-model="formCourse.description" 
+              v-model="formCourse.descripcion" 
               class="form-textarea"
               rows="3"
               placeholder="Describe el contenido y objetivos del curso..."
@@ -236,7 +253,7 @@
                 <span class="input-icon">$</span>
                 <input 
                   id="course-price" 
-                  v-model.number="formCourse.price" 
+                  v-model.number="formCourse.precio" 
                   type="number" 
                   min="0" 
                   step="0.01"
@@ -253,14 +270,23 @@
               </label>
               <select 
                 id="course-difficulty" 
-                v-model="formCourse.difficulty" 
+                v-model="formCourse.id_dificultad" 
                 class="form-select"
                 required
+                :disabled="loading.difficulties"
               >
-                <option value="Principiante">Principiante</option>
-                <option value="Intermedio">Intermedio</option>
-                <option value="Avanzado">Avanzado</option>
+                <option value="">Seleccionar dificultad</option>
+                <option 
+                  v-for="difficulty in difficulties" 
+                  :key="difficulty.id_dificultad" 
+                  :value="difficulty.id_dificultad"
+                >
+                  {{ difficulty.dificultad }}
+                </option>
               </select>
+              <div v-if="loading.difficulties" class="loading-indicator">
+                Cargando dificultades...
+              </div>
             </div>
           </div>
           
@@ -269,17 +295,15 @@
               <label for="course-instructor" class="form-label">
                 Instructor <span class="required">*</span>
               </label>
-              <select 
+              <input 
                 id="course-instructor" 
-                v-model="formCourse.instructor" 
-                class="form-select"
-                required
-              >
-                <option value="">Seleccionar instructor</option>
-                <option v-for="inst in instructorsList" :key="inst.id" :value="inst.name">
-                  {{ inst.name }}
-                </option>
-              </select>
+                v-model.number="formCourse.id_instructor" 
+                type="number" 
+                class="form-input"
+                required 
+                placeholder="ID del instructor"
+              />
+              <small class="form-hint">Ingresa el ID numérico del instructor</small>
             </div>
             
             <div class="form-group">
@@ -288,7 +312,7 @@
               </label>
               <select 
                 id="course-status" 
-                v-model="formCourse.status" 
+                v-model="formCourse.estatus" 
                 class="form-select"
                 required
               >
@@ -309,6 +333,7 @@
                 accept="image/*"
                 @change="$emit('cover-change', $event)"
                 class="file-input"
+                :required="!formCourse.id_curso"
               />
               <label for="course-cover-upload" class="upload-label">
                 <span class="upload-icon">📷</span>
@@ -322,8 +347,8 @@
                   <span>✕</span>
                 </button>
               </div>
-              <div v-else-if="formCourse.coverImage && formCourse.id" class="image-preview">
-                <img :src="formCourse.coverImage" alt="Portada actual" />
+              <div v-else-if="formCourse.img_portada && formCourse.id_curso" class="image-preview">
+                <img :src="formCourse.img_portada" alt="Portada actual" />
                 <p class="image-caption">Portada actual</p>
               </div>
             </div>
@@ -333,8 +358,8 @@
             <button type="button" class="btn btn--ghost" @click="$emit('close-course-modal')">
               Cancelar
             </button>
-            <button type="submit" class="btn btn--primary">
-              {{ formCourse.id ? 'Actualizar' : 'Crear' }} Curso
+            <button type="submit" class="btn btn--primary" :disabled="loading.save">
+              {{ loading.save ? 'Guardando...' : (formCourse.id_curso ? 'Actualizar' : 'Crear') }} Curso
             </button>
           </div>
         </form>
@@ -363,7 +388,7 @@
             <div class="course-readonly-field">
               <input 
                 type="text" 
-                v-model="preSelectedCourse.title" 
+                v-model="preSelectedCourse.titulo_curso" 
                 class="form-input"
                 readonly
                 disabled
@@ -374,7 +399,7 @@
               />
               <div class="readonly-hint">
                 <span>ℹ️</span>
-                <small>Este módulo se creará para el curso "{{ preSelectedCourse.title }}"</small>
+                <small>Este módulo se creará para el curso "{{ preSelectedCourse.titulo_curso }}"</small>
               </div>
             </div>
           </div>
@@ -389,12 +414,16 @@
               v-model="formModule.courseId" 
               class="form-select"
               required
+              :disabled="loading.courses"
             >
               <option value="">Seleccionar curso</option>
-              <option v-for="course in courses" :key="course.id" :value="course.id">
-                {{ course.title }}
+              <option v-for="course in courses" :key="course.id_curso" :value="course.id_curso">
+                {{ course.titulo_curso }}
               </option>
             </select>
+            <div v-if="loading.courses" class="loading-indicator">
+              Cargando cursos...
+            </div>
           </div>
           
           <div class="form-grid">
@@ -486,12 +515,16 @@
                   class="form-select"
                   required
                   @change="$emit('lesson-course-change', formLesson.courseId)"
+                  :disabled="loading.courses"
                 >
                   <option value="">Seleccionar curso</option>
-                  <option v-for="course in courses" :key="course.id" :value="course.id">
-                    {{ course.title }}
+                  <option v-for="course in courses" :key="course.id_curso" :value="course.id_curso">
+                    {{ course.titulo_curso }}
                   </option>
                 </select>
+                <div v-if="loading.courses" class="loading-indicator">
+                  Cargando cursos...
+                </div>
               </div>
               
               <div class="form-group">
@@ -779,7 +812,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { cursoService } from '@/services/cursos.services'
+import { categoriasService } from '@/services/categorias.services'
+import { DificultadServices } from '@/services/dificultad.services'
 
 const props = defineProps({
   // Course Detail Modal
@@ -793,7 +829,6 @@ const props = defineProps({
   showCourseModal: Boolean,
   courseModalTitle: String,
   formCourse: Object,
-  categories: Array,
   instructorsList: Array,
   coverPreview: String,
   
@@ -801,7 +836,6 @@ const props = defineProps({
   showModuleModal: Boolean,
   moduleModalTitle: String,
   formModule: Object,
-  courses: Array,
   
   // Lesson Modal
   showLessonModal: Boolean,
@@ -843,14 +877,103 @@ const emit = defineEmits([
   'remove-option'
 ])
 
-// Local state para pestaña de lección
+// Local state
 const lessonTab = ref('info')
+const categories = ref([])
+const difficulties = ref([])
+const courses = ref([])
+const loading = ref({
+  categories: false,
+  difficulties: false,
+  courses: false,
+  save: false
+})
 
-// Variable para guardar el curso preseleccionado
+// Cargar datos al montar el componente o cuando se abra el modal de curso
+onMounted(() => {
+  loadInitialData()
+})
+
+// Observar cuando se abre el modal de curso para cargar datos si es necesario
+watch(() => props.showCourseModal, (isOpen) => {
+  if (isOpen) {
+    if (categories.value.length === 0) loadCategories()
+    if (difficulties.value.length === 0) loadDifficulties()
+  }
+})
+
+// Observar cuando se abre el modal de módulo para cargar cursos si es necesario
+watch(() => props.showModuleModal, (isOpen) => {
+  if (isOpen && courses.value.length === 0) {
+    loadCourses()
+  }
+})
+
+// Observar cuando se abre el modal de lección para cargar cursos si es necesario
+watch(() => props.showLessonModal, (isOpen) => {
+  if (isOpen && courses.value.length === 0) {
+    loadCourses()
+  }
+})
+
+// Métodos para cargar datos
+const loadInitialData = async () => {
+  await Promise.all([
+    loadCourses(),
+    loadCategories(),
+    loadDifficulties()
+  ])
+}
+
+const loadCourses = async () => {
+  loading.value.courses = true
+  try {
+    const response = await cursoService.obtenerCursos()
+    if (response.success && response.data) {
+      courses.value = response.data
+    }
+  } catch (error) {
+    console.error('Error al cargar cursos:', error)
+    courses.value = []
+  } finally {
+    loading.value.courses = false
+  }
+}
+
+const loadCategories = async () => {
+  loading.value.categories = true
+  try {
+    const response = await categoriasService.obtenerCategorias()
+    if (response.success && response.data) {
+      categories.value = response.data
+    }
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+    categories.value = []
+  } finally {
+    loading.value.categories = false
+  }
+}
+
+const loadDifficulties = async () => {
+  loading.value.difficulties = true
+  try {
+    const response = await DificultadServices.obtenerDificultades()
+    if (response.success && response.data) {
+      difficulties.value = response.data
+    }
+  } catch (error) {
+    console.error('Error al cargar dificultades:', error)
+    difficulties.value = []
+  } finally {
+    loading.value.difficulties = false
+  }
+}
+
+// Variables computadas
 const preSelectedCourse = computed(() => {
-  // Si el formModule tiene un courseId, buscar el curso correspondiente
-  if (props.formModule?.courseId && props.courses?.length) {
-    const course = props.courses.find(c => c.id === props.formModule.courseId)
+  if (props.formModule?.courseId && courses.value?.length) {
+    const course = courses.value.find(c => c.id_curso === props.formModule.courseId)
     return course || null
   }
   return null
@@ -870,6 +993,30 @@ const getLessonTypeLabel = (type) => {
   }
   return labels[type] || type
 }
+
+const getDifficultyName = (difficultyId) => {
+  if (!difficultyId || !difficulties.value.length) return 'No asignada'
+  const difficulty = difficulties.value.find(d => d.id_dificultad === difficultyId)
+  return difficulty ? difficulty.nombre_dificultad : 'No asignada'
+}
+
+const getCategoryName = (categoryId) => {
+  if (!categoryId || !categories.value.length) return 'No asignada'
+  const category = categories.value.find(c => c.id_categoria === categoryId)
+  return category ? category.nombre_categoria : 'No asignada'
+}
+
+// Exponer métodos para uso externo
+defineExpose({
+  loadCourses,
+  loadCategories,
+  loadDifficulties,
+  setLoading: (type, value) => {
+    if (type in loading.value) {
+      loading.value[type] = value
+    }
+  }
+})
 </script>
 
 <style scoped>
@@ -919,6 +1066,7 @@ const getLessonTypeLabel = (type) => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .detail-item {
@@ -934,6 +1082,41 @@ const getLessonTypeLabel = (type) => {
 }
 
 .detail-value {
+  color: var(--color-oscuro-variante);
+}
+
+/* Loading indicator */
+.loading-indicator {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f0f9ff;
+  border-radius: var(--border-radius-1);
+  color: #0369a1;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.loading-indicator::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid #0369a1;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Form hints */
+.form-hint {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
   color: var(--color-oscuro-variante);
 }
 

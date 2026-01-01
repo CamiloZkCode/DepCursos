@@ -59,4 +59,11 @@ export async function cambiarContrasenaUsuario(id_usuario, passwords) {
   }
 }
 
-
+export async function obtenerInstructores(id_rol = 3) {
+  try {
+    const res = await API.get(`/usuario/obtenerInstructores/${id_rol}`);
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || err;
+  }
+}

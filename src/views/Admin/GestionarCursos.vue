@@ -39,6 +39,12 @@
                 <div class="stat-card__label">Cursos Totales</div>
               </div>
             </div>
+            <div class="stat-card" v-if="loading.courses">
+              <div class="stat-card__icon">🔄</div>
+              <div class="stat-card__content">
+                <div class="stat-card__label">Cargando...</div>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -62,9 +68,29 @@
           </button>
         </div>
         
-        <button class="btn btn--primary btn--with-icon" @click="openCreateCourseModal">
-          <span class="btn-icon">➕</span>
-          Crear Nuevo Curso
+        <div class="management-actions">
+          <button 
+            class="btn btn--outline btn--with-icon" 
+            @click="refreshCourses"
+            :disabled="loading.courses"
+          >
+            <span class="btn-icon" v-if="!loading.courses">🔄</span>
+            <span class="spinner" v-else></span>
+            Actualizar
+          </button>
+          <button class="btn btn--primary btn--with-icon" @click="openCreateCourseModal">
+            <span class="btn-icon">➕</span>
+            Crear Nuevo Curso
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div v-if="error" class="error-message">
+        <span class="error-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button class="btn btn--outline btn--small" @click="refreshCourses">
+          Reintentar
         </button>
       </div>
 
@@ -72,41 +98,43 @@
       <div v-if="viewMode === 'grid' && courses.length" class="courses-grid">
         <div 
           v-for="course in courses" 
-          :key="course.id" 
+          :key="course.id_curso" 
           class="course-card"
         >
-          <div class="course-card__image" :style="{ backgroundImage: `url(${course.coverImage || defaultCover})` }">
-            <div class="course-card__badge">{{ course.status }}</div>
-            <div class="course-card__category">{{ course.category }}</div>
+          <div class="course-card__image" :style="{ backgroundImage: `url(${course.img_portada || defaultCover})` }">
+            <div class="course-card__badge" :class="`status-badge--${course.estatus === 'Publicado' ? 'active' : 'inactive'}`">
+              {{ course.estatus }}
+            </div>
+            <div class="course-card__category">{{ getCategoryName(course.id_categoria) }}</div>
           </div>
           
           <div class="course-card__content">
             <div class="course-card__header">
-              <h3 class="course-card__title">{{ course.title }}</h3>
+              <h3 class="course-card__title">{{ course.titulo_curso }}</h3>
               <div class="course-card__meta">
                 <div class="meta-item">
                   <span class="meta-icon">👨‍🏫</span>
-                  <span>{{ course.instructor }}</span>
+                  <span>ID Instructor: {{ course.id_instructor }}</span>
                 </div>
                 <div class="meta-item">
-                  <span>${{ course.price }}</span>
+                  <span>${{ course.precio }}</span>
                 </div>
                 <div class="meta-item">
                   <span class="meta-icon">📊</span>
-                  <span>{{ course.difficulty }}</span>
+                  <span>{{ getDifficultyName(course.id_dificultad) }}</span>
                 </div>
               </div>
             </div>
             
-            <p class="course-card__description">{{ truncateText(course.description, 120) }}</p>
+            <p class="course-card__description">{{ truncateText(course.descripcion, 120) }}</p>
             
             <div class="course-stats">
               <div class="stat-item">
-                <span class="stat-value">{{ getModulesForCourse(course.id).length }}</span>
+                <span class="stat-value">{{ getModulesForCourse(course.id_curso).length }}</span>
                 <span class="stat-label">Módulos</span>
               </div>
               <div class="stat-item">
-                <span class="stat-value">{{ getLessonsForCourse(course.id).length }}</span>
+                <span class="stat-value">{{ getLessonsForCourse(course.id_curso).length }}</span>
                 <span class="stat-label">Lecciones</span>
               </div>
             </div>
@@ -115,7 +143,7 @@
               <div class="action-buttons">
                 <button 
                   class="btn btn--outline btn--small" 
-                  @click="openCourseDetail(course.id)"
+                  @click="openCourseDetail(course)"
                 >
                   <span class="btn-icon">👁️</span>
                   Ver Detalles
@@ -131,7 +159,7 @@
               
               <button 
                 class="btn btn--primary btn--small btn--with-icon" 
-                @click="openCreateModuleModal(course.id)"
+                @click="openCreateModuleModal(course)"
               >
                 <span class="btn-icon">➕</span>
                 Agregar Módulo
@@ -151,47 +179,55 @@
                 <th>Categoría</th>
                 <th>Instructor</th>
                 <th>Estado</th>
+                <th>Dificultad</th>
+                <th>Precio</th>
                 <th>Módulos</th>
                 <th>Lecciones</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="course in courses" :key="course.id">
+              <tr v-for="course in courses" :key="course.id_curso">
                 <td>
                   <div class="course-cell">
                     <div 
                       class="course-avatar" 
-                      :style="{ backgroundImage: `url(${course.coverImage || defaultCover})` }"
+                      :style="{ backgroundImage: `url(${course.img_portada || defaultCover})` }"
                     ></div>
                     <div class="course-info">
-                      <strong>{{ course.title }}</strong>
-                      <span class="course-price">${{ course.price }}</span>
+                      <strong>{{ course.titulo_curso }}</strong>
+                      <span class="course-description">{{ truncateText(course.descripcion, 50) }}</span>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span class="category-badge">{{ course.category }}</span>
+                  <span class="category-badge">{{ getCategoryName(course.id_categoria) }}</span>
                 </td>
                 <td>
-                  <span class="instructor-name">{{ course.instructor }}</span>
+                  <span class="instructor-name">ID: {{ course.id_instructor }}</span>
                 </td>
                 <td>
-                  <span class="status-badge" :class="`status-badge--${course.status === 'Publicado' ? 'active' : 'inactive'}`">
-                    {{ course.status }}
+                  <span class="status-badge" :class="`status-badge--${course.estatus === 'Publicado' ? 'active' : 'inactive'}`">
+                    {{ course.estatus }}
                   </span>
                 </td>
                 <td>
-                  <span class="count-badge">{{ getModulesForCourse(course.id).length }}</span>
+                  <span class="difficulty-badge">{{ getDifficultyName(course.id_dificultad) }}</span>
                 </td>
                 <td>
-                  <span class="count-badge">{{ getLessonsForCourse(course.id).length }}</span>
+                  <span class="course-price">${{ course.precio }}</span>
+                </td>
+                <td>
+                  <span class="count-badge">{{ getModulesForCourse(course.id_curso).length }}</span>
+                </td>
+                <td>
+                  <span class="count-badge">{{ getLessonsForCourse(course.id_curso).length }}</span>
                 </td>
                 <td>
                   <div class="action-buttons">
                     <button 
                       class="btn btn--outline btn--xs" 
-                      @click="openCourseDetail(course.id)"
+                      @click="openCourseDetail(course)"
                       title="Ver detalles"
                     >
                       <span class="btn-icon">👁️</span>
@@ -205,7 +241,7 @@
                     </button>
                     <button 
                       class="btn btn--primary btn--xs" 
-                      @click="openCreateModuleModal(course.id)"
+                      @click="openCreateModuleModal(course)"
                       title="Agregar módulo"
                     >
                       <span class="btn-icon">➕</span>
@@ -216,6 +252,12 @@
             </tbody>
           </table>
         </div>
+      </div>
+
+      <!-- Estado de carga -->
+      <div v-else-if="loading.courses" class="loading-state">
+        <div class="spinner-large"></div>
+        <p>Cargando cursos...</p>
       </div>
 
       <!-- Estado vacío -->
@@ -234,6 +276,7 @@
 
     <!-- ===== COMPONENTE ÚNICO DE MODALES ===== -->
     <CourseModals
+      ref="courseModalsRef"
       :show-course-detail-modal="showCourseDetailModal"
       :selected-course="selectedCourse"
       :course-modules="courseModules"
@@ -242,7 +285,6 @@
       :show-course-modal="showCourseModal"
       :course-modal-title="courseModalTitle"
       :form-course="formCourse"
-      :categories="categories"
       :instructors-list="instructorsList"
       :cover-preview="coverPreview"
       :show-module-modal="showModuleModal"
@@ -263,7 +305,7 @@
       @create-lesson="openCreateLessonModal"
       @edit-lesson="openEditLessonModal"
       @close-course-modal="closeCourseModal"
-      @save-course="saveCourse"
+      @save-course="handleSaveCourse"
       @cover-change="handleCoverChange"
       @clear-cover="clearCoverPreview"
       @close-module-modal="closeModuleModal"
@@ -281,15 +323,22 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import ProfileHeader from '@/components/ProfileHeader.vue'
 import CourseModals from '@/components/CourseModals.vue'
+import { cursoService } from '@/services/cursos.services'
+import { categoriasService } from '@/services/categorias.services'
+import { DificultadServices } from '@/services/dificultad.services'
+
+// Referencia al componente de modales
+const courseModalsRef = ref(null)
 
 // Estado principal
 const activeTab = ref('cursos')
 const viewMode = ref('grid')
 const expandedCourse = ref(null)
 const expandedModule = ref(null)
+const error = ref(null)
 
 // Modales
 const showCourseDetailModal = ref(false)
@@ -309,39 +358,19 @@ const user = reactive({
 const avatarSrc = ref('/src/assets/icons/LogoFondo.jpeg')
 const defaultCover = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=200&fit=crop'
 
-// Datos de ejemplo
-const courses = reactive([
-  {
-    id: 1,
-    title: 'Curso de Yoga para Principiantes',
-    description: 'Aprende las bases del yoga con este curso completo para principiantes. Incluye posturas básicas, técnicas de respiración y meditación.',
-    price: 49.99,
-    coverImage: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=200&fit=crop',
-    category: 'Yoga',
-    difficulty: 'Principiante',
-    instructor: 'Ana Martínez',
-    status: 'Publicado'
-  },
-  {
-    id: 2,
-    title: 'Entrenamiento Fitness Avanzado',
-    description: 'Programa intensivo de fitness para personas con experiencia. Mejora tu fuerza, resistencia y composición corporal.',
-    price: 79.99,
-    coverImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=200&fit=crop',
-    category: 'Fitness',
-    difficulty: 'Avanzado',
-    instructor: 'Carlos Rodríguez',
-    status: 'Borrador'
-  }
-])
+// Datos reales desde API
+const courses = ref([])
+const categories = ref([])
+const difficulties = ref([])
 
-const modules = reactive([
+// Datos de ejemplo para módulos y lecciones (hasta que tengas los endpoints)
+const modules = ref([
   { id: 1, courseId: 1, title: 'Introducción al Yoga', order: 1 },
   { id: 2, courseId: 1, title: 'Posturas Básicas', order: 2 },
   { id: 3, courseId: 2, title: 'Fundamentos del Entrenamiento', order: 1 }
 ])
 
-const lessons = reactive([
+const lessons = ref([
   { 
     id: 1, 
     moduleId: 1, 
@@ -358,54 +387,129 @@ const lessons = reactive([
     order: 2, 
     duration: 10,
     contentText: 'El yoga ofrece numerosos beneficios...' 
-  },
-  { 
-    id: 3, 
-    moduleId: 2, 
-    title: 'Postura de la Montaña', 
-    type: 'video', 
-    order: 1, 
-    duration: 20 
-  },
-  { 
-    id: 4, 
-    moduleId: 3, 
-    title: 'Principios del Fitness', 
-    type: 'archivo', 
-    order: 1, 
-    duration: 25 
   }
 ])
 
-const categories = reactive([
-  { id: 1, name: 'Fitness' },
-  { id: 2, name: 'Yoga' },
-  { id: 3, name: 'Nutrición' }
-])
-
-const instructorsList = reactive([
+// Instructores (puedes cambiarlo por un endpoint si lo tienes)
+const instructorsList = ref([
   { id: 1, name: 'Carlos Rodríguez' },
   { id: 2, name: 'Ana Martínez' },
   { id: 3, name: 'Luis Gómez' }
 ])
 
+// Estados de carga
+const loading = reactive({
+  courses: false,
+  categories: false,
+  difficulties: false,
+  save: false
+})
+
 // Computed properties
-const totalModules = computed(() => modules.length)
-const totalLessons = computed(() => lessons.length)
-const totalQuizzes = computed(() => lessons.filter(l => l.type === 'quiz').length)
+const totalModules = computed(() => modules.value.length)
+const totalLessons = computed(() => lessons.value.length)
+const totalQuizzes = computed(() => lessons.value.filter(l => l.type === 'quiz').length)
 
 const courseModules = computed(() => {
   if (!selectedCourse.value) return []
-  return getModulesForCourse(selectedCourse.value.id)
+  return getModulesForCourse(selectedCourse.value.id_curso)
 })
 
+// Cargar datos iniciales
+onMounted(() => {
+  loadInitialData()
+})
+
+// Métodos para cargar datos
+const loadInitialData = async () => {
+  await Promise.all([
+    loadCourses(),
+    loadCategories(),
+    loadDifficulties()
+  ])
+}
+
+const loadCourses = async () => {
+  loading.courses = true
+  error.value = null
+  try {
+    const response = await cursoService.obtenerCursos()
+    if (response.success && response.data) {
+      courses.value = response.data.map(course => ({
+        ...course,
+        // Asegurar que los nombres de los campos sean consistentes
+        titulo_curso: course.titulo_curso || '',
+        descripcion: course.descripcion || '',
+        precio: course.precio || 0,
+        img_portada: course.img_portada || defaultCover,
+        estatus: course.estatus || 'Borrador'
+      }))
+    } else {
+      courses.value = []
+    }
+  } catch (err) {
+    console.error('Error al cargar cursos:', err)
+    error.value = err.message || 'Error al cargar los cursos'
+    courses.value = []
+  } finally {
+    loading.courses = false
+  }
+}
+
+const loadCategories = async () => {
+  loading.categories = true
+  try {
+    const response = await categoriasService.obtenerCategorias()
+    if (response.success && response.data) {
+      categories.value = response.data
+    }
+  } catch (err) {
+    console.error('Error al cargar categorías:', err)
+    categories.value = []
+  } finally {
+    loading.categories = false
+  }
+}
+
+const loadDifficulties = async () => {
+  loading.difficulties = true
+  try {
+    const response = await DificultadServices.obtenerDificultades()
+    if (response.success && response.data) {
+      difficulties.value = response.data
+    }
+  } catch (err) {
+    console.error('Error al cargar dificultades:', err)
+    difficulties.value = []
+  } finally {
+    loading.difficulties = false
+  }
+}
+
+const refreshCourses = () => {
+  loadCourses()
+}
+
+// Métodos auxiliares para obtener nombres
+const getCategoryName = (categoryId) => {
+  if (!categoryId || !categories.value.length) return 'No asignada'
+  const category = categories.value.find(c => c.id_categoria === categoryId)
+  return category ? category.nombre_categoria : 'No asignada'
+}
+
+const getDifficultyName = (difficultyId) => {
+  if (!difficultyId || !difficulties.value.length) return 'No asignada'
+  const difficulty = difficulties.value.find(d => d.id_dificultad === difficultyId)
+  return difficulty ? difficulty.nombre_dificultad : 'No asignada'
+}
+
 const getModulesForCourse = (courseId) => {
-  return modules.filter(m => m.courseId === courseId).sort((a, b) => a.order - b.order)
+  return modules.value.filter(m => m.courseId === courseId).sort((a, b) => a.order - b.order)
 }
 
 const getLessonsForCourse = (courseId) => {
-  const courseModules = modules.filter(m => m.courseId === courseId).map(m => m.id)
-  return lessons.filter(l => courseModules.includes(l.moduleId))
+  const courseModulesIds = modules.value.filter(m => m.courseId === courseId).map(m => m.id)
+  return lessons.value.filter(l => courseModulesIds.includes(l.moduleId))
 }
 
 // Funciones de utilidad
@@ -414,13 +518,10 @@ const truncateText = (text, length) => {
   return text.length > length ? text.substring(0, length) + '...' : text
 }
 
-// Funciones para abrir modales
-const openCourseDetail = (courseId) => {
-  const course = courses.find(c => c.id === courseId)
-  if (course) {
-    selectedCourse.value = { ...course }
-    showCourseDetailModal.value = true
-  }
+// Funciones para abrir modales de curso
+const openCourseDetail = (course) => {
+  selectedCourse.value = { ...course }
+  showCourseDetailModal.value = true
 }
 
 const closeCourseDetailModal = () => {
@@ -442,33 +543,37 @@ const handleAvatarChange = (event) => {
   }
 }
 
-// Modal Curso
+// Modal Curso - Variables y funciones
 const courseModalTitle = ref('Nuevo Curso')
 const formCourse = reactive({
-  id: null,
-  title: '',
-  description: '',
-  price: 0,
-  coverImage: '',
-  category: '',
-  difficulty: 'Principiante',
-  instructor: '',
-  status: 'Borrador'
+  id_curso: null,
+  titulo_curso: '',
+  descripcion: '',
+  precio: 0,
+  img_portada: '',
+  id_categoria: '',
+  id_dificultad: '',
+  id_instructor: '',
+  estatus: 'Borrador'
 })
 const coverPreview = ref('')
 const selectedCoverFile = ref(null)
 
 const openCreateCourseModal = () => {
+  // Cargar categorías y dificultades si no están cargadas
+  if (categories.value.length === 0) loadCategories()
+  if (difficulties.value.length === 0) loadDifficulties()
+  
   Object.assign(formCourse, { 
-    id: null, 
-    title: '', 
-    description: '', 
-    price: 0, 
-    coverImage: '', 
-    category: '', 
-    difficulty: 'Principiante', 
-    instructor: '', 
-    status: 'Borrador' 
+    id_curso: null, 
+    titulo_curso: '', 
+    descripcion: '', 
+    precio: 0, 
+    img_portada: '', 
+    id_categoria: '', 
+    id_dificultad: '', 
+    id_instructor: '', 
+    estatus: 'Borrador' 
   })
   selectedCoverFile.value = null
   coverPreview.value = ''
@@ -477,7 +582,21 @@ const openCreateCourseModal = () => {
 }
 
 const openEditCourseModal = (course) => {
-  Object.assign(formCourse, { ...course })
+  // Cargar categorías y dificultades si no están cargadas
+  if (categories.value.length === 0) loadCategories()
+  if (difficulties.value.length === 0) loadDifficulties()
+  
+  Object.assign(formCourse, { 
+    id_curso: course.id_curso,
+    titulo_curso: course.titulo_curso,
+    descripcion: course.descripcion,
+    precio: course.precio,
+    img_portada: course.img_portada,
+    id_categoria: course.id_categoria,
+    id_dificultad: course.id_dificultad,
+    id_instructor: course.id_instructor,
+    estatus: course.estatus
+  })
   selectedCoverFile.value = null
   coverPreview.value = ''
   courseModalTitle.value = 'Editar Curso'
@@ -497,25 +616,47 @@ const clearCoverPreview = () => {
   selectedCoverFile.value = null
 }
 
-const saveCourse = (courseData) => {
-  if (courseData.title && courseData.price >= 0 && courseData.category && courseData.instructor) {
-    if (courseData.id) {
-      const index = courses.findIndex(c => c.id === courseData.id)
-      if (index !== -1) {
-        courses[index] = { 
-          ...courseData,
-          coverImage: selectedCoverFile.value ? 'URL_SIMULADA_' + selectedCoverFile.value.name : courses[index].coverImage
-        }
-      }
-    } else {
-      courses.push({ 
-        id: courses.length + 1, 
-        ...courseData,
-        coverImage: selectedCoverFile.value ? 'URL_SIMULADA_' + selectedCoverFile.value.name : defaultCover
-      })
+// Función para guardar curso (integrando con API)
+const handleSaveCourse = async (courseData) => {
+  loading.save = true
+  try {
+    // Crear FormData
+    const formData = new FormData()
+    formData.append('titulo_curso', courseData.titulo_curso)
+    formData.append('descripcion', courseData.descripcion)
+    formData.append('precio', courseData.precio)
+    formData.append('id_categoria', courseData.id_categoria)
+    formData.append('id_dificultad', courseData.id_dificultad)
+    formData.append('id_instructor', courseData.id_instructor)
+    formData.append('estatus', courseData.estatus)
+    
+    // Agregar imagen si hay una nueva
+    if (selectedCoverFile.value) {
+      formData.append('image', selectedCoverFile.value)
     }
-    alert('Curso guardado exitosamente')
-    closeCourseModal()
+
+    let response
+    if (courseData.id_curso) {
+      // Actualizar curso existente
+      response = await cursoService.actualizarCurso(courseData.id_curso, formData)
+    } else {
+      // Crear nuevo curso
+      response = await cursoService.crearCurso(formData)
+    }
+
+    if (response.success) {
+      // Recargar cursos
+      await loadCourses()
+      alert(response.message || 'Curso guardado exitosamente')
+      closeCourseModal()
+    } else {
+      alert(response.message || 'Error al guardar el curso')
+    }
+  } catch (err) {
+    console.error('Error al guardar curso:', err)
+    alert(err.message || 'Error al guardar el curso. Por favor, intenta de nuevo.')
+  } finally {
+    loading.save = false
   }
 }
 
@@ -534,11 +675,11 @@ const formModule = reactive({
   order: 1
 })
 
-const openCreateModuleModal = (courseId) => {
-  const nextOrder = getModulesForCourse(courseId).length + 1
+const openCreateModuleModal = (course) => {
+  const nextOrder = getModulesForCourse(course.id_curso).length + 1
   Object.assign(formModule, { 
     id: null, 
-    courseId: courseId, 
+    courseId: course.id_curso, 
     title: '', 
     order: nextOrder 
   })
@@ -555,13 +696,13 @@ const openEditModuleModal = (module) => {
 const saveModule = (moduleData) => {
   if (moduleData.courseId && moduleData.title && moduleData.order) {
     if (moduleData.id) {
-      const index = modules.findIndex(m => m.id === moduleData.id)
+      const index = modules.value.findIndex(m => m.id === moduleData.id)
       if (index !== -1) {
-        modules[index] = { ...moduleData }
+        modules.value[index] = { ...moduleData }
       }
     } else {
-      modules.push({ 
-        id: modules.length + 1, 
+      modules.value.push({ 
+        id: modules.value.length + 1, 
         ...moduleData 
       })
     }
@@ -607,7 +748,7 @@ const openCreateLessonModal = (courseId, moduleId = null) => {
 
 const openEditLessonModal = (lesson) => {
   resetLessonForm()
-  const module = modules.find(m => m.id === lesson.moduleId)
+  const module = modules.value.find(m => m.id === lesson.moduleId)
   if (module) {
     formLesson.courseId = module.courseId
     formLesson.moduleId = module.id
@@ -700,7 +841,7 @@ const saveLesson = (lessonData) => {
     }
     
     const lessonToSave = {
-      id: lessonData.id || lessons.length + 1,
+      id: lessonData.id || lessons.value.length + 1,
       moduleId: lessonData.moduleId,
       title: lessonData.title,
       type: 'quiz',
@@ -709,17 +850,17 @@ const saveLesson = (lessonData) => {
     }
     
     if (lessonData.id) {
-      const index = lessons.findIndex(l => l.id === lessonData.id)
+      const index = lessons.value.findIndex(l => l.id === lessonData.id)
       if (index !== -1) {
-        lessons[index] = lessonToSave
+        lessons.value[index] = lessonToSave
       }
     } else {
-      lessons.push(lessonToSave)
+      lessons.value.push(lessonToSave)
     }
     
   } else {
     const lessonToSave = {
-      id: lessonData.id || lessons.length + 1,
+      id: lessonData.id || lessons.value.length + 1,
       moduleId: lessonData.moduleId,
       title: lessonData.title,
       type: lessonData.type,
@@ -733,12 +874,12 @@ const saveLesson = (lessonData) => {
     }
     
     if (lessonData.id) {
-      const index = lessons.findIndex(l => l.id === lessonData.id)
+      const index = lessons.value.findIndex(l => l.id === lessonData.id)
       if (index !== -1) {
-        lessons[index] = lessonToSave
+        lessons.value[index] = lessonToSave
       }
     } else {
-      lessons.push(lessonToSave)
+      lessons.value.push(lessonToSave)
     }
   }
   
@@ -899,6 +1040,11 @@ const removeOption = (qIndex, oIndex) => {
   gap: 1rem;
 }
 
+.management-actions {
+  display: flex;
+  gap: 1rem;
+}
+
 .view-controls {
   display: flex;
   gap: 0.5rem;
@@ -1049,12 +1195,21 @@ const removeOption = (qIndex, oIndex) => {
   position: absolute;
   top: 1rem;
   left: 1rem;
-  background: var(--color-morado);
-  color: white;
   padding: 0.25rem 0.75rem;
   border-radius: var(--border-radius-1);
   font-weight: 600;
   font-size: 0.75rem;
+}
+
+.status-badge--active {
+  background: var(--color-morado);
+  color: white;
+}
+
+.status-badge--inactive {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--color-morado);
+  border: 1px solid var(--color-morado);
 }
 
 .course-card__category {
@@ -1211,9 +1366,16 @@ const removeOption = (qIndex, oIndex) => {
   flex-direction: column;
 }
 
+.course-description {
+  font-size: 0.75rem;
+  color: var(--color-oscuro-variante);
+  margin-top: 0.25rem;
+}
+
 .course-price {
   font-size: 0.875rem;
-  color: var(--color-oscuro-variante);
+  color: var(--color-morado);
+  font-weight: 600;
 }
 
 .category-badge {
@@ -1221,6 +1383,16 @@ const removeOption = (qIndex, oIndex) => {
   padding: 0.25rem 0.75rem;
   background: #e0e7ff;
   color: #3730a3;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.difficulty-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: #fef3c7;
+  color: #92400e;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
@@ -1267,6 +1439,64 @@ const removeOption = (qIndex, oIndex) => {
   gap: 0.5rem;
 }
 
+/* Mensajes de error */
+.error-message {
+  margin: 2rem;
+  padding: 1.5rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: var(--border-radius-2);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.error-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.error-message p {
+  margin: 0;
+  color: #991b1b;
+  flex: 1;
+}
+
+/* Estado de carga */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.spinner-large {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--color-morado);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid var(--color-morado);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* Estado vacío */
 .empty-state {
   text-align: center;
@@ -1308,6 +1538,15 @@ const removeOption = (qIndex, oIndex) => {
     align-items: stretch;
   }
   
+  .management-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .management-actions .btn {
+    width: 100%;
+  }
+  
   .view-controls {
     align-self: center;
   }
@@ -1331,6 +1570,12 @@ const removeOption = (qIndex, oIndex) => {
   
   .table-container {
     padding: 0 1.5rem 1.5rem;
+  }
+  
+  .error-message {
+    margin: 1.5rem;
+    flex-direction: column;
+    text-align: center;
   }
 }
 </style>

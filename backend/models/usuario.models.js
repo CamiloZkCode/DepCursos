@@ -33,12 +33,13 @@ async function obtenerDatosUsuario(id_usuario) {
   return rows[0] || null;
 }
 
+// En models/usuario.models.js
 async function obtenerInstructores(id_rol) {
   const [rows] = await db.query(
-    "SELECT * FROM Usuarios WHERE id_rol = ? ORDER by nombre ",
+    "SELECT * FROM Usuarios WHERE id_rol = ? ORDER BY nombre",
     [id_rol]
   );
-  return rows[0] || null;
+  return rows; 
 }
 
 

@@ -19,7 +19,7 @@ router.put('/usuarios/:id/contrasena', verificarToken, cambiarContrasena);
 
 router.get('/datosUsuario/:id',verificarToken, obtenerPerfilUsuario);
 
-router.get('/obtenerInstructores',verificarToken,obtenerInstructores)
-
+// En routes/usuario.routes.js
+router.get("/obtenerInstructores/:id_rol", verificarToken,obtenerInstructores);
 module.exports = router; 
 

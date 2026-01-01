@@ -1,26 +1,13 @@
 <template>
   <main class="profile-admin" aria-describedby="profile-admin-intro">
     <!-- ===== HEADER DEL PERFIL ===== -->
-    <ProfileHeader 
-      :user="user" 
-      :avatar-src="user.img_usuario || '/src/assets/icons/LogoFondo.jpeg'" 
-      @change-avatar="handleAvatarChange"
-      :is-admin="true"
-      :is-estudiante="false"
-    />
+    <ProfileHeader :user="user" :avatar-src="user.img_usuario || '/src/assets/icons/LogoFondo.jpeg'"
+      @change-avatar="handleAvatarChange" :is-admin="true" :is-estudiante="false" />
 
     <!-- ===== NAVEGACIÓN DE TABS ===== -->
     <nav class="profile__tabs" role="tablist" aria-label="Secciones del perfil administrador">
-      <button 
-        v-for="tab in tabs" 
-        :key="tab.id" 
-        class="profile__tab" 
-        :class="{ 'is-active': activeTab === tab.id }"
-        @click="activeTab = tab.id" 
-        role="tab" 
-        :aria-selected="activeTab === tab.id" 
-        :aria-controls="tab.id"
-      >
+      <button v-for="tab in tabs" :key="tab.id" class="profile__tab" :class="{ 'is-active': activeTab === tab.id }"
+        @click="activeTab = tab.id" role="tab" :aria-selected="activeTab === tab.id" :aria-controls="tab.id">
         <span class="profile__tab-icon">{{ tab.icon }}</span>
         <span class="profile__tab-label">{{ tab.label }}</span>
       </button>
@@ -35,14 +22,14 @@
           <div class="spinner"></div>
           <p>Cargando datos del perfil...</p>
         </div>
-        
+
         <!-- Contenido del perfil -->
         <template v-else>
           <header class="section-header">
             <h2>Información Personal</h2>
             <p>Actualiza tus datos personales</p>
           </header>
-          
+
           <div class="profile__form-container">
             <form class="profile__form" @submit.prevent="updateProfile">
               <!-- Sección: Datos Personales -->
@@ -53,43 +40,24 @@
                     <label for="nombreCompleto" class="form-label">
                       Nombre Completo <span class="required">*</span>
                     </label>
-                    <input 
-                      id="nombreCompleto" 
-                      v-model="editedUser.fullName" 
-                      type="text" 
-                      class="form-input"
-                      required 
-                      :disabled="isSaving"
-                      placeholder="Ej: Juan Pérez"
-                    />
+                    <input id="nombreCompleto" v-model="editedUser.fullName" type="text" class="form-input" required
+                      :disabled="isSaving" placeholder="Ej: Juan Pérez" />
                   </div>
-                  
+
                   <div class="form-group">
                     <label for="telefono" class="form-label">Teléfono</label>
-                    <input 
-                      id="telefono" 
-                      v-model="editedUser.phone" 
-                      type="tel" 
-                      class="form-input"
-                      :disabled="isSaving"
-                      placeholder="+57 123 456 7890"
-                    />
+                    <input id="telefono" v-model="editedUser.phone" type="tel" class="form-input" :disabled="isSaving"
+                      placeholder="+57 123 456 7890" />
                   </div>
-                  
+
                   <div class="form-group">
                     <label for="correo" class="form-label">Correo electrónico</label>
-                    <input 
-                      id="correo" 
-                      v-model="editedUser.email" 
-                      type="email" 
-                      class="form-input"
-                      :disabled="isSaving"
-                      placeholder="admin@ejemplo.com"
-                    />
+                    <input id="correo" v-model="editedUser.email" type="email" class="form-input" :disabled="isSaving"
+                      placeholder="admin@ejemplo.com" />
                   </div>
                 </div>
               </div>
-              
+
               <!-- Sección: Localización -->
               <div class="form-section">
                 <h3 class="form-section__title">Localización</h3>
@@ -98,32 +66,20 @@
                     <label for="pais" class="form-label">
                       País
                     </label>
-                    <input 
-                      id="pais" 
-                      v-model="editedUser.country" 
-                      type="text" 
-                      class="form-input"
-                      :disabled="isSaving"
-                      placeholder="Ej: Colombia, México, Argentina"
-                    />
+                    <input id="pais" v-model="editedUser.country" type="text" class="form-input" :disabled="isSaving"
+                      placeholder="Ej: Colombia, México, Argentina" />
                   </div>
-                  
+
                   <div class="form-group">
                     <label for="estado" class="form-label">
                       Departamento/Estado
                     </label>
-                    <input 
-                      id="estado" 
-                      v-model="editedUser.state" 
-                      type="text" 
-                      class="form-input"
-                      :disabled="isSaving"
-                      placeholder="Ej: Tolima, Bogotá D.C., Antioquia"
-                    />
+                    <input id="estado" v-model="editedUser.state" type="text" class="form-input" :disabled="isSaving"
+                      placeholder="Ej: Tolima, Bogotá D.C., Antioquia" />
                   </div>
                 </div>
               </div>
-              
+
               <!-- Sección: Seguridad -->
               <div class="form-section">
                 <h3 class="form-section__title">Seguridad</h3>
@@ -133,34 +89,21 @@
                       <h4>Contraseña</h4>
                       <p>Cambia tu contraseña regularmente para mayor seguridad</p>
                     </div>
-                    <button 
-                      type="button" 
-                      class="btn btn--outline"
-                      @click="showPasswordModal = true"
-                      :disabled="isSaving"
-                    >
+                    <button type="button" class="btn btn--outline" @click="showPasswordModal = true"
+                      :disabled="isSaving">
                       Cambiar contraseña
                     </button>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Acciones del formulario -->
               <div class="form-actions">
-                <button 
-                  type="button" 
-                  class="btn btn--ghost"
-                  @click="resetForm"
-                  :disabled="!hasChanges || isSaving"
-                >
+                <button type="button" class="btn btn--ghost" @click="resetForm" :disabled="!hasChanges || isSaving">
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
-                  class="btn btn--primary"
-                  :disabled="!hasChanges || isSaving"
-                  :class="{ 'btn--loading': isSaving }"
-                >
+                <button type="submit" class="btn btn--primary" :disabled="!hasChanges || isSaving"
+                  :class="{ 'btn--loading': isSaving }">
                   <span v-if="isSaving">Guardando...</span>
                   <span v-else>Guardar Cambios</span>
                 </button>
@@ -176,14 +119,14 @@
           <h2>Gestionar Categorías</h2>
           <p>Crea y administra las categorías de cursos</p>
         </header>
-        
+
         <div class="management-container">
           <!-- Estado de carga -->
           <div v-if="loadingCategories" class="loading-state">
             <div class="spinner"></div>
             <p>Cargando categorías...</p>
           </div>
-          
+
           <template v-else>
             <!-- Encabezado con estadísticas y botón de acción -->
             <div class="management-header">
@@ -196,43 +139,36 @@
                   </div>
                 </div>
               </div>
-              
+
               <button class="btn btn--primary" @click="openCreateCategoryModal">
                 <span class="btn-icon">➕</span>
                 Nueva Categoría
               </button>
             </div>
-            
+
             <!-- Grid de categorías -->
             <div class="categories-grid">
-              <div 
-                v-for="category in categories" 
-                :key="category.id" 
-                class="category-card"
-              >
+              <div v-for="category in categories" :key="category.id" class="category-card">
                 <div class="category-card__image" :style="{ backgroundImage: `url(${category.image_url})` }">
                   <div class="category-card__badge">{{ category.badge || 'CAT' }}</div>
                 </div>
-                
+
                 <div class="category-card__content">
                   <div class="category-card__header">
                     <h3 class="category-card__title">{{ category.name }}</h3>
                   </div>
-                  
+
                   <p class="category-card__description">{{ category.description || 'Sin descripción' }}</p>
-                  
+
                   <div class="category-card__actions">
-                    <button 
-                      class="btn btn--outline"
-                      @click="openEditCategoryModal(category)"
-                    >
+                    <button class="btn btn--outline" @click="openEditCategoryModal(category)">
                       Editar
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- Estado vacío -->
             <div v-if="categories.length === 0" class="empty-state">
               <div class="empty-state__icon">📂</div>
@@ -254,95 +190,91 @@
           <h2>Gestionar Instructores</h2>
           <p>Administra los instructores de la plataforma</p>
         </header>
-        
+
         <div class="management-container">
-          <!-- Encabezado con estadísticas -->
-          <div class="management-header">
-            <div class="stats-overview">
-              <div class="stat-card">
-                <div class="stat-card__icon">👥</div>
-                <div class="stat-card__content">
-                  <div class="stat-card__value">{{ activeInstructors }}</div>
-                  <div class="stat-card__label">Instructores Activos</div>
+          <!-- Estado de carga -->
+          <div v-if="loadingInstructors && instructorsList.length === 0" class="loading-state">
+            <div class="spinner"></div>
+            <p>Cargando instructores...</p>
+          </div>
+
+          <template v-else>
+            <!-- Encabezado con estadísticas -->
+            <div class="management-header">
+              <div class="stats-overview">
+                <div class="stat-card">
+                  <div class="stat-card__icon">👥</div>
+                  <div class="stat-card__content">
+                    <div class="stat-card__value">{{ instructorsList.length }}</div>
+                    <div class="stat-card__label">Total Instructores</div>
+                  </div>
                 </div>
               </div>
+
+              <!-- Botón para crear nuevo instructor -->
+              <button class="btn btn--primary" @click="openCreateInstructorModal">
+                <span class="btn-icon">👨‍🏫</span>
+                Nuevo Instructor
+              </button>
             </div>
-            
-            <!-- Botón para crear nuevo instructor -->
-            <button class="btn btn--primary" @click="openCreateInstructorModal">
-              <span class="btn-icon">👨‍🏫</span>
-              Nuevo Instructor
-            </button>
-          </div>
-          
-          <!-- Tabla de instructores -->
-          <div class="table-container">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Instructor</th>
-                    <th>Contacto</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="instructor in instructorsList" :key="instructor.id">
-                    <td>
-                      <div class="user-cell">
-                        <div class="user-avatar" :style="{ backgroundImage: `url(${instructor.avatar || avatarSrc})` }"></div>
-                        <div class="user-info">
-                          <strong>{{ instructor.name }}</strong>
-                          <span class="user-id">ID: {{ instructor.id }}</span>
+
+            <!-- Tabla de instructores simplificada -->
+            <div class="table-container">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Instructor</th>
+                      <th>Teléfono</th>
+                      <th>Correo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="instructor in instructorsList" :key="instructor.id_usuario">
+                      <td>
+                        <span class="user-id">{{ instructor.id_usuario }}</span>
+                      </td>
+                      <td>
+                        <div class="user-cell">
+                          <div class="user-avatar" :style="{
+                            backgroundImage: `url(${instructor.img_usuario || instructor.avatar || avatarSrc})`
+                          }"></div>
+                          <div class="user-info">
+                            <strong>{{ instructor.nombre }}</strong>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="contact-info">
+                      </td>
+                      <td>
+                        <div class="contact-item">
+                          <span class="contact-icon">📱</span>
+                          <span>{{ instructor.telefono || 'Sin teléfono' }}</span>
+                        </div>
+                      </td>
+                      <td>
                         <div class="contact-item">
                           <span class="contact-icon">📧</span>
-                          <span>{{ instructor.email }}</span>
+                          <span>{{ instructor.correo }}</span>
                         </div>
-                        <div class="contact-item" v-if="instructor.phone">
-                          <span class="contact-icon">📱</span>
-                          <span>{{ instructor.phone }}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="status-badge" :class="`status-badge--${instructor.active ? 'active' : 'inactive'}`">
-                        {{ instructor.active ? 'Activo' : 'Inactivo' }}
-                      </span>
-                    </td>
-                    <td>
-                      <div class="action-buttons">
-                        <button 
-                          class="btn btn--toggle"
-                          :class="instructor.active ? 'btn--danger' : 'btn--success'"
-                          @click="toggleInstructorAccess(instructor.id)"
-                        >
-                          {{ instructor.active ? 'Desactivar' : 'Activar' }}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          
-          <!-- Estado vacío -->
-          <div v-if="instructorsList.length === 0" class="empty-state">
-            <div class="empty-state__icon">👨‍🏫</div>
-            <h3 class="empty-state__title">No hay instructores registrados</h3>
-            <p class="empty-state__description">
-              Agrega instructores para que puedan crear y gestionar cursos
-            </p>
-            <button class="btn btn--primary" @click="openCreateInstructorModal">
-              Agregar Primer Instructor
-            </button>
-          </div>
+
+            <!-- Estado vacío -->
+            <div v-if="instructorsList.length === 0 && !loadingInstructors" class="empty-state">
+              <div class="empty-state__icon">👨‍🏫</div>
+              <h3 class="empty-state__title">No hay instructores registrados</h3>
+              <p class="empty-state__description">
+                Agrega instructores para que puedan crear y gestionar cursos
+              </p>
+              <button class="btn btn--primary" @click="openCreateInstructorModal">
+                Agregar Primer Instructor
+              </button>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -352,7 +284,7 @@
           <h2>Dashboard de Estadísticas</h2>
           <p>Métricas y análisis de la plataforma</p>
         </header>
-        
+
         <div class="dashboard-container">
           <!-- Tarjetas de métricas principales -->
           <div class="metrics-grid">
@@ -363,7 +295,7 @@
                 <div class="metric-card__label">Usuarios Registrados</div>
               </div>
             </div>
-            
+
             <div class="metric-card metric-card--success">
               <div class="metric-card__icon">📚</div>
               <div class="metric-card__content">
@@ -371,7 +303,7 @@
                 <div class="metric-card__label">Inscripciones Totales</div>
               </div>
             </div>
-            
+
             <div class="metric-card metric-card--warning">
               <div class="metric-card__icon">🎓</div>
               <div class="metric-card__content">
@@ -380,7 +312,7 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Gráficos y visualizaciones -->
           <div class="charts-grid">
             <!-- Gráfico de inscripciones por curso -->
@@ -391,24 +323,18 @@
               </div>
               <div class="chart-content">
                 <div class="bar-chart">
-                  <div 
-                    v-for="course in topCourses" 
-                    :key="course.id" 
-                    class="bar-item"
-                  >
+                  <div v-for="course in topCourses" :key="course.id" class="bar-item">
                     <div class="bar-label">{{ course.title }}</div>
                     <div class="bar-wrapper">
-                      <div 
-                        class="bar-fill" 
-                        :style="{ width: `${(course.enrolled / course.maxEnrolled) * 100}%` }"
-                      ></div>
+                      <div class="bar-fill" :style="{ width: `${(course.enrolled / course.maxEnrolled) * 100}%` }">
+                      </div>
                     </div>
                     <div class="bar-value">{{ course.enrolled }} inscritos</div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- Gráfico de distribución por categoría -->
             <div class="chart-container">
               <div class="chart-header">
@@ -417,20 +343,14 @@
               </div>
               <div class="chart-content">
                 <div class="category-distribution">
-                  <div 
-                    v-for="category in categoryDistribution" 
-                    :key="category.name"
-                    class="category-item"
-                  >
+                  <div v-for="category in categoryDistribution" :key="category.name" class="category-item">
                     <div class="category-info">
                       <span class="category-name">{{ category.name }}</span>
                       <span class="category-count">{{ category.count }} cursos</span>
                     </div>
                     <div class="category-bar">
-                      <div 
-                        class="category-bar-fill" 
-                        :style="{ width: `${(category.count / totalCourses) * 100}%` }"
-                      ></div>
+                      <div class="category-bar-fill" :style="{ width: `${(category.count / totalCourses) * 100}%` }">
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -450,7 +370,7 @@
             <h3 id="password-modal-title">Cambiar Contraseña</h3>
             <button class="modal__close" @click="closePasswordModal" aria-label="Cerrar">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </header>
@@ -461,110 +381,81 @@
                   Contraseña actual <span class="required">*</span>
                 </label>
                 <div class="password-input">
-                  <input 
-                    id="current-password" 
-                    v-model="passwordForm.current" 
-                    :type="showCurrentPassword ? 'text' : 'password'" 
-                    required 
-                    class="form-input"
-                    placeholder="Ingresa tu contraseña actual"
-                  />
-                  <button 
-                    type="button" 
-                    class="password-toggle"
-                    @click="showCurrentPassword = !showCurrentPassword"
-                  >
+                  <input id="current-password" v-model="passwordForm.current"
+                    :type="showCurrentPassword ? 'text' : 'password'" required class="form-input"
+                    placeholder="Ingresa tu contraseña actual" />
+                  <button type="button" class="password-toggle" @click="showCurrentPassword = !showCurrentPassword">
                     <svg v-if="showCurrentPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
                     <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                   </button>
                 </div>
               </div>
-              
+
               <div class="form-group">
                 <label for="new-password" class="form-label">
                   Nueva contraseña <span class="required">*</span>
                 </label>
                 <div class="password-input">
-                  <input 
-                    id="new-password" 
-                    v-model="passwordForm.new" 
-                    :type="showNewPassword ? 'text' : 'password'" 
-                    required 
-                    class="form-input"
-                    placeholder="Mínimo 8 caracteres"
-                  />
-                  <button 
-                    type="button" 
-                    class="password-toggle"
-                    @click="showNewPassword = !showNewPassword"
-                  >
+                  <input id="new-password" v-model="passwordForm.new" :type="showNewPassword ? 'text' : 'password'"
+                    required class="form-input" placeholder="Mínimo 8 caracteres" />
+                  <button type="button" class="password-toggle" @click="showNewPassword = !showNewPassword">
                     <svg v-if="showNewPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
                     <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                   </button>
                 </div>
                 <div class="password-strength">
-                  <div 
-                    class="strength-bar" 
-                    :class="passwordStrengthClass"
-                  ></div>
+                  <div class="strength-bar" :class="passwordStrengthClass"></div>
                   <span class="strength-text">{{ passwordStrengthText }}</span>
                 </div>
               </div>
-              
+
               <div class="form-group">
                 <label for="confirm-password" class="form-label">
                   Confirmar nueva contraseña <span class="required">*</span>
                 </label>
                 <div class="password-input">
-                  <input 
-                    id="confirm-password" 
-                    v-model="passwordForm.confirm" 
-                    :type="showConfirmPassword ? 'text' : 'password'" 
-                    required 
-                    class="form-input"
-                    placeholder="Repite la nueva contraseña"
-                  />
-                  <button 
-                    type="button" 
-                    class="password-toggle"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                  >
+                  <input id="confirm-password" v-model="passwordForm.confirm"
+                    :type="showConfirmPassword ? 'text' : 'password'" required class="form-input"
+                    placeholder="Repite la nueva contraseña" />
+                  <button type="button" class="password-toggle" @click="showConfirmPassword = !showConfirmPassword">
                     <svg v-if="showConfirmPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                      <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
                     <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
-                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                      <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
                     </svg>
                   </button>
                 </div>
               </div>
-              
+
               <div class="modal__actions">
                 <button type="button" class="btn btn--ghost" @click="closePasswordModal">
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
-                  class="btn btn--primary"
-                  :disabled="!canSubmitPassword"
-                >
+                <button type="submit" class="btn btn--primary" :disabled="!canSubmitPassword">
                   Cambiar Contraseña
                 </button>
               </div>
@@ -580,7 +471,7 @@
             <h3 id="category-modal-title">{{ categoryModalTitle }}</h3>
             <button class="modal__close" @click="closeCategoryModal" aria-label="Cerrar">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </header>
@@ -591,66 +482,44 @@
                   <label for="category-name" class="form-label">
                     Nombre de la categoría <span class="required">*</span>
                   </label>
-                  <input 
-                    id="category-name" 
-                    v-model="formCategory.nombre_categoria" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    placeholder="Ej: Fitness, Yoga, Nutrición"
-                  />
+                  <input id="category-name" v-model="formCategory.nombre_categoria" type="text" class="form-input"
+                    required placeholder="Ej: Fitness, Yoga, Nutrición" />
                 </div>
-                
+
                 <div class="form-group">
                   <label for="category-badge" class="form-label">
                     Insignia <span class="required">*</span>
                   </label>
-                  <input 
-                    id="category-badge" 
-                    v-model="formCategory.insignia" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    placeholder="Ej: FIT, YGA, NUT"
-                    maxlength="5"
-                  />
+                  <input id="category-badge" v-model="formCategory.insignia" type="text" class="form-input" required
+                    placeholder="Ej: FIT, YGA, NUT" maxlength="5" />
                   <div class="form-help">Máximo 5 caracteres</div>
                 </div>
               </div>
-              
+
               <div class="form-group">
                 <label for="category-description" class="form-label">Descripción</label>
-                <textarea 
-                  id="category-description" 
-                  v-model="formCategory.descripcion_categoria" 
-                  class="form-textarea"
-                  rows="3"
-                  placeholder="Describe la categoría..."
-                ></textarea>
+                <textarea id="category-description" v-model="formCategory.descripcion_categoria" class="form-textarea"
+                  rows="3" placeholder="Describe la categoría..."></textarea>
               </div>
-              
+
               <div class="form-group">
                 <label class="form-label">
-                  Imagen de la categoría 
+                  Imagen de la categoría
                   <span v-if="!formCategory.id_categoria" class="required">*</span>
                   <span v-else>(Opcional para actualizar)</span>
                 </label>
                 <div class="image-upload">
-                  <input 
-                    type="file" 
-                    id="category-image-upload"
-                    accept="image/*"
-                    @change="handleCategoryImageChange"
-                    class="file-input"
-                  />
+                  <input type="file" id="category-image-upload" accept="image/*" @change="handleCategoryImageChange"
+                    class="file-input" />
                   <label for="category-image-upload" class="upload-label">
                     <span class="upload-icon">📷</span>
                     <span>Subir imagen</span>
                   </label>
-                  
+
                   <div v-if="categoryImagePreview" class="image-preview">
                     <img :src="categoryImagePreview" alt="Vista previa" />
-                    <button type="button" class="btn btn--xs btn--ghost" @click="categoryImagePreview = ''; categoryImageFile = null;">
+                    <button type="button" class="btn btn--xs btn--ghost"
+                      @click="categoryImagePreview = ''; categoryImageFile = null;">
                       <span>✕</span>
                     </button>
                   </div>
@@ -669,9 +538,10 @@
                   * Si no seleccionas una nueva imagen, se mantendrá la actual
                 </div>
               </div>
-              
+
               <div class="modal__actions">
-                <button type="button" class="btn btn--ghost" @click="closeCategoryModal" :disabled="isSubmittingCategory">
+                <button type="button" class="btn btn--ghost" @click="closeCategoryModal"
+                  :disabled="isSubmittingCategory">
                   Cancelar
                 </button>
                 <button type="submit" class="btn btn--primary" :disabled="isSubmittingCategory">
@@ -685,13 +555,14 @@
       </div>
 
       <!-- Modal: Crear Nuevo Instructor -->
+      <!-- Modal: Crear Nuevo Instructor -->
       <div v-if="showInstructorModal" class="modal-backdrop" @click.self="closeInstructorModal">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="instructor-modal-title">
           <header class="modal__header">
             <h3 id="instructor-modal-title">Nuevo Instructor</h3>
             <button class="modal__close" @click="closeInstructorModal" aria-label="Cerrar">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
               </svg>
             </button>
           </header>
@@ -702,145 +573,101 @@
                   <label for="instructor-name" class="form-label">
                     Nombre completo <span class="required">*</span>
                   </label>
-                  <input 
-                    id="instructor-name" 
-                    v-model="newInstructor.name" 
-                    type="text" 
-                    class="form-input"
-                    required 
-                    placeholder="Nombre del instructor"
-                  />
+                  <input id="instructor-name" v-model="newInstructor.nombre" type="text" class="form-input" required
+                    placeholder="Nombre del instructor" />
                 </div>
-                
+
+                <div class="form-group">
+                  <label for="instructor-id" class="form-label">
+                    Cédula/Número de identificación <span class="required">*</span>
+                  </label>
+                  <input id="instructor-id" v-model="newInstructor.id_usuario" type="text" class="form-input" required
+                    placeholder="Ej: 1234567890" :disabled="isCreatingInstructor" />
+                </div>
+              </div>
+
+              <div class="form-grid">
                 <div class="form-group">
                   <label for="instructor-email" class="form-label">
                     Correo electrónico <span class="required">*</span>
                   </label>
-                  <input 
-                    id="instructor-email" 
-                    v-model="newInstructor.email" 
-                    type="email" 
-                    class="form-input"
-                    required 
-                    placeholder="instructor@ejemplo.com"
-                  />
+                  <input id="instructor-email" v-model="newInstructor.correo" type="email" class="form-input" required
+                    placeholder="instructor@ejemplo.com" />
                 </div>
-              </div>
-              
-              <div class="form-grid">
+
                 <div class="form-group">
                   <label for="instructor-phone" class="form-label">Teléfono</label>
-                  <input 
-                    id="instructor-phone" 
-                    v-model="newInstructor.phone" 
-                    type="tel" 
-                    class="form-input"
-                    placeholder="+57 123 456 7890"
-                  />
-                </div>
-                
-                <div class="form-group">
-                  <label for="instructor-specialty" class="form-label">Especialidad</label>
-                  <input 
-                    id="instructor-specialty" 
-                    v-model="newInstructor.specialty" 
-                    type="text" 
-                    class="form-input"
-                    placeholder="Ej: Fitness, Yoga, Nutrición"
-                  />
+                  <input id="instructor-phone" v-model="newInstructor.telefono" type="tel" class="form-input"
+                    placeholder="+57 123 456 7890" />
                 </div>
               </div>
-              
-              <div class="form-group">
-                <label for="instructor-bio" class="form-label">Biografía</label>
-                <textarea 
-                  id="instructor-bio" 
-                  v-model="newInstructor.bio" 
-                  class="form-textarea"
-                  rows="3"
-                  placeholder="Describe la experiencia y especialidades del instructor..."
-                ></textarea>
-              </div>
-              
+
               <div class="form-grid">
                 <div class="form-group">
                   <label for="instructor-password" class="form-label">
                     Contraseña <span class="required">*</span>
                   </label>
                   <div class="password-input">
-                    <input 
-                      id="instructor-password" 
-                      v-model="newInstructor.password" 
-                      :type="showInstructorPassword ? 'text' : 'password'" 
-                      class="form-input"
-                      required 
-                      placeholder="Contraseña temporal"
-                    />
-                    <button 
-                      type="button" 
-                      class="password-toggle"
-                      @click="showInstructorPassword = !showInstructorPassword"
-                    >
+                    <input id="instructor-password" v-model="newInstructor.contrasena"
+                      :type="showInstructorPassword ? 'text' : 'password'" class="form-input" required
+                      placeholder="Contraseña temporal" />
+                    <button type="button" class="password-toggle"
+                      @click="showInstructorPassword = !showInstructorPassword">
                       <svg v-if="showInstructorPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                        <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                        <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                       </svg>
                       <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
                       </svg>
                     </button>
                   </div>
                 </div>
-                
+
                 <div class="form-group">
                   <label for="instructor-confirm-password" class="form-label">
                     Confirmar contraseña <span class="required">*</span>
                   </label>
                   <div class="password-input">
-                    <input 
-                      id="instructor-confirm-password" 
-                      v-model="newInstructor.confirmPassword" 
-                      :type="showConfirmInstructorPassword ? 'text' : 'password'" 
-                      class="form-input"
-                      required 
-                      placeholder="Confirmar contraseña"
-                    />
-                    <button 
-                      type="button" 
-                      class="password-toggle"
-                      @click="showConfirmInstructorPassword = !showConfirmInstructorPassword"
-                    >
+                    <input id="instructor-confirm-password" v-model="newInstructor.confirmPassword"
+                      :type="showConfirmInstructorPassword ? 'text' : 'password'" class="form-input" required
+                      placeholder="Confirmar contraseña" />
+                    <button type="button" class="password-toggle"
+                      @click="showConfirmInstructorPassword = !showConfirmInstructorPassword">
                       <svg v-if="showConfirmInstructorPassword" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                        <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
+                        <path d="M4 4L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                       </svg>
                       <svg v-else width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+                        <path d="M2 10C2 10 5 4 10 4C15 4 18 10 18 10C18 10 15 16 10 16C5 16 2 10 2 10Z"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2" />
                       </svg>
                     </button>
                   </div>
-                  <div v-if="newInstructor.password && newInstructor.confirmPassword" class="password-match">
-                    <span :class="newInstructor.password === newInstructor.confirmPassword ? 'match-success' : 'match-error'">
-                      {{ newInstructor.password === newInstructor.confirmPassword ? '✓ Las contraseñas coinciden' : '✗ Las contraseñas no coinciden' }}
+                  <div v-if="newInstructor.contrasena && newInstructor.confirmPassword" class="password-match">
+                    <span
+                      :class="newInstructor.contrasena === newInstructor.confirmPassword ? 'match-success' : 'match-error'">
+                      {{ newInstructor.contrasena === newInstructor.confirmPassword ? '✓ Las contraseñas coinciden' : '✗ Las contraseñas no coinciden' }}
                     </span>
                   </div>
                 </div>
               </div>
-              
+
               <div class="modal__actions">
-                <button type="button" class="btn btn--ghost" @click="closeInstructorModal">
+                <button type="button" class="btn btn--ghost" @click="closeInstructorModal"
+                  :disabled="isCreatingInstructor">
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
-                  class="btn btn--primary"
-                  :disabled="!canCreateInstructor"
-                >
-                  Crear Instructor
+                <button type="submit" class="btn btn--primary" :disabled="!canCreateInstructor || isCreatingInstructor">
+                  <span v-if="isCreatingInstructor">Creando...</span>
+                  <span v-else>Crear Instructor</span>
                 </button>
               </div>
             </form>
@@ -864,15 +691,18 @@ import { useAuthStore } from '@/store/auth'
 import ProfileHeader from '@/components/ProfileHeader.vue'
 
 // Servicios API
-import { 
-  obtenerDatosPerfil, 
-  actualizarDatosPerfil, 
+import {
+  obtenerDatosPerfil,
+  actualizarDatosPerfil,
   cambiarContrasenaUsuario,
-  actualizarAvatarUsuario 
+  actualizarAvatarUsuario,
+  registroUsuario,
+  obtenerInstructores
+
 } from '@/services/usuario.services'
 
 // Servicios de categorías
-import { categoriasService } from '@/services/categorias.services' 
+import { categoriasService } from '@/services/categorias.services'
 
 // Librerías externas
 import Swal from 'sweetalert2'
@@ -933,12 +763,12 @@ const tabs = [
 const passwordStrength = computed(() => {
   const password = passwordForm.new
   if (!password) return 0
-  
+
   let strength = 0
   if (password.length >= 8) strength += 33
   if (/[A-Z]/.test(password)) strength += 33
   if (/[0-9]/.test(password)) strength += 34
-  
+
   return strength
 })
 
@@ -959,11 +789,11 @@ const passwordsMatch = computed(() => {
 })
 
 const canSubmitPassword = computed(() => {
-  return passwordForm.current && 
-         passwordForm.new && 
-         passwordForm.confirm && 
-         passwordStrength.value >= 66 && 
-         passwordsMatch.value
+  return passwordForm.current &&
+    passwordForm.new &&
+    passwordForm.confirm &&
+    passwordStrength.value >= 66 &&
+    passwordsMatch.value
 })
 
 // ===== MÉTODOS =====
@@ -971,10 +801,10 @@ const canSubmitPassword = computed(() => {
 const cargarDatosUsuario = async () => {
   try {
     loading.value = true
-    
+
     // CORREGIR: Usar 'id' en lugar de 'id_usuario'
     const userId = authStore.user?.id
-    
+
     if (!userId) {
       console.error('No se encontró ID de usuario en el store')
       Swal.fire({
@@ -985,13 +815,13 @@ const cargarDatosUsuario = async () => {
       })
       return
     }
-    
+
     const datos = await obtenerDatosPerfil(userId)
-    
+
     if (!datos) {
       throw new Error('El servidor no retornó datos')
     }
-    
+
     // Mapear datos del backend al frontend
     user.fullName = datos.nombre || authStore.user?.nombre || ''
     user.phone = datos.telefono || datos.phone || ''
@@ -1000,15 +830,15 @@ const cargarDatosUsuario = async () => {
     user.state = datos.departamento || datos.state || datos.estado || ''
     user.id_usuario = datos.id_usuario || datos.id || userId
     user.img_usuario = datos.img_usuario || datos.imagen || '/src/assets/icons/LogoFondo.jpeg'
-      
+
     // Inicializar editedUser con los datos del usuario
-    editedUser.value = { 
+    editedUser.value = {
       fullName: user.fullName,
       phone: user.phone,
       email: user.email,
       country: user.country,
       state: user.state
-    }    
+    }
   } catch (error) {
     console.error('❌ Error al cargar datos del usuario:', error)
     console.error('Detalles del error:', {
@@ -1016,12 +846,12 @@ const cargarDatosUsuario = async () => {
       response: error.response?.data,
       status: error.response?.status
     })
-    
+
     // Cargar datos mínimos desde el store de auth
     user.fullName = authStore.user?.nombre || 'Usuario'
     user.email = authStore.user?.correo || ''
     user.id_usuario = authStore.user?.id || ''
-    
+
     editedUser.value = {
       fullName: user.fullName,
       phone: '',
@@ -1029,14 +859,14 @@ const cargarDatosUsuario = async () => {
       country: '',
       state: ''
     }
-    
+
     Swal.fire({
       icon: 'warning',
       title: 'Datos limitados',
       text: 'Se cargaron datos básicos. Algunos campos pueden estar vacíos.',
       timer: 3000
     })
-    
+
   } finally {
     loading.value = false
   }
@@ -1044,7 +874,7 @@ const cargarDatosUsuario = async () => {
 
 // Restablece el formulario a los valores originales
 const resetForm = () => {
-  editedUser.value = { 
+  editedUser.value = {
     fullName: user.fullName,
     phone: user.phone,
     email: user.email,
@@ -1057,10 +887,10 @@ const resetForm = () => {
 // Actualiza el perfil del usuario en el backend
 const updateProfile = async () => {
   if (!hasChanges.value) return
-  
+
   try {
     isSaving.value = true
-    
+
     const datosActualizados = {
       nombre: editedUser.value.fullName,
       telefono: editedUser.value.phone,
@@ -1068,9 +898,9 @@ const updateProfile = async () => {
       pais: editedUser.value.country,
       departamento: editedUser.value.state
     }
-    
+
     await actualizarDatosPerfil(user.id_usuario, datosActualizados)
-    
+
     // Actualizar el objeto user con los nuevos datos
     user.fullName = editedUser.value.fullName
     user.phone = editedUser.value.phone
@@ -1083,11 +913,11 @@ const updateProfile = async () => {
       // 1. Actualizar el store
       authStore.user.nombre = editedUser.value.fullName
       authStore.user.correo = editedUser.value.email
-      
+
       // 2. ¡ESTO ES LO QUE TE FALTA! Actualizar localStorage
       localStorage.setItem("user", JSON.stringify(authStore.user))
     }
-    
+
     Swal.fire({
       icon: 'success',
       title: '¡Éxito!',
@@ -1095,7 +925,7 @@ const updateProfile = async () => {
       timer: 2000,
       showConfirmButton: false
     })
-    
+
   } catch (error) {
     console.error('Error al actualizar perfil:', error)
     Swal.fire({
@@ -1112,7 +942,7 @@ const updateProfile = async () => {
 const handleAvatarChange = async (event) => {
   const file = event.target.files[0]
   if (!file) return
-  
+
   try {
     // Validar tipo de archivo
     if (!file.type.startsWith('image/')) {
@@ -1123,7 +953,7 @@ const handleAvatarChange = async (event) => {
       })
       return
     }
-    
+
     // Validar tamaño (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       Swal.fire({
@@ -1133,13 +963,13 @@ const handleAvatarChange = async (event) => {
       })
       return
     }
-    
+
     const response = await actualizarAvatarUsuario(user.id_usuario, file)
-    
+
     if (response.success) {
       // Actualizar la imagen en el frontend
       user.img_usuario = response.data.imagen
-      
+
       Swal.fire({
         icon: 'success',
         title: '¡Éxito!',
@@ -1148,7 +978,7 @@ const handleAvatarChange = async (event) => {
         showConfirmButton: false
       })
     }
-    
+
   } catch (error) {
     console.error('Error al cambiar avatar:', error)
     Swal.fire({
@@ -1242,7 +1072,7 @@ const cargarCategorias = async () => {
   try {
     loadingCategories.value = true
     const response = await categoriasService.obtenerCategorias()
-    
+
     if (response.success) {
       categories.value = response.data.map(cat => ({
         id: cat.id_categoria,
@@ -1275,7 +1105,7 @@ const openCreateCategoryModal = () => {
   formCategory.image_url = ''
   categoryImageFile.value = null
   categoryImagePreview.value = ''
-  
+
   categoryModalTitle.value = 'Nueva Categoría'
   showCategoryModal.value = true
 }
@@ -1288,10 +1118,10 @@ const openEditCategoryModal = (category) => {
   formCategory.insignia = category.badge
   formCategory.descripcion_categoria = category.description
   formCategory.image_url = category.image_url
-  
+
   categoryImageFile.value = null
   categoryImagePreview.value = ''
-  
+
   categoryModalTitle.value = 'Editar Categoría'
   showCategoryModal.value = true
 }
@@ -1322,7 +1152,7 @@ const handleCategoryImageChange = (event) => {
       })
       return
     }
-    
+
     // Validar tamaño (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       Swal.fire({
@@ -1332,7 +1162,7 @@ const handleCategoryImageChange = (event) => {
       })
       return
     }
-    
+
     categoryImageFile.value = file
     categoryImagePreview.value = URL.createObjectURL(file)
   }
@@ -1342,29 +1172,29 @@ const handleCategoryImageChange = (event) => {
 const saveCategory = async () => {
   try {
     isSubmittingCategory.value = true
-    
+
     // Validar campos
     if (!formCategory.nombre_categoria || !formCategory.insignia) {
       throw new Error('Nombre e insignia son campos requeridos')
     }
-    
+
     // Para nueva categoría, validar que tenga imagen
     if (!formCategory.id_categoria && !categoryImageFile.value) {
       throw new Error('La imagen es requerida para nuevas categorías')
     }
-    
+
     // Crear FormData
     const formData = new FormData()
     formData.append('nombre_categoria', formCategory.nombre_categoria)
     formData.append('insignia', formCategory.insignia)
     formData.append('descripcion_categoria', formCategory.descripcion_categoria)
-    
+
     if (categoryImageFile.value) {
       formData.append('img_categoria', categoryImageFile.value)
     }
-    
+
     let response
-    
+
     if (formCategory.id_categoria) {
       // Actualizar categoría existente
       response = await categoriasService.actualizarCategoria(formCategory.id_categoria, formData)
@@ -1372,14 +1202,14 @@ const saveCategory = async () => {
       // Crear nueva categoría
       response = await categoriasService.crearCategoria(formData)
     }
-    
+
     if (response.success) {
       // Recargar categorías
       await cargarCategorias()
-      
+
       // Cerrar modal
       closeCategoryModal()
-      
+
       // Mostrar mensaje de éxito
       Swal.fire({
         icon: 'success',
@@ -1389,7 +1219,7 @@ const saveCategory = async () => {
         showConfirmButton: false
       })
     }
-    
+
   } catch (error) {
     console.error('Error al guardar categoría:', error)
     Swal.fire({
@@ -1407,47 +1237,18 @@ const saveCategory = async () => {
 // =================================================================
 
 // ===== ESTADO =====
-const instructorsList = reactive([
-  { 
-    id: 1, 
-    name: 'Carlos Rodríguez', 
-    email: 'carlos@academia.com', 
-    phone: '+57 311 222 3333',
-    specialty: 'Fitness y CrossFit',
-    bio: 'Entrenador certificado con 10 años de experiencia',
-    active: true,
-    avatar: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop'
-  },
-  { 
-    id: 2, 
-    name: 'Ana Martínez', 
-    email: 'ana@academia.com', 
-    phone: '+57 322 444 5555',
-    specialty: 'Yoga y Meditación',
-    bio: 'Instructora de yoga con certificación internacional',
-    active: true,
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop'
-  },
-  { 
-    id: 3, 
-    name: 'Luis Gómez', 
-    email: 'luis@academia.com', 
-    phone: '+57 300 666 7777',
-    specialty: 'Nutrición Deportiva',
-    bio: 'Nutricionista deportivo especializado en alto rendimiento',
-    active: false,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop'
-  }
-])
+const instructorsList = ref([])
+const loadingInstructors = ref(false)
+const isCreatingInstructor = ref(false)
 
-const newInstructor = ref({ 
-  name: '', 
-  email: '', 
-  phone: '', 
-  specialty: '', 
-  bio: '', 
-  password: '', 
-  confirmPassword: '' 
+const newInstructor = ref({
+  nombre: '',
+  id_usuario: '',
+  correo: '',
+  telefono: '',
+  contrasena: '',
+  confirmPassword: '',
+  id_rol: 3  // Siempre 3 para instructores
 })
 const showInstructorModal = ref(false)
 const showInstructorPassword = ref(false)
@@ -1455,30 +1256,89 @@ const showConfirmInstructorPassword = ref(false)
 
 // ===== COMPUTED =====
 const activeInstructors = computed(() => {
-  return instructorsList.filter(i => i.active).length
+  return instructorsList.value.length
 })
 
 const canCreateInstructor = computed(() => {
-  return newInstructor.value.name && 
-         newInstructor.value.email && 
-         newInstructor.value.password && 
-         newInstructor.value.password === newInstructor.value.confirmPassword
+  return newInstructor.value.nombre &&
+    newInstructor.value.id_usuario &&
+    newInstructor.value.correo &&
+    newInstructor.value.contrasena &&
+    newInstructor.value.contrasena === newInstructor.value.confirmPassword
 })
 
 // ===== MÉTODOS =====
+
+/**
+ * Carga la lista de instructores desde el backend
+ */
+const cargarInstructores = async () => {
+  try {
+    loadingInstructors.value = true
+    
+    const response = await obtenerInstructores()
+    
+    // Si no hay respuesta o está vacía
+    if (!response) {
+      instructorsList.value = []
+      return
+    }
+    
+    // Determinar de dónde obtener los datos
+    let data = []
+    
+    if (Array.isArray(response)) {
+      data = response
+    } else if (response.data && Array.isArray(response.data)) {
+      data = response.data
+    } else if (response.success && response.data && Array.isArray(response.data)) {
+      data = response.data
+    }
+    
+    // Mapear los datos
+    instructorsList.value = data.map(instructor => ({
+      id_usuario: instructor.id_usuario || '',
+      nombre: instructor.nombre || '',
+      correo: instructor.correo || '',
+      telefono: instructor.telefono || '',
+      img_usuario: instructor.img_usuario || instructor.imagen || '/src/assets/icons/LogoFondo.jpeg'
+    }))
+    
+  } catch (error) {
+    // Si no hay instructores (404), mostrar array vacío
+    if (error.response?.status === 404) {
+      instructorsList.value = []
+    } else {
+      // Para otros errores, mostrar mensaje
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar los instructores',
+        timer: 2000,
+        showConfirmButton: false
+      })
+      instructorsList.value = []
+    }
+  } finally {
+    loadingInstructors.value = false
+  }
+}
+
 /**
  * Abre el modal para crear un nuevo instructor
  */
 const openCreateInstructorModal = () => {
-  newInstructor.value = { 
-    name: '', 
-    email: '', 
-    phone: '', 
-    specialty: '', 
-    bio: '', 
-    password: '', 
-    confirmPassword: '' 
+  newInstructor.value = {
+    nombre: '',
+    id_usuario: '',
+    correo: '',
+    telefono: '',
+    contrasena: '',
+    confirmPassword: '',
+    id_rol: 3
   }
+  showInstructorPassword.value = false
+  showConfirmInstructorPassword.value = false
   showInstructorModal.value = true
 }
 
@@ -1487,60 +1347,87 @@ const openCreateInstructorModal = () => {
  */
 const closeInstructorModal = () => {
   showInstructorModal.value = false
+  // Limpiar formulario
+  newInstructor.value = {
+    nombre: '',
+    id_usuario: '',
+    correo: '',
+    telefono: '',
+    contrasena: '',
+    confirmPassword: '',
+    id_rol: 3
+  }
 }
 
 /**
- * Crea un nuevo instructor
+ * Crea un nuevo instructor usando el endpoint de registro
  */
-const createInstructor = () => {
+const createInstructor = async () => {
   if (!canCreateInstructor.value) return
   
-  instructorsList.push({
-    id: instructorsList.length + 1,
-    name: newInstructor.value.name,
-    email: newInstructor.value.email,
-    phone: newInstructor.value.phone || '',
-    specialty: newInstructor.value.specialty || '',
-    bio: newInstructor.value.bio || '',
-    active: true,
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop'
-  })
-  
-  newInstructor.value = { 
-    name: '', 
-    email: '', 
-    phone: '', 
-    specialty: '', 
-    bio: '', 
-    password: '', 
-    confirmPassword: '' 
-  }
-  showInstructorModal.value = false
-  
-  Swal.fire({
-    icon: 'success',
-    title: '¡Éxito!',
-    text: 'Instructor creado exitosamente',
-    timer: 2000,
-    showConfirmButton: false
-  })
-}
-
-/**
- * Activa o desactiva el acceso de un instructor
- */
-const toggleInstructorAccess = (id) => {
-  const instructor = instructorsList.find(i => i.id === id)
-  if (instructor) {
-    instructor.active = !instructor.active
+  try {
+    isCreatingInstructor.value = true
     
+    // Validar que las contraseñas coincidan
+    if (newInstructor.value.contrasena !== newInstructor.value.confirmPassword) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Contraseñas no coinciden',
+        text: 'Las contraseñas deben ser iguales',
+        timer: 2000,
+        showConfirmButton: false
+      })
+      return
+    }
+    
+    // Preparar los datos para el registro
+    const usuarioData = {
+      id_usuario: newInstructor.value.id_usuario,
+      nombre: newInstructor.value.nombre,
+      correo: newInstructor.value.correo,
+      telefono: newInstructor.value.telefono || null,
+      contraseña_hash: newInstructor.value.contrasena,
+      id_rol: 3, // Siempre 3 para instructores
+    }
+    
+    // Llamar al endpoint de registro
+    const response = await registroUsuario(usuarioData)
+    
+    // Cerrar modal
+    closeInstructorModal()
+    
+    // Mostrar mensaje de éxito
     Swal.fire({
       icon: 'success',
-      title: 'Acceso modificado',
-      text: `Acceso ${instructor.active ? 'activado' : 'desactivado'} para ${instructor.name}`,
+      title: '¡Éxito!',
+      text: response.message || 'Instructor creado exitosamente',
       timer: 2000,
       showConfirmButton: false
     })
+    
+    // Recargar la lista de instructores
+    await cargarInstructores()
+    
+  } catch (error) {
+    let errorMessage = 'Error al crear el instructor'
+    
+    if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    }
+    
+    // Mensajes específicos para errores comunes
+    if (errorMessage.includes('duplicate') || errorMessage.includes('ya existe')) {
+      errorMessage = 'El número de identificación o correo ya está registrado'
+    }
+    
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: errorMessage,
+      confirmButtonText: 'Entendido'
+    })
+  } finally {
+    isCreatingInstructor.value = false
   }
 }
 
@@ -1628,14 +1515,14 @@ const topCourses = computed(() => {
 
 const categoryDistribution = computed(() => {
   const distribution = {}
-  
+
   courses.forEach(course => {
     if (!distribution[course.category]) {
       distribution[course.category] = 0
     }
     distribution[course.category]++
   })
-  
+
   return Object.keys(distribution).map(category => ({
     name: category,
     count: distribution[category]
@@ -1645,51 +1532,57 @@ const categoryDistribution = computed(() => {
 const totalCourses = computed(() => courses.length)
 
 // ===== MÉTODOS =====
-/**
- * Formatea números con separadores de miles
- */
 const formatNumber = (num) => {
   return new Intl.NumberFormat('es-ES').format(num)
 }
 
 // =================================================================
-// Onmounted
+// OnMounted
 // =================================================================
 onMounted(async () => {
   await nextTick()
-  
-  // Usar 'id' en lugar de 'id_usuario'
+
   if (authStore.isAuthenticated && authStore.user?.id) {
     await cargarDatosUsuario()
   } else {
     loading.value = false
+    return
   }
 
-   if (activeTab.value === 'categorias') {
+  // Solo cargar categorías si esa es la pestaña activa
+  if (activeTab.value === 'categorias') {
     cargarCategorias()
-}
+  }
+  
+  // Solo cargar instructores si esa es la pestaña activa
+  if (activeTab.value === 'instructores') {
+    cargarInstructores()
+  }
 })
 
-
-// También puedes cargar cuando se cambie a la pestaña
+// Cargar datos cuando se cambia de pestaña
 watch(() => activeTab.value, (newTab) => {
-  if (newTab === 'categorias' && categories.value.length === 0) {
+  if (newTab === 'categorias') {
     cargarCategorias()
+  }
+  
+  if (newTab === 'instructores') {
+    cargarInstructores()
   }
 })
 
-// Actualizar el watch para usar 'id'
+// Recargar datos del usuario cuando cambia el ID
 watch(
   () => authStore.user?.id,
-  (newId) => {    
-    if (newId && !loading.value) {
+  (newId) => {
+    if (newId) {
       cargarDatosUsuario()
     }
   },
   { immediate: true }
 )
 
-// Watch para detectar cambios en el formulario
+// Detectar cambios en el formulario de perfil
 watch(editedUser, (newVal) => {
   hasChanges.value = JSON.stringify(newVal) !== JSON.stringify({
     fullName: user.fullName,
@@ -1791,8 +1684,15 @@ watch(editedUser, (newVal) => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Estado de carga */
@@ -1816,8 +1716,13 @@ watch(editedUser, (newVal) => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* =================================================================
@@ -2182,7 +2087,7 @@ watch(editedUser, (newVal) => {
 }
 
 /* =================================================================
-   ESTILOS PARA GESTIÓN DE INSTRUCTORES
+   ESTILOS PARA GESTIÓN DE INSTRUCTORES (VERSIÓN SIMPLIFICADA)
    ================================================================= */
 
 .table-container {
@@ -2198,7 +2103,7 @@ watch(editedUser, (newVal) => {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 600px;
 }
 
 .data-table th,
@@ -2243,12 +2148,7 @@ watch(editedUser, (newVal) => {
 .user-id {
   font-size: 0.75rem;
   color: var(--color-oscuro-variante);
-}
-
-.contact-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  font-weight: 600;
 }
 
 .contact-item {
@@ -2261,29 +2161,6 @@ watch(editedUser, (newVal) => {
 .contact-icon {
   font-size: 0.75rem;
   opacity: 0.6;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.status-badge--active {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-badge--inactive {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 0.5rem;
 }
 
 /* =================================================================
@@ -2526,8 +2403,13 @@ watch(editedUser, (newVal) => {
 }
 
 @keyframes backdropFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
@@ -2545,12 +2427,13 @@ watch(editedUser, (newVal) => {
 }
 
 @keyframes modalSlideIn {
-  from { 
-    opacity: 0; 
+  from {
+    opacity: 0;
     transform: translateY(-20px) scale(0.95);
   }
-  to { 
-    opacity: 1; 
+
+  to {
+    opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
@@ -2760,45 +2643,45 @@ watch(editedUser, (newVal) => {
     overflow-x: auto;
     padding-bottom: 0;
   }
-  
+
   .profile__tab {
     padding: 1rem;
     min-width: fit-content;
   }
-  
+
   .tab-content {
     padding: 1.5rem;
   }
-  
+
   .management-header {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .stats-overview {
     flex-direction: column;
   }
-  
+
   .stat-card {
     min-width: auto;
   }
-  
+
   .categories-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .modal {
     width: min(95%, 100%);
   }
-  
+
   .modal--large {
     width: min(95%, 100%);
   }
@@ -2808,15 +2691,15 @@ watch(editedUser, (newVal) => {
   .profile__tab-label {
     font-size: 0.85rem;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .modal__actions {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
   }
